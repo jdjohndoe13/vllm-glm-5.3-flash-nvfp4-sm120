@@ -32,7 +32,8 @@ offloading (64 GiB in RAM).**
   startup is just slower (JIT compiles + warmup, see section 7). Don't delete
   them while a server is running. If that folder is missing or not writable,
   the launchers automatically fall back to a local `.cache/` folder created
-  next to the launcher script.
+  next to the launcher script. These are the kernel JIT caches — they have
+  nothing to do with the HuggingFace model cache (see the model bullet above).
 - **Ports**: the server binds `0.0.0.0:1025`. Nothing else must use it.
 
 ## 2. Prerequisites (fresh Ubuntu 26.04)
@@ -84,6 +85,18 @@ Image on Docker Hub: [cstechdev/vllm](https://hub.docker.com/r/cstechdev/vllm)
 ```bash
 git clone https://github.com/jdjohndoe13/vllm-glm-5.3-flash-nvfp4-sm120.git
 bash vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flash-nvfp4.sh
+```
+
+All launcher knobs (model paths, image pin, container name, port, context
+length, …) sit in the `EDITABLE SETTINGS` block at the top of the `.sh` file
+— edit them there, or override per-run without touching the file:
+
+```bash
+MAX_MODEL_LEN=150000 bash vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flash-nvfp4.sh
+# or equivalently:  bash vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flash-nvfp4.sh MAX_MODEL_LEN=150000
+# NOTE: `bash MAX_MODEL_LEN=150000 <script>.sh` does NOT work — bash treats
+#       the assignment as the script's filename. Put the assignment before
+#       'bash' (or after the script path), not between them.
 ```
 
 - Wait for `Application startup complete` in the output

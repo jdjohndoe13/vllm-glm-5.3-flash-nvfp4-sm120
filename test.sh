@@ -25,7 +25,8 @@ set -uo pipefail
 F="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRVLOG="$F/kvoff-server.log"
 REPORT="$F/kvoff-report.txt"
-NAME=vllm-glm-5.3-flash-nvfp4
+# docker container name under test (same default the launchers use)
+CONTAINER_NAME=vllm-glm-5.3-flash-nvfp4
 PORT=1025
 
 log() { echo "[$(date +%H:%M:%S)] $*"; }
@@ -51,7 +52,7 @@ READY=0
 for i in $(seq 1 150); do
   sleep 10
   if grep -aq "Application startup complete" "$SRVLOG" 2>/dev/null; then READY=1; break; fi
-  if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${NAME}$"; then
+  if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${CONTAINER_NAME}$"; then
     log "container died during startup - aborting"; break
   fi
   if grep -aq "AssertionError" "$SRVLOG" 2>/dev/null; then
@@ -63,7 +64,7 @@ if [ "$READY" -ne 1 ]; then
   log "=== server did NOT become ready; relevant log lines: ==="
   grep -aE "AssertionError|Traceback|ERROR|offload|Offloading|kv_transfer" "$SRVLOG" | tail -30
   tail -20 "$SRVLOG"
-  docker stop -t 60 "$NAME" >/dev/null 2>&1; docker rm -f "$NAME" >/dev/null 2>&1
+  docker stop -t 60 "$CONTAINER_NAME" >/dev/null 2>&1; docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1
   echo "RESULT: TEST FAILED AT BOOT. GPUs freed." | tee "$REPORT"
   exit 1
 fi
@@ -166,8 +167,8 @@ grep -aiE "offload|OffloadingConnector|kv_transfer|CPUOffload|SharedOffload|kv c
 
 # ---------------- teardown ----------------
 log "stopping container (frees GPUs)"
-docker stop -t 120 "$NAME" >/dev/null 2>&1
-docker rm -f "$NAME" >/dev/null 2>&1
+docker stop -t 120 "$CONTAINER_NAME" >/dev/null 2>&1
+docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1
 log "container removed. GPUs are now free."
 log "To resume normal serving: bash $F/vllm-glm-5.3-flash-nvfp4.sh"
 echo "Full engine log: $SRVLOG ; report: $REPORT"
