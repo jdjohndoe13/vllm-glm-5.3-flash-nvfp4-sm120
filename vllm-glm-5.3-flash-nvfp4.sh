@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# ============================================================================
+# GLM-5.3-Flash-NVFP4 on vLLM — 8x RTX 5090 (sm_120) — PRODUCTION CONFIG
+# with KV CPU offloading (64 GiB) enabled.
+#
+# This is the primary launcher. Config verified on testcomp2 on 2026-09-12:
+#   * mounts the 6 PATCHED FILES from patched-files/ over the image's stock
+#     vllm package (per-file mounts; proven byte-identical to the original
+#     full-tree mount: a full diff of the tree vs the image's stock package
+#     showed exactly these 6 files differ — see patched-files/manifest.txt
+#     and patches/README.md)
+#   * KV offloading: OffloadingConnector, kv_both, 64 GiB CPU budget
+#     (total across TP=8 -> ~8 GiB pinned/rank, shared region in /dev/shm;
+#     that is why shm-size is 128g and why ~68.67 GB of RAM is used)
+#   * GPU KV pool: 414,634 tokens (kv-cache-memory 3.3e9, fp8)
+#   * auto-restarts on boot/reboot (unless-stopped), port 1025
+#
+# Provenance / patch refs (see README.md and patches/README.md):
+#   image cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1
+#   fork commit g487ecf187; PR vllm-project/vllm#54743 (unmerged,
+#   head 899699c74ae2b8e8adc8726e5c9d0e355935076a) — preserved on branch
+#   pr-54743-kv-offload-prefix-cacheable of the jdjohndoe13/vllm fork.
+# ============================================================================
+set -euo pipefail
+F="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+IMAGE="cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1"
+MODEL_ID="/mnt/huggingface/RedHatAI/GLM-5.3-Flash-NVFP4"
+MAX_MODEL_LEN=200000
+MAX_NUM_SEQS=4
+NAME=vllm-glm-5.3-flash-nvfp4
+CACHE=/mnt/data/shared/models/vllm-moet-cache
+mkdir -p "$CACHE/jit" "$CACHE/tilelang"
+
+# per-file mounts of the patched files over the image's stock vllm package
+VLLM_PKG=/usr/local/lib/python3.12/dist-packages/vllm
+MOUNTS=()
+while IFS= read -r rel; do
+  [ -n "$rel" ] || continue
+  if [ ! -f "$F/patched-files/$rel" ]; then
+    echo "ERROR: missing patched file: $F/patched-files/$rel" >&2
+    exit 1
+  fi
+  MOUNTS+=( -v "$F/patched-files/$rel:$VLLM_PKG/$rel:ro" )
+done < "$F/patched-files/manifest.txt"
+
+# switch guard: stop/remove any previous instance (also used when switching
+# to/from the -orig launcher, which uses the same container name)
+docker container stop "$NAME" 2>/dev/null || true
+docker container rm -f "$NAME" 2>/dev/null || true
+
+docker run --restart=unless-stopped --gpus all --ipc=host --shm-size 128g -p 1025:1025 \
+  --name "$NAME" \
+  --cap-add SYS_NICE \
+  -v /mnt/huggingface:/mnt/huggingface:ro \
+  -e VLLM_ENGINE_READY_TIMEOUT_S=3600 \
+  "${MOUNTS[@]}" \
+  -v "$CACHE/jit":/root/.cache \
+  -v "$CACHE/tilelang":/root/.tilelang \
+  -e DG_JIT_CACHE_DIR=/root/.cache/deep_gemm \
+  -e TRITON_CACHE_DIR=/root/.cache/triton \
+  -e TORCHINDUCTOR_CACHE_DIR=/root/.cache/torchinductor \
+  "$IMAGE" "$MODEL_ID" \
+  --served-model-name glm-5.3-flash qwen-3.8-flash-next \
+  --host 0.0.0.0 --port 1025 \
+  --trust-remote-code \
+  --tensor-parallel-size 8 \
+  --pipeline-parallel-size 1 \
+  --max-model-len "$MAX_MODEL_LEN" \
+  --max-num-seqs "$MAX_NUM_SEQS" \
+  --kv-cache-memory 3300000000 \
+  --kv-cache-dtype fp8 \
+  --kernel-config '{"enable_jit_warmup":true,"enable_cutedsl_warmup":true}' \
+  --no-enable-flashinfer-autotune \
+  --enable-prefix-caching \
+  --enable-auto-tool-choice \
+  --tool-call-parser glm47 \
+  --reasoning-parser deepseek_r1 \
+  --block-size 256 \
+  --max-num-batched-tokens 2048 \
+  --kv-cache-metrics \
+  --enable-mfu-metrics \
+  --enable-chunked-prefill \
+  --optimization-level 3 \
+  --async-scheduling \
+  --jit-monitor-verbose \
+  --kv-transfer-config '{
+    "kv_connector": "OffloadingConnector",
+    "kv_role": "kv_both",
+    "kv_connector_extra_config": {
+      "cpu_bytes_to_use": 68719476736
+    }
+  }'

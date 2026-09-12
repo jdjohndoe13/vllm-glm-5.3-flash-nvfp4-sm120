@@ -1,0 +1,10 @@
+# python artifacts (regenerated automatically)
+__pycache__/
+*.pyc
+
+# run artifacts
+kvoff-server.log
+kvoff-report.txt
+last_kvoff_test_exit_code.txt
+*.rej
+*.orig

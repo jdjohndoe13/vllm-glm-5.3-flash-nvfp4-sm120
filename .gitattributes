@@ -1,0 +1,11 @@
+# Binary artifacts
+*.so binary
+*.bin binary
+*.pt binary
+
+# Text-ish files that must not be mangled
+*.sh text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.diff text eol=lf
+*.txt text eol=lf
