@@ -1,6 +1,6 @@
 # Patches — provenance and application notes
 
-The shipped `vllm-image-tree/` was built from the vllm package **extracted
+The shipped `patched-files/` were produced from the vllm package **extracted
 from the docker image** (below), with two modifications applied.
 
 **Note: the committed kit ships only the resulting changed files**
@@ -9,8 +9,8 @@ Equivalence was verified by diffing the full patched tree against the
 image's stock package: exactly the 6 manifest files differ, everything else
 is byte-identical to the image.
 
-1. **PR #54743** — "[KV Offload] Scope offload group configs to
-   prefix-cacheable KV cache groups" (vllm-project/vllm, **unmerged/open**).
+1. PR vllm-project/vllm#54743 — "[KV Offload] Scope offload group configs to
+   prefix-cacheable KV cache groups" (**open/unmerged**).
    - Head commit: `899699c74ae2b8e8adc8726e5c9d0e355935076a`
      (fork `nood-co1`, branch `fix/offloading-config-scope-prefix-cacheable`)
    - Base commit: `504bb8b0c39dbde713a7344772bdb7005adbb214`
@@ -37,8 +37,8 @@ is byte-identical to the image.
      (SSH: `git@github-jdjohndoe13:jdjohndoe13/vllm.git`).
 
 2. **Boot-fix (one line)** — the fork's `KVCacheSpec` classes predate
-   upstream's `prefix_cacheable` attribute introduced/referenced by PR
-   #54743. The fork's equivalent property is
+   upstream's `prefix_cacheable` attribute introduced/referenced by
+   vllm-project/vllm#54743. The fork's equivalent property is
    `participates_in_prefix_caching` (returns False exactly for the
    non-prefix-cacheable scratch groups — the fork's own tail_cache
    solution). Without this the server dies at boot with:
@@ -50,13 +50,13 @@ is byte-identical to the image.
        distributed/kv_transfer/kv_connector/v1/offloading/config.py
      ```
 
-3. **Overlay files baked into the tree** (also shipped standalone in the repo
-   root for the no-offload launcher, which mounts them instead):
-   - `vllm-glm-5.3-flash-nvfp4-modelopt.py` →
-     `model_executor/layers/quantization/modelopt.py`
+3. **Overlay files** (2 of the 6 entries in `patched-files/` + `manifest.txt`;
+   the no-offload launcher mounts these two too):
+   - `patched-files/model_executor/layers/quantization/modelopt.py` →
+     mounted over `model_executor/layers/quantization/modelopt.py`
      (SM120 NVFP4 serving fix from the cstechdev image's overlay set)
-   - `deepseek_v4_mhc_warmup.py` →
-     `model_executor/warmup/deepseek_v4_mhc_warmup.py`
+   - `patched-files/model_executor/warmup/deepseek_v4_mhc_warmup.py` →
+     mounted over `model_executor/warmup/deepseek_v4_mhc_warmup.py`
      (mHC kernel warmup; removes per-request JIT compile warnings)
 
 ## Image / fork provenance
@@ -68,8 +68,12 @@ is byte-identical to the image.
     launchers run this ID and refuse drifted tags)
 - The image's vllm is built from the **cstechdev fork, commit `g487ecf187`**
   — NOT an upstream vllm commit. The SM120 overlay fixes (rope-free
-  sparse-MLA + kpool; glm5next support per PR #53906 lineage) are part of
-  that fork; upstream vLLM could not run this model on sm_120 at image
-  build time.
-- If you need to inspect the fork's history, the tree was extracted from the
-  image exactly as shipped — no need to rebuild anything.
+  sparse-MLA + kpool; glm5next support per vllm-project/vllm#53906 lineage)
+  are part of that fork; upstream vLLM could not run this model on sm_120 at
+  image build time.
+- The image build sources live at
+  https://github.com/chriswritescode-dev/glm-5.3-flash-sm120 , with a
+  preservation fork at
+  https://github.com/jdjohndoe13/glm-5.3-flash-sm120-docker-image-sources .
+- If you need to inspect the fork's history, the shipped files were
+  extracted from the image exactly as patched — no need to rebuild anything.

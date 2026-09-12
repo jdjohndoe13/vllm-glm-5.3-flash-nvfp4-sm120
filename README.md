@@ -58,7 +58,7 @@ docker image inspect --format '{{.Id}}' cstechdev/vllm:glm53-flash-nope-sm120-cu
 
 | path | what it is |
 |---|---|
-| `patched-files/` | **The only vllm files that differ from the image's stock package** (PR #54743 port + boot-fix + 2 overlays) — 6 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
+| `patched-files/` | **The only vllm files that differ from the image's stock package** (vllm-project/vllm#54743 port + boot-fix + 2 overlays) — 6 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
 | `vllm-glm-5.3-flash-nvfp4.sh` | **Primary launcher** — production config with KV offloading (port 1025, auto-restart, per-file mounts from `patched-files/`). |
 | `vllm-glm-5.3-flash-nvfp4-orig.sh` | Fallback launcher — same server WITHOUT KV offloading (stock image package + the 2 overlay files mounted individually). Same container name/port; the launchers guard against each other. |
 | `test.sh` | Needle-battery validation test (boots the offload launcher, 6 tests, tears down). |
@@ -107,10 +107,10 @@ kit's `patched-files/` contains only the 6 files that differ from it, and
 the launcher bind-mounts them individually over their stock paths inside
 the container (paths listed in `patched-files/manifest.txt`):
 
-- `distributed/kv_transfer/kv_connector/v1/offloading/config.py` — PR #54743 + boot-fix
-- `distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py` — PR #54743
-- `v1/kv_offload/base.py` — PR #54743
-- `v1/kv_offload/config.py` — PR #54743
+- `distributed/kv_transfer/kv_connector/v1/offloading/config.py` — vllm-project/vllm#54743 + boot-fix
+- `distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py` — vllm-project/vllm#54743
+- `v1/kv_offload/base.py` — vllm-project/vllm#54743
+- `v1/kv_offload/config.py` — vllm-project/vllm#54743
 - `model_executor/layers/quantization/modelopt.py` — SM120 NVFP4 overlay
 - `model_executor/warmup/deepseek_v4_mhc_warmup.py` — mHC warmup overlay
 
@@ -148,7 +148,7 @@ re-published under the same name).
   held in all tests (needle checks before/after eviction, under
   preemption, and under concurrent overflow).
 - Sustained long-decode-with-store churn (the upstream ~33% penalty claim,
-  PR #55035) was not reproduced in our short-decode tests; your real usage
+  vllm-project/vllm#55035) was not reproduced in our short-decode tests; your real usage
   pattern is the arbiter.
 - Keep `cpu_bytes_to_use` ≤ 64 GiB: upstream reports crashes with larger
   CPU budgets (vllm-project/vllm#52656).
@@ -176,7 +176,7 @@ re-published under the same name).
   after reboot — but the **first request after a fresh boot can hit a still
   starting engine**; the engine answers on the port only after
   `Application startup complete`.
-- The tree is mounted `:ro` — edit it deliberately, never casually.
+- The mounted patched files are `:ro` — edit them deliberately, never casually.
 
 ## 8. Switching to the no-offload fallback
 
@@ -190,7 +190,7 @@ vllm-glm-5.3-flash-nvfp4` follows whichever container is up.)
 
 ## 9. Patch source preservation (DONE — preserved in a fork)
 
-The offload fix comes from **vllm PR #54743** ("[KV Offload] Scope offload
+The offload fix comes from PR vllm-project/vllm#54743 ("[KV Offload] Scope offload
 group configs to prefix-cacheable KV cache groups"), which is **open /
 unmerged upstream**:
 
@@ -218,11 +218,16 @@ The shipped `patches/pr54743.notests.diff` is generated from exactly that
 commit, so the kit remains self-contained even without the fork — the fork
 is belt-and-suspenders for future archaeology.
 
-Runtime provenance: the image is built from the **cstechdev fork, commit
-`g487ecf187`** (NOT an upstream commit — it carries the sm_120 rope-free
-sparse-MLA + kpool fixes for glm5next, upstream PR #53906 lineage + fork
-fixes #53969). The image tag is pinned in every launcher; back it up with
-`backup-image.sh` if registry availability is ever a concern.
+Runtime provenance: the docker image is built from the sources at
+https://github.com/chriswritescode-dev/glm-5.3-flash-sm120 — that repo is
+the "cstechdev fork" whose vllm commit is `g487ecf187` (NOT an upstream
+vLLM commit — it carries the sm_120 rope-free sparse-MLA + kpool fixes for
+glm5next, vllm-project/vllm#53906 lineage + fork fixes
+vllm-project/vllm#53969). A mirror fork of those image sources is kept at
+https://github.com/jdjohndoe13/glm-5.3-flash-sm120-docker-image-sources in
+case the original disappears. The image is pinned by digest in every
+launcher; back it up with `backup-image.sh` if registry availability is
+ever a concern.
 
 ## 10. Troubleshooting quick list
 
@@ -234,17 +239,17 @@ fixes #53969). The image tag is pinned in every launcher; back it up with
 | launcher aborts with `pinned image ... not present locally` | get the pinned build: `docker load` the backup tarball, or `docker pull cstechdev/vllm@sha256:0bd709e8...fde5`. If the tag exists but "points to" a different hash, the tag drifted — do NOT run it |
 | container dies at boot, GPUs busy | another LLM process holds VRAM: `nvidia-smi --query-compute-apps=pid --format=csv` and stop it |
 | port 1025 in use | previous container alive: `docker rm -f vllm-glm-5.3-flash-nvfp4` |
-| answers look corrupted / U+FFFD garbage | wrong checkpoint (LibertAIDAI modelopt) — use RedHatAI compressed-tensors (#54150) |
+| answers look corrupted / U+FFFD garbage | wrong checkpoint (LibertAIDAI modelopt) — use RedHatAI compressed-tensors (vllm-project/vllm#54150) |
 | offload restores never happen (loads stay 0) | tier present but nothing evicts; check `kv_offload_store_bytes_total` grows when the GPU pool fills |
 
 ## 11. Reference upstream items
 
-- vllm-project/vllm **#54831** — KV offloading impossible for GLM-5.3
+- vllm-project/vllm#54831 — KV offloading impossible for GLM-5.3
   (DSA indexer) — the architecture-level blocker this kit works around via
-  the fork's scratch-group design + PR #54743 scoping.
-- vllm-project/vllm **#54150** — modelopt NVFP4 checkpoint corruption on sm_120.
-- vllm-project/vllm **#53963 / #53906 / #53969** — glm5next-on-sm120
-  enablement lineage (the fork image's fixes).
-- vllm-project/vllm **#52656** — CPU offload budgets >64 GiB crash.
-- vllm-project/vllm **#55035** — offloading throughput A/B (the ~33%
+  the fork's scratch-group design + vllm-project/vllm#54743 scoping.
+- vllm-project/vllm#54150 — modelopt NVFP4 checkpoint corruption on sm_120.
+- vllm-project/vllm#53963, vllm-project/vllm#53906, vllm-project/vllm#53969 —
+  glm5next-on-sm120 enablement lineage (the fork image's fixes).
+- vllm-project/vllm#52656 — CPU offload budgets >64 GiB crash.
+- vllm-project/vllm#55035 — offloading throughput A/B (the ~33%
   decode-penalty claim for sustained churn).
