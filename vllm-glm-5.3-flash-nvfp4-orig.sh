@@ -65,6 +65,12 @@ done
 : "${MAX_MODEL_LEN:=200000}"
 : "${MAX_NUM_SEQS:=4}"
 
+# Names the model is advertised under in the OpenAI-compatible API,
+# space-separated (expanded unquoted in `docker run` on purpose, so that
+# several names word-split into separate --served-model-name tokens).
+# Default: just "glm-5.3-flash".
+: "${SERVED_MODEL_NAMES:=glm-5.3-flash}"
+
 # Docker container name + host port. Both launchers of this kit share the
 # SAME name+port, so starting one stops the other automatically.
 # (test.sh assumes the default port.)
@@ -133,7 +139,7 @@ docker run --restart=unless-stopped --gpus all --ipc=host --shm-size 64g -p "$PO
   -e TRITON_CACHE_DIR=/root/.cache/triton \
   -e TORCHINDUCTOR_CACHE_DIR=/root/.cache/torchinductor \
   "$IMAGE_ID" "$MODEL_ID" \
-  --served-model-name glm-5.3-flash qwen-3.8-flash-next \
+  --served-model-name $SERVED_MODEL_NAMES \
   --host 0.0.0.0 --port "$PORT" \
   --trust-remote-code \
   --tensor-parallel-size 8 \
@@ -152,6 +158,8 @@ docker run --restart=unless-stopped --gpus all --ipc=host --shm-size 64g -p "$PO
   --max-num-batched-tokens 2048 \
   --kv-cache-metrics \
   --enable-mfu-metrics \
+  --enable-prompt-tokens-details \
+  --enable-per-request-metrics \
   --enable-chunked-prefill \
   --optimization-level 3 \
   --async-scheduling \

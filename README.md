@@ -122,8 +122,10 @@ You should see text that contains `"content":"KVTEST-OK"`.
   T1 (cold) and all answers correct. Reference run (2026-09-12):
   T1 15.2 s, T2 1.3 s, T3 11.9 s, T4 11.7 s, **T5 1.3 s (11.3×)**, T6 1.6 s.
 
-- Optional convenience alias (adjust to your clone location):
-  `echo "alias llmglmf='bash $HOME/vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flash-nvfp4.sh'" >> ~/.bashrc`
+- Optional convenience alias (adjust to your clone location; the `SERVED_MODEL_NAMES`
+  env prefix makes the server answer under both `glm-5.3-flash` and
+  `glm-5.3-flash-nvfp4` instead of the default single name):
+  `echo "alias llmglmf='SERVED_MODEL_NAMES=\"glm-5.3-flash glm-5.3-flash-nvfp4\" bash $HOME/vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flash-nvfp4.sh'" >> ~/.bashrc`
 
 ## 5. How the per-file mounts work (and why it's safe)
 
@@ -187,6 +189,17 @@ re-published under the same name).
   - `vllm:kv_offload_store_bytes_total` / `vllm:kv_offload_load_bytes_total`
     — cumulative GB spilled / restored. Rising load counter = the feature
     is earning its keep for your traffic.
+- Response-level detail (enabled by launcher flags): the OpenAI-compatible
+  response carries `usage.prompt_tokens_details.cached_tokens` (prefix-cache
+  hits for that prompt — `--enable-prompt-tokens-details`) and a `metrics`
+  object with per-request timing (queue/prefill/decode breakdown —
+  `--enable-per-request-metrics`). Repeat the same curl to see nonzero
+  `cached_tokens`. Note `kv_transfer_params` / `ec_transfer_params` stay
+  `null` by design here: they are populated only by disaggregated P2P
+  KV-transfer connectors (LMCache/NIXL-style flows), not by the local CPU
+  offload connector; request-side `kv_transfer_params` IS supported by the
+  patched connector as a per-request knob (`max_offload_tokens`,
+  `kv_load_tiers` tier matchers).
 - Hybrid-model KV accounting is chunky: ~8 GB tier per ~110k-token payload
   → roughly 4 × 200k-token sessions fit in the 64 GiB tier.
 
