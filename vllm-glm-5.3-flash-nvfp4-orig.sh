@@ -3,10 +3,17 @@
 # GLM-5.3-Flash-NVFP4 on vLLM — 8x RTX 5090 (sm_120) — FALLBACK: no KV offload
 #
 # Same server as vllm-glm-5.3-flash-nvfp4.sh but WITHOUT KV CPU offloading
-# (uses the image's stock vllm package + two overlay files instead of the
-# patched tree). Use this if you want to compare behavior or if the offload
-# tree ever misbehaves. Same container name + port: stop the other one first
-# (both launchers do this guard themselves).
+# (uses the image's stock vllm package + the two overlay files mounted
+# individually instead of the offload-patched set). Use this if you want to
+# compare behavior or if the offload config ever misbehaves. Same container
+# name + port: stop the other one first (both launchers do this guard
+# themselves).
+#
+# Adaptive fallbacks (identical to the primary launcher):
+#   * cache dir: /mnt/data/shared/models/vllm-moet-cache when usable, else
+#     .cache/ next to this script
+#   * model: local RedHatAI checkpoint when present+readable, else the HF
+#     repo id (vLLM downloads on first boot into the mounted HF cache)
 #
 # NOTE on the two file overlays (shipped under patched-files/, mirroring the
 # package tree — the same files the offload launcher mounts, see manifest):
@@ -45,14 +52,31 @@ fi
 #   LibertAIDAI/GLM-5.3-Flash-NVFP4 (modelopt) emits corrupted tokens
 #   on SM120 (invalid UTF-8 / U+FFFD, occasional degenerate loops) —
 #   open bug vllm-project/vllm#54150.
-MODEL_ID="/mnt/huggingface/RedHatAI/GLM-5.3-Flash-NVFP4"
-#MODEL_ID="/mnt/huggingface/LibertAIDAI/GLM-5.3-Flash-NVFP4"
+HF_LOCAL="/mnt/huggingface/RedHatAI/GLM-5.3-Flash-NVFP4"
+HF_FALLBACK_ID="RedHatAI/GLM-5.3-Flash-NVFP4"
+MODEL_MOUNTS=()
+if [ -d "$HF_LOCAL" ] && [ -r "$HF_LOCAL" ] && [ -n "$(ls -A "$HF_LOCAL" 2>/dev/null)" ]; then
+  MODEL_ID="$HF_LOCAL"
+  MODEL_MOUNTS+=( -v /mnt/huggingface:/mnt/huggingface:ro )
+else
+  MODEL_ID="$HF_FALLBACK_ID"
+  HF_CACHE="${HF_HOME:-$HOME/.cache/huggingface}"
+  mkdir -p "$HF_CACHE/hub"
+  MODEL_MOUNTS+=( -v "$HF_CACHE:/root/.cache/huggingface" )
+  echo "NOTE: local checkpoint '$HF_LOCAL' not found/readable — serving HF repo '$MODEL_ID'" >&2
+  echo "      first boot downloads ~198 GB into '$HF_CACHE' (pre-seed with: hf download $MODEL_ID)" >&2
+fi
+
+CACHE=/mnt/data/shared/models/vllm-moet-cache
+if ! mkdir -p "$CACHE/jit" "$CACHE/tilelang" 2>/dev/null; then
+  echo "NOTE: '$CACHE' missing or not writable — using '$F/.cache' instead" >&2
+  CACHE="$F/.cache"
+  mkdir -p "$CACHE/jit" "$CACHE/tilelang"
+fi
 
 MAX_MODEL_LEN=200000
 MAX_NUM_SEQS=4
 NAME=vllm-glm-5.3-flash-nvfp4
-CACHE=/mnt/data/shared/models/vllm-moet-cache
-mkdir -p "$CACHE/jit" "$CACHE/tilelang"
 
 docker container stop "$NAME" 2>/dev/null || true
 docker container rm -f "$NAME" 2>/dev/null || true
@@ -60,7 +84,7 @@ docker container rm -f "$NAME" 2>/dev/null || true
 docker run --restart=unless-stopped --gpus all --ipc=host --shm-size 64g -p 1025:1025 \
   --name "$NAME" \
   --cap-add SYS_NICE \
-  -v /mnt/huggingface:/mnt/huggingface:ro \
+  "${MODEL_MOUNTS[@]}" \
   -e VLLM_ENGINE_READY_TIMEOUT_S=3600 \
   -v "$F/patched-files/model_executor/layers/quantization/modelopt.py":/usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/quantization/modelopt.py:ro \
   -v "$CACHE/jit":/root/.cache \

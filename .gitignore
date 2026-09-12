@@ -8,3 +8,6 @@ kvoff-report.txt
 last_kvoff_test_exit_code.txt
 *.rej
 *.orig
+
+# launcher fallback cache (created next to the .sh when the shared cache is unusable)
+.cache/

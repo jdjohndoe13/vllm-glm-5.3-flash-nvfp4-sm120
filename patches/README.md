@@ -61,7 +61,8 @@ is byte-identical to the image.
 
 ## Image / fork provenance
 
-- Image: `cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1`
+- Image: [`cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1`](https://hub.docker.com/r/cstechdev/vllm/tags?page=1&name=glm53-flash-nope-sm120-cu130-20260826-r1)
+  on Docker Hub ([repo overview](https://hub.docker.com/r/cstechdev/vllm))
   (cu130 build, SM120 fixes baked in by the cstechdev fork)
   - pinned: `sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5`
     (config digest == registry manifest digest for this build; both

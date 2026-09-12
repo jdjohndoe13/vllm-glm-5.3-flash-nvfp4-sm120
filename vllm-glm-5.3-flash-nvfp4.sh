@@ -15,6 +15,12 @@
 #   * GPU KV pool: 414,634 tokens (kv-cache-memory 3.3e9, fp8)
 #   * auto-restarts on boot/reboot (unless-stopped), port 1025
 #
+# Adaptive fallbacks (fresh-machine friendly):
+#   * cache dir: uses /mnt/data/shared/models/vllm-moet-cache when usable,
+#     else creates .cache/ next to this script and mounts that instead
+#   * model: uses the local RedHatAI checkpoint when present+readable, else
+#     passes the HF repo id so vLLM downloads it (into the mounted HF cache)
+#
 # Provenance / patch refs (see README.md and patches/README.md):
 #   image cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1
 #     pinned sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5
@@ -48,12 +54,40 @@ if ! docker image inspect "$IMAGE_ID" >/dev/null 2>&1; then
   fi
   exit 1
 fi
-MODEL_ID="/mnt/huggingface/RedHatAI/GLM-5.3-Flash-NVFP4"
+
+# ---------------------------------------------------------------------------
+# Adaptive cache location: shared moet-cache when usable, else .cache/ next
+# to this script.
+# ---------------------------------------------------------------------------
+CACHE=/mnt/data/shared/models/vllm-moet-cache
+if ! mkdir -p "$CACHE/jit" "$CACHE/tilelang" 2>/dev/null; then
+  echo "NOTE: '$CACHE' missing or not writable — using '$F/.cache' instead" >&2
+  CACHE="$F/.cache"
+  mkdir -p "$CACHE/jit" "$CACHE/tilelang"
+fi
+
+# ---------------------------------------------------------------------------
+# Adaptive model source: local checkpoint when present+readable, else the HF
+# repo id (vLLM downloads on first boot into the mounted HF cache; ~198 GB).
+# ---------------------------------------------------------------------------
+HF_LOCAL="/mnt/huggingface/RedHatAI/GLM-5.3-Flash-NVFP4"
+HF_FALLBACK_ID="RedHatAI/GLM-5.3-Flash-NVFP4"
+MODEL_MOUNTS=()
+if [ -d "$HF_LOCAL" ] && [ -r "$HF_LOCAL" ] && [ -n "$(ls -A "$HF_LOCAL" 2>/dev/null)" ]; then
+  MODEL_ID="$HF_LOCAL"
+  MODEL_MOUNTS+=( -v /mnt/huggingface:/mnt/huggingface:ro )
+else
+  MODEL_ID="$HF_FALLBACK_ID"
+  HF_CACHE="${HF_HOME:-$HOME/.cache/huggingface}"
+  mkdir -p "$HF_CACHE/hub"
+  MODEL_MOUNTS+=( -v "$HF_CACHE:/root/.cache/huggingface" )
+  echo "NOTE: local checkpoint '$HF_LOCAL' not found/readable — serving HF repo '$MODEL_ID'" >&2
+  echo "      first boot downloads ~198 GB into '$HF_CACHE' (pre-seed with: hf download $MODEL_ID)" >&2
+fi
+
 MAX_MODEL_LEN=200000
 MAX_NUM_SEQS=4
 NAME=vllm-glm-5.3-flash-nvfp4
-CACHE=/mnt/data/shared/models/vllm-moet-cache
-mkdir -p "$CACHE/jit" "$CACHE/tilelang"
 
 # per-file mounts of the patched files over the image's stock vllm package
 VLLM_PKG=/usr/local/lib/python3.12/dist-packages/vllm
@@ -75,7 +109,7 @@ docker container rm -f "$NAME" 2>/dev/null || true
 docker run --restart=unless-stopped --gpus all --ipc=host --shm-size 128g -p 1025:1025 \
   --name "$NAME" \
   --cap-add SYS_NICE \
-  -v /mnt/huggingface:/mnt/huggingface:ro \
+  "${MODEL_MOUNTS[@]}" \
   -e VLLM_ENGINE_READY_TIMEOUT_S=3600 \
   "${MOUNTS[@]}" \
   -v "$CACHE/jit":/root/.cache \

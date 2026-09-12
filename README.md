@@ -13,16 +13,26 @@ offloading (64 GiB in RAM).**
 
 ## 1. Assumptions
 
-- **Model files**: the NVFP4 checkpoint already exists at
-  `/mnt/huggingface/RedHatAI/GLM-5.3-Flash-NVFP4`
-  (⚠ use the **RedHatAI** compressed-tensors checkpoint — the LibertAIDAI
+- **Model files** (auto-detected): if
+  `/mnt/huggingface/RedHatAI/GLM-5.3-Flash-NVFP4` exists and is readable,
+  the launcher mounts `/mnt/huggingface` read-only and serves it directly
+  ([RedHatAI/GLM-5.3-Flash-NVFP4 on Hugging Face](https://huggingface.co/RedHatAI/GLM-5.3-Flash-NVFP4)).
+  If not, the launcher passes the repo id `RedHatAI/GLM-5.3-Flash-NVFP4`
+  instead and mounts `$HOME/.cache/huggingface` into the container — vLLM
+  then downloads the checkpoint on first boot (**~198 GB**; pre-seed outside
+  the container with `hf download RedHatAI/GLM-5.3-Flash-NVFP4` to skip the
+  in-container download).
+  (⚠ use the **RedHatAI** compressed-tensors checkpoint — the
+  [LibertAIDAI/GLM-5.3-Flash-NVFP4](https://huggingface.co/LibertAIDAI/GLM-5.3-Flash-NVFP4)
   modelopt checkpoint emits corrupted tokens on sm_120, see
-  vllm-project/vllm#54150). The launcher mounts `/mnt/huggingface` read-only.
+  vllm-project/vllm#54150.)
 - **Kernel JIT caches**: `/mnt/data/shared/models/vllm-moet-cache/{jit,tilelang}`
   (Triton/deep_gemm/tilelang disk caches, shared across vllm servers on the
   box). If missing, they regenerate automatically on first boot — first
   startup is just slower (JIT compiles + warmup, see section 7). Don't delete
-  them while a server is running.
+  them while a server is running. If that folder is missing or not writable,
+  the launchers automatically fall back to a local `.cache/` folder created
+  next to the launcher script.
 - **Ports**: the server binds `0.0.0.0:1025`. Nothing else must use it.
 
 ## 2. Prerequisites (fresh Ubuntu 26.04)
@@ -54,6 +64,10 @@ docker image inspect --format '{{.Id}}' cstechdev/vllm:glm53-flash-nope-sm120-cu
 # must print: sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5
 ```
 
+Image on Docker Hub: [cstechdev/vllm](https://hub.docker.com/r/cstechdev/vllm)
+(tag `glm53-flash-nope-sm120-cu130-20260826-r1`,
+[direct tag link](https://hub.docker.com/r/cstechdev/vllm/tags?page=1&name=glm53-flash-nope-sm120-cu130-20260826-r1)).
+
 ## 3. Repository layout
 
 | path | what it is |
@@ -68,11 +82,8 @@ docker image inspect --format '{{.Id}}' cstechdev/vllm:glm53-flash-nope-sm120-cu
 ## 4. Quick start (recommended)
 
 ```bash
-git clone <this-repo> vllm-glm-5.3-flash-nvfp4-sm120
-cd vllm-glm-5.3-flash-nvfp4-sm120
-
-# make sure GPUs are free, then:
-bash vllm-glm-5.3-flash-nvfp4.sh
+git clone https://github.com/jdjohndoe13/vllm-glm-5.3-flash-nvfp4-sm120.git
+bash vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flash-nvfp4.sh
 ```
 
 - Wait for `Application startup complete` in the output
@@ -87,17 +98,19 @@ curl -s http://localhost:1025/v1/models | head -c 400
 curl -s http://localhost:1025/v1/chat/completions \
   -H 'Content-Type: application/json' \
   -d '{"model":"glm-5.3-flash","messages":[{"role":"user",
-       "content":"Reply with exactly this token: KVTEST-OK"}],"max_tokens":16}'
+       "content":"Reply with exactly this token: KVTEST-OK"}],"max_tokens":1600}'
 ```
 
+You should see text that contains `"content":"KVTEST-OK"`.
+
 - The full validation battery (boots, tests, tears down — restart the
-  launcher afterwards): `bash test.sh`. Expected verdict:
+  launcher afterwards): `bash vllm-glm-5.3-flash-nvfp4-sm120/test.sh`. Expected verdict:
   `KV OFFLOADING WORKS` with T5 (repeat-after-eviction) ≥ ~10× faster than
   T1 (cold) and all answers correct. Reference run (2026-09-12):
   T1 15.2 s, T2 1.3 s, T3 11.9 s, T4 11.7 s, **T5 1.3 s (11.3×)**, T6 1.6 s.
 
-- Optional convenience alias:
-  `echo "alias llmglmf='bash $(pwd)/vllm-glm-5.3-flash-nvfp4.sh'" >> ~/.bashrc`
+- Optional convenience alias (adjust to your clone location):
+  `echo "alias llmglmf='bash $HOME/vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flash-nvfp4.sh'" >> ~/.bashrc`
 
 ## 5. How the per-file mounts work (and why it's safe)
 
@@ -126,7 +139,9 @@ CUDA/deps substrate, ~29 GB built artifact): pull it from the registry on
 the new machine, or pre-stage it with `backup-image.sh`
 (`docker save` → `docker load`) before wiping the old machine.
 
-**Image pin**: the validated build is `sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5`
+**Image pin**: the validated build of
+[cstechdev/vllm](https://hub.docker.com/r/cstechdev/vllm) is
+`sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5`
 (config digest and registry manifest digest coincide for this image). Both
 launchers run that ID directly and refuse to start if it is absent — even
 if the tag exists locally with different content (i.e., the tag was
@@ -218,7 +233,9 @@ The shipped `patches/pr54743.notests.diff` is generated from exactly that
 commit, so the kit remains self-contained even without the fork — the fork
 is belt-and-suspenders for future archaeology.
 
-Runtime provenance: the docker image is built from the sources at
+Runtime provenance: the docker image
+([cstechdev/vllm](https://hub.docker.com/r/cstechdev/vllm) on Docker Hub)
+is built from the sources at
 https://github.com/chriswritescode-dev/glm-5.3-flash-sm120 — that repo is
 the "cstechdev fork" whose vllm commit is `g487ecf187` (NOT an upstream
 vLLM commit — it carries the sm_120 rope-free sparse-MLA + kpool fixes for
