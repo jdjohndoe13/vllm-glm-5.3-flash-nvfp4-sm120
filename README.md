@@ -192,14 +192,60 @@ re-published under the same name).
 - Response-level detail (enabled by launcher flags): the OpenAI-compatible
   response carries `usage.prompt_tokens_details.cached_tokens` (prefix-cache
   hits for that prompt — `--enable-prompt-tokens-details`) and a `metrics`
-  object with per-request timing (queue/prefill/decode breakdown —
-  `--enable-per-request-metrics`). Repeat the same curl to see nonzero
-  `cached_tokens`. Note `kv_transfer_params` / `ec_transfer_params` stay
-  `null` by design here: they are populated only by disaggregated P2P
-  KV-transfer connectors (LMCache/NIXL-style flows), not by the local CPU
-  offload connector; request-side `kv_transfer_params` IS supported by the
-  patched connector as a per-request knob (`max_offload_tokens`,
-  `kv_load_tiers` tier matchers).
+  object with per-request timing (`time_to_first_token_ms`,
+  `generation_time_ms`, `queue_time_ms`, `mean_itl_ms`,
+  `tokens_per_second` — `--enable-per-request-metrics`). Measured on
+  testcomp2: repeating a 109,876-token prompt reported
+  `cached_tokens: 109568` and cut TTFT from ~13.7 s to ~0.15 s. A
+  non-destructive self-check for all of this ships with the kit:
+  `bash test_kv_cache.sh` (verifies cached_tokens, the metrics object and
+  null transfer params, with prometheus counter attribution and an
+  idle-stability gate). Caveats:
+  - Prefix-cache hits are **block-granular** (`block_size` 256) and this
+    hybrid model does **not reuse its first 256-token block** — so prompts
+    shorter than ~2 blocks (~513 tokens) legitimately report 0 even when
+    repeated verbatim. Use a filler of several thousand tokens to see
+    nonzero `cached_tokens`.
+  - `created_cache_tokens` is currently always 0 in this build (the
+    finalize-time estimate reads 0 after the fact), even for requests that
+    demonstrably wrote the cache.
+  - `kv_transfer_params` / `ec_transfer_params` stay `null` by design here:
+    they are populated only by disaggregated P2P KV-transfer connectors
+    (LMCache/NIXL-style flows), not by the local CPU offload connector;
+    request-side `kv_transfer_params` IS supported by the patched connector
+    as a per-request knob (`max_offload_tokens`, `kv_load_tiers` tier
+    matchers).
+  - Right after boot, the JIT warmup sweep inflates the `prefix_cache_*`
+    prometheus counters (its dummy prefills query the cache repeatedly).
+    Any attached LLM agent session re-prefills its whole conversation
+    context every turn, so the counters keep moving whenever such a
+    session is active. Intermittently the engine also RESETS these
+    counters during quiet windows (values decrease; observed twice on
+    testcomp2, cadence unexplained) — `test_kv_cache.sh` detects this and
+    labels attribution accordingly; per-request counter deltas remain
+    exact when no reset lands inside their snapshot pairs.
+  - CPU-offload tier behavior with REAL session content (measured by
+    replaying llm-proxy-captured 108-165k-token agent requests on
+    testcomp2): the connector stores every finished request's KV to the
+    tier — a 164k-token request wrote ~40 GB on finish (`store_bytes_total`
+    counts ~245 KB/token, higher than the ~63 KB/token load counter — the
+    store counter appears to include staging overhead). Requests sharing a
+    prefix restore their overlapping blocks FROM THE TIER automatically
+    (`external_prefix_cache_hits_total` + `load_bytes_total` deltas), even
+    across "sessions". After eviction (three disjoint large prompts pushed
+    the 414k-token pool past capacity), repeating the first prompt
+    restored ~126k tokens (7.8 GB) from the tier in ~0.15 s of TTFT
+    overhead: total wall 4.2 s / TTFT 149 ms versus 25.4 s / TTFT 21.3 s
+    fresh (~140x). Tier restores run at RAM speed (~50 GB/s), so a
+    restore is nearly free compared to re-prefill.
+  - During 140-165k-token prefills colliding with tier restores the CUDA
+    caching allocator can emit OOM-retry warnings (~318 MB ask vs ~240 MB
+    free per GPU); it flushes its cache and retries — observed twice in
+    one hour of heavy traffic (once from a real session), zero failed
+    requests. Treat as transient. If hard `CUDA out of memory` errors ever
+    appear, lower `kv_cache_memory` in the launcher slightly (e.g. 3.3e9 →
+    3.1e9) to leave activation headroom; that shrinks the GPU pool
+    proportionally.
 - Hybrid-model KV accounting is chunky: ~8 GB tier per ~110k-token payload
   → roughly 4 × 200k-token sessions fit in the 64 GiB tier.
 
