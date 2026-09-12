@@ -20,6 +20,25 @@ F="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # (upstream vLLM cannot run this model on sm_120 yet; see
 #  vllm-project/vllm issues #53963, #54150 and PR #53969):
 IMAGE="cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1"
+# PINNED build — same hash as the offload launcher (see its header):
+#   config digest == registry manifest digest for this build
+IMAGE_ID="sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5"
+
+if ! docker image inspect "$IMAGE_ID" >/dev/null 2>&1; then
+  echo "ERROR: pinned image $IMAGE_ID is not present locally." >&2
+  if docker image inspect "$IMAGE" >/dev/null 2>&1; then
+    echo "The tag '$IMAGE' exists but is NOT the pinned build:" >&2
+    docker image inspect "$IMAGE" --format '  tag points to: {{.Id}}' >&2
+    echo "Refusing to run a possibly-drifted image. Obtain the pinned one:" >&2
+    echo "  docker load < glm-image.tar                     (backup-image.sh tarball)" >&2
+    echo "  or docker pull cstechdev/vllm@sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5" >&2
+  else
+    echo "Obtain it first:" >&2
+    echo "  docker load < glm-image.tar                     (backup-image.sh tarball)" >&2
+    echo "  or docker pull cstechdev/vllm@sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5" >&2
+  fi
+  exit 1
+fi
 
 # IMPORTANT — checkpoint choice on SM120:
 #   Use RedHatAI/GLM-5.3-Flash-NVFP4 (compressed-tensors).
@@ -50,7 +69,7 @@ docker run --restart=unless-stopped --gpus all --ipc=host --shm-size 64g -p 1025
   -e DG_JIT_CACHE_DIR=/root/.cache/deep_gemm \
   -e TRITON_CACHE_DIR=/root/.cache/triton \
   -e TORCHINDUCTOR_CACHE_DIR=/root/.cache/torchinductor \
-  "$IMAGE" "$MODEL_ID" \
+  "$IMAGE_ID" "$MODEL_ID" \
   --served-model-name glm-5.3-flash qwen-3.8-flash-next \
   --host 0.0.0.0 --port 1025 \
   --trust-remote-code \

@@ -17,6 +17,8 @@
 #
 # Provenance / patch refs (see README.md and patches/README.md):
 #   image cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1
+#     pinned sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5
+#     (config digest == registry manifest digest for this build)
 #   fork commit g487ecf187; PR vllm-project/vllm#54743 (unmerged,
 #   head 899699c74ae2b8e8adc8726e5c9d0e355935076a) — preserved on branch
 #   pr-54743-kv-offload-prefix-cacheable of the jdjohndoe13/vllm fork.
@@ -25,6 +27,27 @@ set -euo pipefail
 F="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 IMAGE="cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1"
+# PINNED build — the exact image validated on testcomp2 (2026-09-12).
+# docker run targets this ID directly; the tag above is kept only as a
+# readable name / hint. Guards against the tag being re-published later
+# with different content under the same name.
+IMAGE_ID="sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5"
+
+if ! docker image inspect "$IMAGE_ID" >/dev/null 2>&1; then
+  echo "ERROR: pinned image $IMAGE_ID is not present locally." >&2
+  if docker image inspect "$IMAGE" >/dev/null 2>&1; then
+    echo "The tag '$IMAGE' exists but is NOT the pinned build:" >&2
+    docker image inspect "$IMAGE" --format '  tag points to: {{.Id}}' >&2
+    echo "Refusing to run a possibly-drifted image. Obtain the pinned one:" >&2
+    echo "  docker load < glm-image.tar                     (backup-image.sh tarball)" >&2
+    echo "  or docker pull cstechdev/vllm@sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5" >&2
+  else
+    echo "Obtain it first:" >&2
+    echo "  docker load < glm-image.tar                     (backup-image.sh tarball)" >&2
+    echo "  or docker pull cstechdev/vllm@sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5" >&2
+  fi
+  exit 1
+fi
 MODEL_ID="/mnt/huggingface/RedHatAI/GLM-5.3-Flash-NVFP4"
 MAX_MODEL_LEN=200000
 MAX_NUM_SEQS=4
@@ -60,7 +83,7 @@ docker run --restart=unless-stopped --gpus all --ipc=host --shm-size 128g -p 102
   -e DG_JIT_CACHE_DIR=/root/.cache/deep_gemm \
   -e TRITON_CACHE_DIR=/root/.cache/triton \
   -e TORCHINDUCTOR_CACHE_DIR=/root/.cache/torchinductor \
-  "$IMAGE" "$MODEL_ID" \
+  "$IMAGE_ID" "$MODEL_ID" \
   --served-model-name glm-5.3-flash qwen-3.8-flash-next \
   --host 0.0.0.0 --port 1025 \
   --trust-remote-code \

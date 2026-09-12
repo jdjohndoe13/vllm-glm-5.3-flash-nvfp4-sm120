@@ -45,8 +45,13 @@ sudo systemctl restart docker
 sudo apt-get install -y curl python3
 
 # docker pull the image now to confirm access (see backup-image.sh if you
-# want to pre-stage it from a docker-save tarball instead)
-docker pull cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1
+# want to pre-stage it from a docker-save tarball instead).
+# The launchers pin the EXACT build by hash — the tag alone is not trusted:
+docker pull cstechdev/vllm@sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5
+
+# verify whatever you have locally matches the pin:
+docker image inspect --format '{{.Id}}' cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1
+# must print: sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5
 ```
 
 ## 3. Repository layout
@@ -117,9 +122,15 @@ image therefore yields the identical runtime to mounting a full patched
 tree.
 
 The image itself remains the one artifact this repo cannot carry (torch/
-CUDA/deps substrate, ~25 GB built artifact): pull it from the registry on
+CUDA/deps substrate, ~29 GB built artifact): pull it from the registry on
 the new machine, or pre-stage it with `backup-image.sh`
 (`docker save` → `docker load`) before wiping the old machine.
+
+**Image pin**: the validated build is `sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5`
+(config digest and registry manifest digest coincide for this image). Both
+launchers run that ID directly and refuse to start if it is absent — even
+if the tag exists locally with different content (i.e., the tag was
+re-published under the same name).
 
 ## 6. What the KV offloading config does (and what to expect)
 
@@ -220,6 +231,7 @@ fixes #53969). The image tag is pinned in every launcher; back it up with
 | `AssertionError ... tokens_per_block ... tokens_per_hash` at boot | the mounted offloading config is stale/wrong — `grep participates_in_prefix_caching patched-files/distributed/kv_transfer/kv_connector/v1/offloading/config.py` must match (line ~62); if not, re-copy from the fork (README §9) |
 | `'UniformTypeKVCacheSpecs' object has no attribute 'prefix_cacheable'` | same — boot-fix missing in the mounted config.py |
 | launcher aborts with `missing patched file:` | repo incomplete — manifest.txt lists 6 files that must exist under `patched-files/` |
+| launcher aborts with `pinned image ... not present locally` | get the pinned build: `docker load` the backup tarball, or `docker pull cstechdev/vllm@sha256:0bd709e8...fde5`. If the tag exists but "points to" a different hash, the tag drifted — do NOT run it |
 | container dies at boot, GPUs busy | another LLM process holds VRAM: `nvidia-smi --query-compute-apps=pid --format=csv` and stop it |
 | port 1025 in use | previous container alive: `docker rm -f vllm-glm-5.3-flash-nvfp4` |
 | answers look corrupted / U+FFFD garbage | wrong checkpoint (LibertAIDAI modelopt) — use RedHatAI compressed-tensors (#54150) |

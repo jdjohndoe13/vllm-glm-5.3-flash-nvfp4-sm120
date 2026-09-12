@@ -63,6 +63,9 @@ is byte-identical to the image.
 
 - Image: `cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1`
   (cu130 build, SM120 fixes baked in by the cstechdev fork)
+  - pinned: `sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5`
+    (config digest == registry manifest digest for this build; both
+    launchers run this ID and refuse drifted tags)
 - The image's vllm is built from the **cstechdev fork, commit `g487ecf187`**
   — NOT an upstream vllm commit. The SM120 overlay fixes (rope-free
   sparse-MLA + kpool; glm5next support per PR #53906 lineage) are part of
