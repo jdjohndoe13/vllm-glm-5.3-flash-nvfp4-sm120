@@ -7,7 +7,7 @@ production on that date.
 
 Target: **8× RTX Pro 5090 (32 GB each, sm_120), TP=8, port 1025, vLLM,
 GLM-5.3-Flash-NVFP4 (RedHatAI compressed-tensors checkpoint) with KV CPU
-offloading (64 GiB in RAM).**
+offloading (CPU_TIER_GB-sized RAM tier; default 256 GiB, validated).**
 
 ---
 
@@ -164,9 +164,33 @@ re-published under the same name).
 
 ## 6. What the KV offloading config does (and what to expect)
 
-- `--kv-transfer-config OffloadingConnector / kv_both / cpu_bytes_to_use 68719476736`
-  reserves a **64 GiB CPU tier** (shared `mmap` region in `/dev/shm`,
-  ~68.67 GB file — RAM-backed, not SSD; freed on clean shutdown).
+- `--kv-transfer-config OffloadingConnector / kv_both / cpu_bytes_to_use`
+  reserves a **CPU tier** sized by the launcher setting `CPU_TIER_GB`
+  (default 256 GiB — validated 2026-09-12; raise/lower via
+  `CPU_TIER_GB=900 ./vllm-glm-5.3-flash-nvfp4.sh`). It lives in the HOST's
+  `/dev/shm` because the launcher runs with `--ipc=host`, so Docker's
+  `--shm-size` flag is ignored there; when the tier exceeds the shm mount's
+  size (default: half of RAM = 504 GiB), the launcher **remounts /dev/shm
+  larger automatically** (tmpfs size is a cap, not a reservation — raising
+  it charges nothing; needs passwordless sudo or root, else the gate error
+  prints the manual `mount -o remount,size=…G /dev/shm` plus the fstab line
+  for persistence). Budget physics: the tier file is **preallocated at full
+  size on boot AND pinned via cudaHostRegister** (`PIN_MEMORY` = CUDA
+  available → true here) — i.e. tier GiB are unpageable RAM consumed from
+  the moment the engine starts. On the 1007-GiB host that puts the practical
+  ceiling near ~900 GiB with ONLY the LLM running (leave ~60 GiB for OS +
+  engine processes + psm/sem files); less if anything else big runs
+  concurrently. The tier file (`vllm_offload_<uuid>.mmap`) is **unlinked
+  only on graceful engine exit**:
+  `docker stop` SIGKILLs the engine first, so every restart LEAKS the
+  tier file (measured: 5 orphaned files = 412 GiB filled host /dev/shm to
+  89% and made subsequent starts fail with `RuntimeError: Insufficient
+  space in /dev/shm` from `shm_broadcast.check_shm_free_space`). The
+  launcher's pre-flight now deletes leaked tier mmaps and orphaned torch
+  shm files (`psm_*`, `sem.mp-*`) after stopping the container, then
+  gates on free space; tier files are root-owned, so a non-root start
+  needs passwordless sudo for the auto-wipe — otherwise the gate error
+  prints the manual command: `sudo rm -f /dev/shm/vllm_offload_*.mmap`.
 - GPU KV pool: 414,634 tokens (`kv-cache-memory 3.3e9`, fp8, block 256).
   When the pool fills, evicted prompt KV blocks spill to the CPU tier and
   are **restored from it** when you revisit those prompts — measured
@@ -180,8 +204,18 @@ re-published under the same name).
 - Sustained long-decode-with-store churn (the upstream ~33% penalty claim,
   vllm-project/vllm#55035) was not reproduced in our short-decode tests; your real usage
   pattern is the arbiter.
-- Keep `cpu_bytes_to_use` ≤ 64 GiB: upstream reports crashes with larger
-  CPU budgets (vllm-project/vllm#52656).
+- Upstream vllm-project/vllm#52656 reported silent serve-crashes at 128 GB
+  CPU budgets and boot failure at 256 GB — on OTHER stacks (GLM 5.2,
+  `block_size: 1`, B200/MI325X, v0.26–0.27.1). **Re-tested on this stack
+  (2026-09-12): 128 GiB booted and served; 256 GiB booted, served, and
+  absorbed 138.8 GB of store-counter volume (2×+ the old 64 GiB cap) with
+  zero failed requests** — disjoint ~160-170k real-session prefills stored
+  ~17-22 GB each, cross-conversation restores pulled ~38k shared
+  system-prompt tokens from the tier even across days, and a repeat after
+  eviction restored 158,720 tokens (TTFT 157 ms). No crash in either
+  failure mode. The tier-full edge (tier actually occupied to 256 GiB ≈
+  ~4M tokens) was not exercised; expect graceful degradation to re-prefill
+  per the design.
 - Useful metrics (already exposed on `:1025/metrics`, prometheus-readable):
   - `vllm:kv_offload_cpu_cache_usage_perc` — fraction of the tier **pinned
     by active transfers** (0.0 = idle). NOT tier fill; it reads ~0 even
@@ -247,7 +281,8 @@ re-published under the same name).
     3.1e9) to leave activation headroom; that shrinks the GPU pool
     proportionally.
 - Hybrid-model KV accounting is chunky: ~8 GB tier per ~110k-token payload
-  → roughly 4 × 200k-token sessions fit in the 64 GiB tier.
+  → roughly `CPU_TIER_GB/8` × 110k-token payloads fit in the tier
+  (~15 × 110k at the default 256 GiB).
 
 ## 7. Known limitations / gotchas
 

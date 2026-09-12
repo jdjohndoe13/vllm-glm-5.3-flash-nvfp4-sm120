@@ -9,9 +9,11 @@
 #     full-tree mount: a full diff of the tree vs the image's stock package
 #     showed exactly these 6 files differ — see patched-files/manifest.txt
 #     and patches/README.md)
-#   * KV offloading: OffloadingConnector, kv_both, 64 GiB CPU budget
+#   * KV offloading: OffloadingConnector, kv_both, CPU_TIER_GB CPU budget
+#     (default 64 GiB; see EDITABLE SETTINGS to raise it)
 #     (total across TP=8 -> ~8 GiB pinned/rank, shared region in /dev/shm;
-#     that is why shm-size is 128g and why ~68.67 GB of RAM is used)
+#     that is why /dev/shm is auto-sized (SHM_SIZE) and why tier-sized RAM
+#     is used)
 #   * GPU KV pool: 414,634 tokens (kv-cache-memory 3.3e9, fp8)
 #   * auto-restarts on boot/reboot (unless-stopped), port 1025
 #
@@ -86,6 +88,24 @@ done
 : "${CONTAINER_NAME:=vllm-glm-5.3-flash-nvfp4}"
 : "${PORT:=1025}"
 
+# KV offloading CPU tier budget in GiB — a pinned, fully-preallocated mmap
+# in the HOST's /dev/shm (shared via --ipc=host). The launcher remounts
+# /dev/shm larger automatically when this exceeds the default 50%-of-RAM
+# shm limit (tmpfs size is a cap, not a reservation). Default 256 —
+# validated 2026-09-12 (boots, serves, absorbed >2x the old 64-GiB cap;
+# upstream vllm-project/vllm#52656 crash reports applied to other stacks).
+# NOTE: the tier is charged to RAM at boot and PINNED via cudaHostRegister
+# (unpageable) — keep ~60+ GiB physical RAM for OS + engine processes:
+# on this 1007-GiB machine that puts the practical ceiling near ~900 GiB,
+# lower if the box runs other big software simultaneously.
+: "${CPU_TIER_GB:=256}"
+
+# Container --shm-size flag (GiB). NOTE: with --ipc=host Docker IGNORES this
+# flag — the engine shares the HOST's /dev/shm (host default: half of RAM,
+# ~504 GiB here, shared with every other --ipc=host container). This only
+# matters if --ipc=host were ever removed. Auto-sized when empty.
+: "${SHM_SIZE:=}"
+
 # ============================================================================
 # Everything below is derived logic — usually no need to touch.
 # ============================================================================
@@ -142,12 +162,110 @@ while IFS= read -r rel; do
   MOUNTS+=( -v "$F/patched-files/$rel:$VLLM_PKG/$rel:ro" )
 done < "$F/patched-files/manifest.txt"
 
+# Offload tier sizing: bytes for the connector config. The real capacity
+# gate is the HOST's /dev/shm free space, checked after the pre-flight
+# cleanup below (the tier mmap lives there — --ipc=host shares it).
+CPU_TIER_BYTES=$(( CPU_TIER_GB * 1073741824 ))
+if [ -z "$SHM_SIZE" ]; then
+  SHM_SIZE=$(( CPU_TIER_GB + 32 > 128 ? CPU_TIER_GB + 32 : 128 ))
+fi
+
 # switch guard: stop/remove any previous instance (also used when switching
 # to/from the -orig launcher, which uses the same container name)
 docker container stop "$CONTAINER_NAME" 2>/dev/null || true
 docker container rm -f "$CONTAINER_NAME" 2>/dev/null || true
 
-docker run --restart=unless-stopped --gpus all --ipc=host --shm-size 128g -p "$PORT:$PORT" \
+# ----------------------------------------------------------------------------
+# Pre-flight: reclaim leaked host shared-memory files (measured 2026-09-12:
+# five orphaned tier mmaps = 412 GiB + torch leftovers filled /dev/shm to 89%,
+# which made every subsequent start fail with "Insufficient space in /dev/shm").
+# The tier mmap (vllm_offload_*.mmap) lives in the HOST's /dev/shm because
+# --ipc=host shares it. The connector unlinks it only on graceful engine exit;
+# docker stop/rm SIGKILLs the engine, so EVERY restart leaks the tier file
+# until cleaned here. Tier files are root-owned: non-root callers need
+# passwordless sudo for a full wipe. psm_*/sem.mp-* are torch shared-memory
+# leftovers from killed TP-rank worker groups (torch maps them then unlinks,
+# so visible files are always unreferenced). All are safe to delete at this
+# point: the container was just stopped and nothing else on this host uses
+# host shm.
+# ----------------------------------------------------------------------------
+SHM_CLEAN_CODE='
+import os
+freed = {"tier_mmap": 0, "torch_psm": 0, "torch_sem": 0}
+denied = 0
+for name in os.listdir("/dev/shm"):
+    path = os.path.join("/dev/shm", name)
+    try:
+        size = os.stat(path).st_size
+    except OSError:
+        continue
+    cls = ("tier_mmap" if name.startswith("vllm_offload_") and name.endswith(".mmap")
+           else "torch_psm" if name.startswith("psm_")
+           else "torch_sem" if name.startswith("sem.mp-")
+           else None)
+    if cls is None:
+        continue
+    try:
+        os.unlink(path)
+        freed[cls] += size
+    except PermissionError:
+        denied += size
+    except OSError:
+        pass
+msg = ", ".join(f"{k}={v / 2**30:.1f} GiB" for k, v in freed.items())
+if denied:
+    msg += f" ({denied / 2**30:.1f} GiB skipped: permission denied — run: sudo rm -f /dev/shm/vllm_offload_*.mmap)"
+print("Pre-flight shm cleanup: " + msg)
+'
+if command -v python3 >/dev/null 2>&1; then
+  if [ "$(id -u)" = "0" ]; then
+    python3 -c "$SHM_CLEAN_CODE" || true
+  elif sudo -n true 2>/dev/null && sudo -n python3 -c "$SHM_CLEAN_CODE" 2>/dev/null; then
+    : # full wipe done via passwordless sudo
+  else
+    python3 -c "$SHM_CLEAN_CODE" || true
+  fi
+else
+  echo "WARNING: python3 not found — skipped /dev/shm orphan cleanup." >&2
+fi
+
+# tmpfs /dev/shm capacity is a MOUNT OPTION (default: half of RAM), not a
+# hardware limit — raise it automatically when the tier needs more.
+SHM_NEED=$(( CPU_TIER_BYTES + 16 * 1073741824 ))  # tier + torch psm/sem headroom
+SHM_TOTAL=$(df -B1 --output=total /dev/shm 2>/dev/null | tail -1)
+if [ -n "$SHM_TOTAL" ] && [ "$SHM_TOTAL" -lt "$SHM_NEED" ]; then
+  NEED_G=$(( (SHM_NEED + 1073741823) / 1073741824 ))
+  echo "NOTE: /dev/shm is $(( SHM_TOTAL / 1073741824 )) GiB; remounting to ${NEED_G} GiB for the ${CPU_TIER_GB} GiB tier."
+  if [ "$(id -u)" = "0" ]; then
+    mount -o remount,size="${NEED_G}G" /dev/shm || true
+  elif sudo -n true 2>/dev/null; then
+    sudo -n mount -o remount,size="${NEED_G}G" /dev/shm || true
+  fi
+  SHM_TOTAL=$(df -B1 --output=total /dev/shm 2>/dev/null | tail -1)
+fi
+
+# Hard pre-flight gate: the tier mmap needs its full size FREE in host
+# /dev/shm, plus headroom for torch's TP-rank shared-memory files.
+SHM_AVAIL=$(df -B1 --output=avail /dev/shm 2>/dev/null | tail -1)
+SHM_HEADROOM=$(( 4 * 1073741824 ))
+if [ -n "$SHM_AVAIL" ] && [ "$SHM_AVAIL" -lt $(( CPU_TIER_BYTES + SHM_HEADROOM )) ]; then
+  if [ -n "$SHM_TOTAL" ] && [ "$SHM_TOTAL" -lt "$SHM_NEED" ]; then
+    NEED_G=$(( (SHM_NEED + 1073741823) / 1073741824 ))
+    echo "ERROR: /dev/shm is only $(( SHM_TOTAL / 1073741824 )) GiB total and the automatic remount failed (no passwordless sudo?). Run as root:" >&2
+    echo "       mount -o remount,size=${NEED_G}G /dev/shm" >&2
+    echo "       For persistence across reboots, add to /etc/fstab:" >&2
+    echo "         tmpfs /dev/shm tmpfs rw,nosuid,nodev,size=${NEED_G}G 0 0" >&2
+  else
+    echo "ERROR: /dev/shm has only $(( SHM_AVAIL / 1073741824 )) GiB free; the ${CPU_TIER_GB} GiB" >&2
+    echo "       offload tier needs $(( (CPU_TIER_BYTES + SHM_HEADROOM) / 1073741824 )) GiB. Lower CPU_TIER_GB, or free host" >&2
+    echo "       shared memory with:  sudo rm -f /dev/shm/vllm_offload_*.mmap   (leaked tier files)" >&2
+    df -h /dev/shm >&2
+  fi
+  exit 1
+fi
+echo "KV offload tier: ${CPU_TIER_GB} GiB (${CPU_TIER_BYTES} bytes) — /dev/shm has $(( SHM_AVAIL / 1073741824 )) GiB free"
+
+docker run --restart=unless-stopped --gpus all --ipc=host --shm-size "${SHM_SIZE}g" -p "$PORT:$PORT" \
   --name "$CONTAINER_NAME" \
   --cap-add SYS_NICE \
   "${MODEL_MOUNTS[@]}" \
@@ -188,6 +306,6 @@ docker run --restart=unless-stopped --gpus all --ipc=host --shm-size 128g -p "$P
     "kv_connector": "OffloadingConnector",
     "kv_role": "kv_both",
     "kv_connector_extra_config": {
-      "cpu_bytes_to_use": 68719476736
+      "cpu_bytes_to_use": '"$CPU_TIER_BYTES"'
     }
   }'
