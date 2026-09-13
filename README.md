@@ -5,9 +5,10 @@ ran on the `testcomp2` machine as of **2026-09-12**, including the KV CPU
 offloading feature that was validated, burst-tested, and promoted to
 production on that date.
 
-Target: **8× RTX Pro 5090 (32 GB each, sm_120), TP=8, port 1025, vLLM,
+Target: **8× RTX 5090 (32 GB each, sm_120), TP=8, port 1025, vLLM,
 GLM-5.3-Flash-NVFP4 (RedHatAI compressed-tensors checkpoint) with KV CPU
-offloading (CPU_TIER_GB-sized RAM tier; default 256 GiB, validated).**
+offloading (CPU_TIER_GB-sized RAM tier; default 512 GiB — the validated
+ceiling on this host/driver).**
 
 ---
 
@@ -40,7 +41,7 @@ offloading (CPU_TIER_GB-sized RAM tier; default 256 GiB, validated).**
 
 ```bash
 # NVIDIA driver (the image is a cu130 build — use a current driver,
-# e.g. from ubuntu's nvidia repo or the .run installer; verify with nvidia-smi)
+# e.g. from Ubuntu's nvidia repo or the .run installer; verify with nvidia-smi)
 nvidia-smi   # must show 8 GPUs, driver 580+ recommended for CUDA 13
 
 # Docker (official repo recommended over distro package)
@@ -73,7 +74,7 @@ Image on Docker Hub: [cstechdev/vllm](https://hub.docker.com/r/cstechdev/vllm)
 
 | path | what it is |
 |---|---|
-| `patched-files/` | **The only vllm files that differ from the image's stock package** (vllm-project/vllm#54743 port + boot-fix + 2 overlays) — 6 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
+| `patched-files/` | **The only vllm files that differ from the image's stock package** (vllm-project/vllm#54743 port + boot-fix + 3 overlays) — 7 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
 | `vllm-glm-5.3-flash-nvfp4.sh` | **Primary launcher** — production config with KV offloading (port 1025, auto-restart, per-file mounts from `patched-files/`). |
 | `vllm-glm-5.3-flash-nvfp4-orig.sh` | Fallback launcher — same server WITHOUT KV offloading (stock image package + the 2 overlay files mounted individually). Same container name/port; the launchers guard against each other. |
 | `test.sh` | Needle-battery validation test (boots the offload launcher, 6 tests, tears down). |
@@ -103,7 +104,9 @@ KV_CACHE_MEMORY=4000000000 bash vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flas
 
 - Wait for `Application startup complete` in the output
   (cold start with empty JIT caches: up to ~25 min due to kernel
-  compilation/warmup; warm caches: ~3–5 min; model load itself ~1–2 min).
+  compilation/warmup; warm caches: ~4–7 min and grows with `CPU_TIER_GB`
+  — the driver walks/pins the whole tier at init; 512 GiB measured
+  ~6.5 min; model load itself ~1–2 min).
 - Verify:
 
 ```bash
@@ -133,7 +136,7 @@ You should see text that contains `"content":"KVTEST-OK"`.
 
 The kit does NOT ship a full patched vllm package — it doesn't need to. The
 docker image's stock vllm package is complete and runnable by itself; the
-kit's `patched-files/` contains only the 6 files that differ from it, and
+kit's `patched-files/` contains only the 7 files that differ from it, and
 the launcher bind-mounts them individually over their stock paths inside
 the container (paths listed in `patched-files/manifest.txt`):
 
@@ -141,13 +144,14 @@ the container (paths listed in `patched-files/manifest.txt`):
 - `distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py` — vllm-project/vllm#54743
 - `v1/kv_offload/base.py` — vllm-project/vllm#54743
 - `v1/kv_offload/config.py` — vllm-project/vllm#54743
+- `v1/kv_offload/cpu/shared_offload_region.py` — CPU tier mmap region hint
 - `model_executor/layers/quantization/modelopt.py` — SM120 NVFP4 overlay
 - `model_executor/warmup/deepseek_v4_mhc_warmup.py` — mHC warmup overlay
 
 **Equivalence proof**: the originally-shipped full patched tree (extracted
 from this image, patch applied, boot-fix sed, overlays baked) was diffed in
-full against the image's stock package — exactly these 6 files differ,
-everything else is byte-identical. Mounting these 6 files over a stock
+full against the image's stock package — exactly these 7 files differ,
+everything else is byte-identical. Mounting these 7 files over a stock
 image therefore yields the identical runtime to mounting a full patched
 tree.
 
@@ -168,8 +172,9 @@ re-published under the same name).
 
 - `--kv-transfer-config OffloadingConnector / kv_both / cpu_bytes_to_use`
   reserves a **CPU tier** sized by the launcher setting `CPU_TIER_GB`
-  (default 256 GiB — validated 2026-09-12; raise/lower via
-  `CPU_TIER_GB=900 ./vllm-glm-5.3-flash-nvfp4.sh`). It lives in the HOST's
+  (default 512 GiB — the validated ceiling, see "Budget physics" below;
+  raise/lower via `CPU_TIER_GB=256 ./vllm-glm-5.3-flash-nvfp4.sh`, also
+  validated). It lives in the HOST's
   `/dev/shm` because the launcher runs with `--ipc=host`, so Docker's
   `--shm-size` flag is ignored there; when the tier exceeds the shm mount's
   size (default: half of RAM = 504 GiB), the launcher **remounts /dev/shm
@@ -179,16 +184,22 @@ re-published under the same name).
   for persistence). Budget physics: the tier file is **preallocated at full
   size on boot AND pinned via cudaHostRegister** (`PIN_MEMORY` = CUDA
   available → true here) — i.e. tier GiB are unpageable RAM consumed from
-  the moment the engine starts. On the 1007-GiB host that puts the practical
-  ceiling near ~900 GiB with ONLY the LLM running (leave ~60 GiB for OS +
-  engine processes + psm/sem files); less if anything else big runs
-  concurrently. The tier file (`vllm_offload_<uuid>.mmap`) is **unlinked
+  the moment the engine starts (leave ~60+ GiB for OS + engine processes +
+  psm/sem files). The tier-size ceiling on this host is NOT RAM — it is the
+  NVIDIA driver's per-context pinned-region page-table budget: **512 GiB
+  is the validated maximum**; 576, 640, and 800 GiB tiers all fail on all
+  8 ranks with `cudaHostRegister failed (code=2)` +
+  `NVRM: failed to allocate page table`, independent of free RAM,
+  fragmentation, or compaction (bisected 2026-09-13). Above the ceiling the
+  boot completes but leaves the tier UNPINNED (degraded). The tier region
+  is registered into every TP rank's GPU context, so the budget is charged
+  per rank. The tier file (`vllm_offload_<uuid>.mmap`) is **unlinked
   only on graceful engine exit**:
   `docker stop` SIGKILLs the engine first, so every restart LEAKS the
   tier file (measured: 5 orphaned files = 412 GiB filled host /dev/shm to
   89% and made subsequent starts fail with `RuntimeError: Insufficient
   space in /dev/shm` from `shm_broadcast.check_shm_free_space`). The
-  launcher's pre-flight now deletes leaked tier mmaps and orphaned torch
+  launcher's pre-flight deletes leaked tier mmaps and orphaned torch
   shm files (`psm_*`, `sem.mp-*`) after stopping the container, then
   gates on free space; tier files are root-owned, so a non-root start
   needs passwordless sudo for the auto-wipe — otherwise the gate error
@@ -210,14 +221,14 @@ re-published under the same name).
   CPU budgets and boot failure at 256 GB — on OTHER stacks (GLM 5.2,
   `block_size: 1`, B200/MI325X, v0.26–0.27.1). **Re-tested on this stack
   (2026-09-12): 128 GiB booted and served; 256 GiB booted, served, and
-  absorbed 138.8 GB of store-counter volume (2×+ the old 64 GiB cap) with
+  absorbed 138.8 GB of store-counter volume with
   zero failed requests** — disjoint ~160-170k real-session prefills stored
   ~17-22 GB each, cross-conversation restores pulled ~38k shared
   system-prompt tokens from the tier even across days, and a repeat after
   eviction restored 158,720 tokens (TTFT 157 ms). No crash in either
-  failure mode. The tier-full edge (tier actually occupied to 256 GiB ≈
-  ~4M tokens) was not exercised; expect graceful degradation to re-prefill
-  per the design.
+  failure mode. The tier-full edge (tier actually occupied — 256 GiB ≈
+  ~3.5M tokens at the measured tier occupancy) was not exercised; expect
+  graceful degradation to re-prefill per the design.
 - Useful metrics (already exposed on `:1025/metrics`, prometheus-readable):
   - `vllm:kv_offload_cpu_cache_usage_perc` — fraction of the tier **pinned
     by active transfers** (0.0 = idle). NOT tier fill; it reads ~0 even
@@ -284,14 +295,16 @@ re-published under the same name).
     proportionally.
 - Hybrid-model KV accounting is chunky: ~8 GB tier per ~110k-token payload
   → roughly `CPU_TIER_GB/8` × 110k-token payloads fit in the tier
-  (~15 × 110k at the default 256 GiB).
+  (~64 × 110k at the default 512 GiB, more with prefix overlap).
 
 ## 7. Known limitations / gotchas
 
 - `MAX_NUM_SEQS=4` and a `KV_CACHE_MEMORY`-sized GPU pool (default 3.3e9
-  bytes → 414,634 tokens fp8; `KV_CACHE_MEMORY=4000000000` → ~502k, proven
-  to boot standalone) → with the default pool only ~2 × 200k-token
-  conversations fit concurrently; the rest queue (admission control).
+  bytes → 414,634 tokens fp8; `KV_CACHE_MEMORY=4000000000` → ~502k,
+  `5000000000` → ~628k, the latter proven to boot with the tier in a
+  196k-token 2-concurrent-request test) → with the default pool only
+  ~2 × 200k-token conversations fit concurrently; the rest queue (admission
+  control).
 - Total context limit is 200,000 tokens **including** output tokens —
   generated payloads/tests must keep prompt+output under that
   (a 912k-char filler text ≈ 199.8k tokens will be rejected with a 400).
@@ -363,7 +376,7 @@ ever a concern.
 |---|---|
 | `AssertionError ... tokens_per_block ... tokens_per_hash` at boot | the mounted offloading config is stale/wrong — `grep participates_in_prefix_caching patched-files/distributed/kv_transfer/kv_connector/v1/offloading/config.py` must match (line ~62); if not, re-copy from the fork (README §9) |
 | `'UniformTypeKVCacheSpecs' object has no attribute 'prefix_cacheable'` | same — boot-fix missing in the mounted config.py |
-| launcher aborts with `missing patched file:` | repo incomplete — manifest.txt lists 6 files that must exist under `patched-files/` |
+| launcher aborts with `missing patched file:` | repo incomplete — manifest.txt lists 7 files that must exist under `patched-files/` |
 | launcher aborts with `pinned image ... not present locally` | get the pinned build: `docker load` the backup tarball, or `docker pull cstechdev/vllm@sha256:0bd709e8...fde5`. If the tag exists but "points to" a different hash, the tag drifted — do NOT run it |
 | container dies at boot, GPUs busy | another LLM process holds VRAM: `nvidia-smi --query-compute-apps=pid --format=csv` and stop it |
 | port 1025 in use | previous container alive: `docker rm -f vllm-glm-5.3-flash-nvfp4` |

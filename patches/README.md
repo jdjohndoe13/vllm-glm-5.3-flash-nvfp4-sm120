@@ -1,12 +1,12 @@
 # Patches — provenance and application notes
 
 The shipped `patched-files/` were produced from the vllm package **extracted
-from the docker image** (below), with two modifications applied.
+from the docker image** (below), with the modifications applied below.
 
 **Note: the committed kit ships only the resulting changed files**
-(`patched-files/` + `manifest.txt`, 6 files — see below), not the full tree.
+(`patched-files/` + `manifest.txt`, 7 files — see below), not the full tree.
 Equivalence was verified by diffing the full patched tree against the
-image's stock package: exactly the 6 manifest files differ, everything else
+image's stock package: exactly the 7 manifest files differ, everything else
 is byte-identical to the image.
 
 1. PR vllm-project/vllm#54743 — "[KV Offload] Scope offload group configs to
@@ -50,7 +50,7 @@ is byte-identical to the image.
        distributed/kv_transfer/kv_connector/v1/offloading/config.py
      ```
 
-3. **Overlay files** (2 of the 6 entries in `patched-files/` + `manifest.txt`;
+3. **Overlay files** (2 of the 7 entries in `patched-files/` + `manifest.txt`;
    the no-offload launcher mounts these two too):
    - `patched-files/model_executor/layers/quantization/modelopt.py` →
      mounted over `model_executor/layers/quantization/modelopt.py`
@@ -58,6 +58,16 @@ is byte-identical to the image.
    - `patched-files/model_executor/warmup/deepseek_v4_mhc_warmup.py` →
      mounted over `model_executor/warmup/deepseek_v4_mhc_warmup.py`
      (mHC kernel warmup; removes per-request JIT compile warnings)
+
+4. **CPU offload tier region hint** — `v1/kv_offload/cpu/shared_offload_region.py`
+   (mounted over the same path, offload launcher only): issues
+   `madvise(MADV_HUGEPAGE)` on the tier mmap before the populate pre-fault,
+   so on kernels whose shmem supports THP the tier materializes as
+   2 MiB folios. On the current host kernel (6.17.0-20-generic) shmem
+   refuses 2 MiB folios in every `shmem_enabled` mode (verified
+   2026-09-13 with a 7-variant test matrix), so this is a harmless no-op
+   there — kept so the tier benefits automatically if the kernel gains
+   shmem-THP support.
 
 ## Image / fork provenance
 

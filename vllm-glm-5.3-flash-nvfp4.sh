@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 # ============================================================================
 # GLM-5.3-Flash-NVFP4 on vLLM — 8x RTX 5090 (sm_120) — PRODUCTION CONFIG
-# with KV CPU offloading (64 GiB) enabled.
+# with KV CPU offloading enabled (CPU_TIER_GB, default 512 GiB).
 #
-# This is the primary launcher. Config verified on testcomp2 on 2026-09-12:
-#   * mounts the 6 PATCHED FILES from patched-files/ over the image's stock
+# This is the primary launcher. Config verified on testcomp2 on 2026-09-12
+# (tier ceiling re-validated 2026-09-13):
+#   * mounts the 7 PATCHED FILES from patched-files/ over the image's stock
 #     vllm package (per-file mounts; proven byte-identical to the original
 #     full-tree mount: a full diff of the tree vs the image's stock package
-#     showed exactly these 6 files differ — see patched-files/manifest.txt
+#     showed exactly these 7 files differ — see patched-files/manifest.txt
 #     and patches/README.md)
 #   * KV offloading: OffloadingConnector, kv_both, CPU_TIER_GB CPU budget
-#     (default 512 GiB; see EDITABLE SETTINGS to change it)
-#     (total across TP=8 -> ~8 GiB pinned/rank, shared region in /dev/shm;
-#     that is why /dev/shm is auto-sized (SHM_SIZE) and why tier-sized RAM
-#     is used)
+#     (default 512 GiB — the validated ceiling; see EDITABLE SETTINGS)
+#     (the tier region is allocated once in the HOST's /dev/shm and
+#     registered into every TP rank's GPU context; that is why /dev/shm
+#     is auto-sized (SHM_SIZE) and why tier-sized RAM is charged)
 #   * GPU KV pool: KV_CACHE_MEMORY-sized (default 3.3e9 -> 414,634 tokens,
 #     fp8; 4000000000 -> ~502k tokens — proven to boot standalone)
 #   * auto-restarts on boot/reboot (unless-stopped), port 1025
@@ -77,11 +78,11 @@ done
 # Server sizing / behavior:
 : "${MAX_MODEL_LEN:=200000}"
 : "${MAX_NUM_SEQS:=4}"
-# GPU KV cache budget in BYTES per engine (fp8 KV). Default 3.3e9 -> 414,634
-# tokens of pool (validated 100%). 4000000000 -> ~502k tokens — proven to
-# boot in a no-offload launch; the +offload combination adds only tiny GPU
-# staging buffers, so it is expected to boot but not yet burn-tested: if a
-# boot with 4.0e9 + the tier fails, drop back to the default.
+# GPU KV cache budget in BYTES per engine (fp8 KV). Default 3.3e9 ->
+# 414,634 tokens of pool (validated). 4000000000 -> ~502k tokens;
+# 5000000000 -> ~628k tokens (proven to boot WITH the tier in a
+# 196k-token, 2-concurrent-request test). If a boot with a larger pool
+# + tier fails, drop back to the default.
 : "${KV_CACHE_MEMORY:=3300000000}"
 
 # Names the model is advertised under in the OpenAI-compatible API,
@@ -99,18 +100,15 @@ done
 # KV offloading CPU tier budget in GiB — a pinned, fully-preallocated mmap
 # in the HOST's /dev/shm (shared via --ipc=host). The launcher remounts
 # /dev/shm larger automatically when this exceeds the default 50%-of-RAM
-# shm limit (tmpfs size is a cap, not a reservation). Default 512 —
-# 512 pinned-validated 2026-09-13 (0 cudaHostRegister failures, mHC warmup
-# green); 800 GiB attempts failed on ALL ranks with the NVIDIA driver's
-# "NVRM: failed to allocate page table" (pinned-region page-table budget
-# exceeded, independent of free RAM/compaction) — the hard ceiling is
-# between 512 and 800. 256 validated 2026-09-12 (boots, serves, absorbed
-# >2x the old 64-GiB cap; upstream vllm-project/vllm#52656 crash reports
-# applied to other stacks).
+# shm limit (tmpfs size is a cap, not a reservation).
+# Default 512 GiB — the validated ceiling on this host/driver (2026-09-13:
+# 0 cudaHostRegister failures, mHC warmup green). 576 GiB and above fail
+# on ALL ranks with the NVIDIA driver's "NVRM: failed to allocate page
+# table" — a per-rank pinned-region page-table budget, independent of
+# free RAM or compaction. 256 GiB and 128 GiB validated 2026-09-12.
 # NOTE: the tier is charged to RAM at boot and PINNED via cudaHostRegister
-# (unpageable) — keep ~60+ GiB physical RAM for OS + engine processes:
-# on this 1007-GiB machine that puts the practical ceiling near ~900 GiB,
-# lower if the box runs other big software simultaneously.
+# (unpageable) — keep ~60+ GiB physical RAM for OS + engine processes;
+# lower this (or stop other big software) if the box runs other big jobs.
 : "${CPU_TIER_GB:=512}"
 
 # Container --shm-size flag (GiB). NOTE: with --ipc=host Docker IGNORES this
@@ -278,12 +276,12 @@ if [ -n "$SHM_AVAIL" ] && [ "$SHM_AVAIL" -lt $(( CPU_TIER_BYTES + SHM_HEADROOM )
 fi
 echo "KV offload tier: ${CPU_TIER_GB} GiB (${CPU_TIER_BYTES} bytes) — /dev/shm has $(( SHM_AVAIL / 1073741824 )) GiB free"
 
-# Host tuning for the tier: shmem THP "advise" mode (lets the patched
-# shared_offload_region.py materialize the tier as 2 MiB pages) and a
-# synchronous memory compaction (consolidates free RAM into the contiguous
-# runs the NVIDIA driver's page-table allocator needs — 800-GiB-tier
-# lesson: "NVRM: failed to allocate page table" left the tier unpinned).
-# Best-effort: skipped with a warning when no passwordless sudo.
+# Host tuning for the tier (best-effort; skipped with a warning when no
+# passwordless sudo): a synchronous memory compaction before launch
+# (vm.compact_memory) and shmem THP "advise" mode. On current kernels the
+# tier runs 4 KiB pages (shmem refuses 2 MiB folios, verified 2026-09-13),
+# so the advise hint is inert there — both settings are harmless and kept
+# for kernels that gain shmem-THP support.
 if [ -f "$F/tune-host-for-tier.sh" ]; then
   bash "$F/tune-host-for-tier.sh" || true
 else

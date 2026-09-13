@@ -3,7 +3,7 @@
 # OPTIONAL — recommended BEFORE wiping the drive.
 # Save the vllm docker image to a tar file so it can be docker-loaded on the
 # fresh Ubuntu install even if the registry is unreachable at that point.
-# The image is ~25+ GB; point OUT at an external/backup disk.
+# The image is ~29 GB; point OUT at an external/backup disk.
 #
 #   bash backup-image.sh /path/to/external/glm-image.tar
 #

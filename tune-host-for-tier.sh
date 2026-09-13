@@ -4,20 +4,21 @@
 # safe to run standalone. Every step is best-effort (skipped, not fatal,
 # when passwordless sudo is unavailable).
 #
-# Why (measured 2026-09-13 on the failed 800-GiB tier attempt):
-#  1. cudaHostRegister pins the whole tier by walking EVERY page. At 4 KiB
-#     that is ~210M pages for 800 GiB (init crawled at ~140 GB/min). With
-#     2 MiB tier pages it is ~409600 folios: init collapses to seconds.
-#     The 2 MiB pages come from the patched shared_offload_region.py
-#     (MADV_HUGEPAGE before the populate pre-fault) and only work when the
-#     host's shmem_enabled includes "advise" — set below.
-#  2. A large 4 KiB tier physically fragments host RAM (its pages scatter
-#     across every zone) and the NVIDIA driver then fails to allocate its
-#     DMA page tables: dmesg "NVRM: failed to allocate page table",
-#     cudaHostRegister -> code=2 on all 8 ranks, tier left UNPINNED.
-#     2 MiB pages shrink that page-table footprint ~64x, and synchronous
-#     memory compaction (vm.compact_memory) before launch consolidates the
-#     free memory into the contiguous runs the driver's allocator needs.
+# What it does:
+#  1. vm.compact_memory: synchronously consolidates free RAM before the
+#     engine boots (best-effort pre-boot hygiene).
+#  2. shmem_enabled=advise lets tmpfs files that request huge pages
+#     (MADV_HUGEPAGE in the patched shared_offload_region.py) get 2 MiB
+#     folios. On current kernels this is inert — shmem refuses 2 MiB
+#     folios in every shmem_enabled mode (verified 2026-09-13 on
+#     6.17.0-20-generic with a 7-variant test matrix), so the tier runs
+#     4 KiB pages there; the setting is kept so a future kernel with
+#     shmem-THP support yields 2 MiB tier pages automatically.
+#
+# Tier-size note: the NVIDIA driver rejects pinning above its per-context
+# page-table budget (512 GiB works; 576 GiB and above fail with
+# "NVRM: failed to allocate page table" on all ranks, independent of RAM
+# state — bisected 2026-09-13). Host tuning does not change that ceiling.
 #
 # Optional: TUNE_DROP_CACHES=1 also drops page cache before compaction
 # (frees more RAM, but the next boot re-reads the ~198 GB model from SSD).
@@ -35,7 +36,8 @@ run_priv() { # run_priv <command...> — root direct, else passwordless sudo
 }
 
 # (a) Allow huge pages for tmpfs files that ask for them (MADV_HUGEPAGE).
-#     Other tmpfs users are unaffected by "advise" mode.
+#     Inert on current kernels (shmem refuses 2 MiB folios — see header);
+#     kept future-proof. Other tmpfs users are unaffected by "advise" mode.
 SHMEM_THP=/sys/kernel/mm/transparent_hugepage/shmem_enabled
 if [ -e "$SHMEM_THP" ]; then
   cur=$(cat "$SHMEM_THP")
