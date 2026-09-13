@@ -10,11 +10,12 @@
 #     showed exactly these 6 files differ — see patched-files/manifest.txt
 #     and patches/README.md)
 #   * KV offloading: OffloadingConnector, kv_both, CPU_TIER_GB CPU budget
-#     (default 64 GiB; see EDITABLE SETTINGS to raise it)
+#     (default 256 GiB; see EDITABLE SETTINGS to change it)
 #     (total across TP=8 -> ~8 GiB pinned/rank, shared region in /dev/shm;
 #     that is why /dev/shm is auto-sized (SHM_SIZE) and why tier-sized RAM
 #     is used)
-#   * GPU KV pool: 414,634 tokens (kv-cache-memory 3.3e9, fp8)
+#   * GPU KV pool: KV_CACHE_MEMORY-sized (default 3.3e9 -> 414,634 tokens,
+#     fp8; 4000000000 -> ~502k tokens — proven to boot standalone)
 #   * auto-restarts on boot/reboot (unless-stopped), port 1025
 #
 # Adaptive fallbacks (fresh-machine friendly):
@@ -43,6 +44,7 @@ F="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #   bash vllm-glm-5.3-flash-nvfp4.sh MAX_MODEL_LEN=150000        (as argument)
 #   MAX_MODEL_LEN=150000 ./vllm-glm-5.3-flash-nvfp4.sh           (direct exec)
 #   MAX_MODEL_LEN=150000 MAX_NUM_SEQS=6 bash vllm-glm-5.3-flash-nvfp4.sh
+#   KV_CACHE_MEMORY=4000000000 bash vllm-glm-5.3-flash-nvfp4.sh  (~502k pool)
 # NOTE: 'bash MAX_MODEL_LEN=150000 <script>.sh' does NOT work — bash treats
 #       the assignment as the script's filename.
 # ============================================================================
@@ -75,6 +77,12 @@ done
 # Server sizing / behavior:
 : "${MAX_MODEL_LEN:=200000}"
 : "${MAX_NUM_SEQS:=4}"
+# GPU KV cache budget in BYTES per engine (fp8 KV). Default 3.3e9 -> 414,634
+# tokens of pool (validated 100%). 4000000000 -> ~502k tokens — proven to
+# boot in a no-offload launch; the +offload combination adds only tiny GPU
+# staging buffers, so it is expected to boot but not yet burn-tested: if a
+# boot with 4.0e9 + the tier fails, drop back to the default.
+: "${KV_CACHE_MEMORY:=3300000000}"
 
 # Names the model is advertised under in the OpenAI-compatible API,
 # space-separated (expanded unquoted in `docker run` on purpose, so that
@@ -232,7 +240,7 @@ fi
 # tmpfs /dev/shm capacity is a MOUNT OPTION (default: half of RAM), not a
 # hardware limit — raise it automatically when the tier needs more.
 SHM_NEED=$(( CPU_TIER_BYTES + 16 * 1073741824 ))  # tier + torch psm/sem headroom
-SHM_TOTAL=$(df -B1 --output=total /dev/shm 2>/dev/null | tail -1)
+SHM_TOTAL=$(df -B1 --output=size /dev/shm 2>/dev/null | tail -1)
 if [ -n "$SHM_TOTAL" ] && [ "$SHM_TOTAL" -lt "$SHM_NEED" ]; then
   NEED_G=$(( (SHM_NEED + 1073741823) / 1073741824 ))
   echo "NOTE: /dev/shm is $(( SHM_TOTAL / 1073741824 )) GiB; remounting to ${NEED_G} GiB for the ${CPU_TIER_GB} GiB tier."
@@ -241,7 +249,7 @@ if [ -n "$SHM_TOTAL" ] && [ "$SHM_TOTAL" -lt "$SHM_NEED" ]; then
   elif sudo -n true 2>/dev/null; then
     sudo -n mount -o remount,size="${NEED_G}G" /dev/shm || true
   fi
-  SHM_TOTAL=$(df -B1 --output=total /dev/shm 2>/dev/null | tail -1)
+  SHM_TOTAL=$(df -B1 --output=size /dev/shm 2>/dev/null | tail -1)
 fi
 
 # Hard pre-flight gate: the tier mmap needs its full size FREE in host
@@ -284,7 +292,7 @@ docker run --restart=unless-stopped --gpus all --ipc=host --shm-size "${SHM_SIZE
   --pipeline-parallel-size 1 \
   --max-model-len "$MAX_MODEL_LEN" \
   --max-num-seqs "$MAX_NUM_SEQS" \
-  --kv-cache-memory 3300000000 \
+  --kv-cache-memory "$KV_CACHE_MEMORY" \
   --kv-cache-dtype fp8 \
   --kernel-config '{"enable_jit_warmup":true,"enable_cutedsl_warmup":true}' \
   --no-enable-flashinfer-autotune \

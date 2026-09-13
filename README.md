@@ -94,6 +94,8 @@ length, …) sit in the `EDITABLE SETTINGS` block at the top of the `.sh` file
 ```bash
 MAX_MODEL_LEN=150000 bash vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flash-nvfp4.sh
 # or equivalently:  bash vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flash-nvfp4.sh MAX_MODEL_LEN=150000
+# bigger GPU KV pool (~502k tokens instead of 414k):
+KV_CACHE_MEMORY=4000000000 bash vllm-glm-5.3-flash-nvfp4-sm120/vllm-glm-5.3-flash-nvfp4.sh
 # NOTE: `bash MAX_MODEL_LEN=150000 <script>.sh` does NOT work — bash treats
 #       the assignment as the script's filename. Put the assignment before
 #       'bash' (or after the script path), not between them.
@@ -286,7 +288,9 @@ re-published under the same name).
 
 ## 7. Known limitations / gotchas
 
-- `MAX_NUM_SEQS=4` and a 414k-token GPU pool → only ~2 × 200k-token
+- `MAX_NUM_SEQS=4` and a `KV_CACHE_MEMORY`-sized GPU pool (default 3.3e9
+  bytes → 414,634 tokens fp8; `KV_CACHE_MEMORY=4000000000` → ~502k, proven
+  to boot standalone) → with the default pool only ~2 × 200k-token
   conversations fit concurrently; the rest queue (admission control).
 - Total context limit is 200,000 tokens **including** output tokens —
   generated payloads/tests must keep prompt+output under that
