@@ -10,7 +10,7 @@
 #     showed exactly these 6 files differ — see patched-files/manifest.txt
 #     and patches/README.md)
 #   * KV offloading: OffloadingConnector, kv_both, CPU_TIER_GB CPU budget
-#     (default 256 GiB; see EDITABLE SETTINGS to change it)
+#     (default 512 GiB; see EDITABLE SETTINGS to change it)
 #     (total across TP=8 -> ~8 GiB pinned/rank, shared region in /dev/shm;
 #     that is why /dev/shm is auto-sized (SHM_SIZE) and why tier-sized RAM
 #     is used)
@@ -99,14 +99,19 @@ done
 # KV offloading CPU tier budget in GiB — a pinned, fully-preallocated mmap
 # in the HOST's /dev/shm (shared via --ipc=host). The launcher remounts
 # /dev/shm larger automatically when this exceeds the default 50%-of-RAM
-# shm limit (tmpfs size is a cap, not a reservation). Default 256 —
-# validated 2026-09-12 (boots, serves, absorbed >2x the old 64-GiB cap;
-# upstream vllm-project/vllm#52656 crash reports applied to other stacks).
+# shm limit (tmpfs size is a cap, not a reservation). Default 512 —
+# 512 pinned-validated 2026-09-13 (0 cudaHostRegister failures, mHC warmup
+# green); 800 GiB attempts failed on ALL ranks with the NVIDIA driver's
+# "NVRM: failed to allocate page table" (pinned-region page-table budget
+# exceeded, independent of free RAM/compaction) — the hard ceiling is
+# between 512 and 800. 256 validated 2026-09-12 (boots, serves, absorbed
+# >2x the old 64-GiB cap; upstream vllm-project/vllm#52656 crash reports
+# applied to other stacks).
 # NOTE: the tier is charged to RAM at boot and PINNED via cudaHostRegister
 # (unpageable) — keep ~60+ GiB physical RAM for OS + engine processes:
 # on this 1007-GiB machine that puts the practical ceiling near ~900 GiB,
 # lower if the box runs other big software simultaneously.
-: "${CPU_TIER_GB:=256}"
+: "${CPU_TIER_GB:=512}"
 
 # Container --shm-size flag (GiB). NOTE: with --ipc=host Docker IGNORES this
 # flag — the engine shares the HOST's /dev/shm (host default: half of RAM,
