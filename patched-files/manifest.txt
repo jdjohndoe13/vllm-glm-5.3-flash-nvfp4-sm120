@@ -4,3 +4,4 @@ v1/kv_offload/base.py
 v1/kv_offload/config.py
 model_executor/layers/quantization/modelopt.py
 model_executor/warmup/deepseek_v4_mhc_warmup.py
+v1/kv_offload/cpu/shared_offload_region.py

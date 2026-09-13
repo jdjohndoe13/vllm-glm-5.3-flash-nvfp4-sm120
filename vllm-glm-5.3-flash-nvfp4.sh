@@ -273,6 +273,18 @@ if [ -n "$SHM_AVAIL" ] && [ "$SHM_AVAIL" -lt $(( CPU_TIER_BYTES + SHM_HEADROOM )
 fi
 echo "KV offload tier: ${CPU_TIER_GB} GiB (${CPU_TIER_BYTES} bytes) — /dev/shm has $(( SHM_AVAIL / 1073741824 )) GiB free"
 
+# Host tuning for the tier: shmem THP "advise" mode (lets the patched
+# shared_offload_region.py materialize the tier as 2 MiB pages) and a
+# synchronous memory compaction (consolidates free RAM into the contiguous
+# runs the NVIDIA driver's page-table allocator needs — 800-GiB-tier
+# lesson: "NVRM: failed to allocate page table" left the tier unpinned).
+# Best-effort: skipped with a warning when no passwordless sudo.
+if [ -f "$F/tune-host-for-tier.sh" ]; then
+  bash "$F/tune-host-for-tier.sh" || true
+else
+  echo "NOTE: $F/tune-host-for-tier.sh not found — skipping host tuning." >&2
+fi
+
 docker run --restart=unless-stopped --gpus all --ipc=host --shm-size "${SHM_SIZE}g" -p "$PORT:$PORT" \
   --name "$CONTAINER_NAME" \
   --cap-add SYS_NICE \
