@@ -151,9 +151,11 @@ class SharedOffloadRegion:
         # pages faulted after this MADV_HUGEPAGE materialize as PMD
         # (2 MiB) folios instead of 4 KiB pages: the cudaHostRegister
         # page walk and the NVIDIA driver's DMA page-table footprint
-        # shrink ~64x, which both speeds up tier init dramatically and
-        # avoids "NVRM: failed to allocate page table" pin failures
-        # (tier left UNPINNED) on very large tiers. Best-effort: silently
+        # shrink ~64x, which speeds up tier init dramatically. It does
+        # NOT raise the tier-size ceiling: that is the driver's per-rank
+        # pinned page-table budget (~537-600 MB/rank), and even 2 MiB
+        # pages hit it at >=576 GiB (cudaHostRegister code=2 / "NVRM:
+        # failed to allocate page table"). Best-effort: silently
         # stays on 4 KiB pages when huge pages are unavailable. MUST come
         # before the MADV_POPULATE_WRITE pre-fault below so the faults
         # allocate huge folios.

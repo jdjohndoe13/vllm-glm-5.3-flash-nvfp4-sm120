@@ -12,8 +12,9 @@
 #     and patches/README.md)
 #   * KV offloading: OffloadingConnector, kv_both, CPU_TIER_GB CPU budget
 #     (default 512 GiB — the validated ceiling; see EDITABLE SETTINGS)
-#     (the tier region is allocated once in the HOST's /dev/shm and
-#     registered into every TP rank's GPU context; that is why /dev/shm
+#     (the tier region is allocated once in the HOST's /dev/shm —
+#     512 GiB = 8 ranks x 64 GiB pinned each — and registered into every
+#     TP rank's GPU context; that is why /dev/shm
 #     is auto-sized (SHM_SIZE) and why tier-sized RAM is charged)
 #   * GPU KV pool: KV_CACHE_MEMORY-sized (default 3.3e9 -> 414,634 tokens,
 #     fp8; 4000000000 -> ~502k tokens — proven to boot standalone)

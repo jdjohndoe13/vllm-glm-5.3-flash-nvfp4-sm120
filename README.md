@@ -186,8 +186,10 @@ re-published under the same name).
   available → true here) — i.e. tier GiB are unpageable RAM consumed from
   the moment the engine starts (leave ~60+ GiB for OS + engine processes +
   psm/sem files). The tier-size ceiling on this host is NOT RAM — it is the
-  NVIDIA driver's per-context pinned-region page-table budget: **512 GiB
-  is the validated maximum**; 576, 640, and 800 GiB tiers all fail on all
+  NVIDIA driver's per-rank pinned page-table budget (~537–600 MB of driver
+  page tables per rank; a hard driver limit with no knob, not a RAM-size
+  limit): **512 GiB total (8 ranks × 64 GiB pinned each) is the validated
+  maximum**; 576, 640, and 800 GiB tiers all fail on all
   8 ranks with `cudaHostRegister failed (code=2)` +
   `NVRM: failed to allocate page table`, independent of free RAM,
   fragmentation, or compaction (bisected 2026-09-13). Above the ceiling the
