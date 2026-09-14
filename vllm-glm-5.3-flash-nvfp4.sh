@@ -93,7 +93,7 @@ done
 # space-separated (expanded unquoted in `docker run` on purpose, so that
 # several names word-split into separate --served-model-name tokens).
 # Default: just "glm-5.3-flash".
-: "${SERVED_MODEL_NAMES:=glm-5.3-flash}"
+: "${SERVED_MODEL_NAMES:=qwen-3.8-flash-next}"
 
 # Docker container name + host port. Both launchers of this kit share the
 # SAME name+port, so starting one stops the other automatically.
