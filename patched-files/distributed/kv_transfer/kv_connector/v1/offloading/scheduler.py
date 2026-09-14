@@ -737,6 +737,7 @@ class OffloadingConnectorScheduler:
 
         num_hit_tokens: int = 0
         defer_lookup = False
+        trace: list[str] = []
         lookup_groups = self._lookup_groups
 
         # Tracks which eagle groups have already popped their volatile trailing chunk
@@ -767,6 +768,7 @@ class OffloadingConnectorScheduler:
                 )
                 if max_hit_size_tokens - num_computed_tokens < tokens_per_chunk:
                     # We can only load less than a chunk, so skip.
+                    logger.info("KV-LOOKUP abort req=%s local=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, " ".join(trace))
                     return 0
 
                 sliding_window_size_in_chunks = (
@@ -806,7 +808,17 @@ class OffloadingConnectorScheduler:
                         required_window,
                         req_status.req_context,
                     )
+                trace.append(
+                    f"g{group_idx}"
+                    f"{'SW' + str(sliding_window_size_in_chunks) if sliding_window_size_in_chunks is not None else 'FA'}"
+                    f"{'E' if group_config.is_eagle_group else ''}"
+                    f"{'M' if group_config.requires_cow_source else ''}"
+                    f" hit={num_hit_chunks}"
+                    f" cov={group_state.next_stored_chunk_idx}/{len(group_state.offload_keys)}"
+                    f" max_hit={max_hit_size_tokens}"
+                )
                 if num_hit_chunks == 0:
+                    logger.info("KV-LOOKUP abort req=%s local=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, " ".join(trace))
                     return 0
 
                 if num_hit_chunks is None:
@@ -824,6 +836,7 @@ class OffloadingConnectorScheduler:
                 new_num_hit_tokens = max_hit_size_tokens - num_computed_tokens
                 if new_num_hit_tokens < tokens_per_chunk:
                     # We can only load less than a chunk, so skip.
+                    logger.info("KV-LOOKUP abort req=%s local=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, " ".join(trace))
                     return 0
 
                 if new_num_hit_tokens < num_hit_tokens:
@@ -847,6 +860,7 @@ class OffloadingConnectorScheduler:
                 "Offloading manager delayed request %s as backend requested",
                 req_status.req.request_id,
             )
+            logger.info("KV-LOOKUP defer req=%s local=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, " ".join(trace))
             return None
 
         # Possibly delay the request if any hit chunk is already being loaded.
@@ -881,6 +895,7 @@ class OffloadingConnectorScheduler:
             num_computed_tokens,
         )
 
+        logger.info("KV-LOOKUP hit req=%s local=%d hit=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, num_hit_tokens, " ".join(trace))
         return num_hit_tokens
 
     def _make_boundary_key(

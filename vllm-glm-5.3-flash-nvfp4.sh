@@ -16,8 +16,11 @@
 #     512 GiB = 8 ranks x 64 GiB pinned each — and registered into every
 #     TP rank's GPU context; that is why /dev/shm
 #     is auto-sized (SHM_SIZE) and why tier-sized RAM is charged)
-#   * GPU KV pool: KV_CACHE_MEMORY-sized (default 3.3e9 -> 414,634 tokens,
-#     fp8; 4000000000 -> ~502k tokens — proven to boot standalone)
+#   * GPU KV pool: KV_CACHE_MEMORY-sized (default 4.0e9 -> ~502k tokens, fp8;
+#     raised 2026-09-14 from 3.3e9/414,634 tokens — captured APC-HIT evidence
+#     showed concurrent ~140k agent sessions (esp. parallel-turn bursts,
+#     MAX_NUM_SEQS=4) evict whole cached chains between turns; 4.0e9 was
+#     previously proven to boot standalone)
 #   * auto-restarts on boot/reboot (unless-stopped), port 1025
 #
 # Adaptive fallbacks (fresh-machine friendly):
@@ -84,7 +87,7 @@ done
 # 5000000000 -> ~628k tokens (proven to boot WITH the tier in a
 # 196k-token, 2-concurrent-request test). If a boot with a larger pool
 # + tier fails, drop back to the default.
-: "${KV_CACHE_MEMORY:=3300000000}"
+: "${KV_CACHE_MEMORY:=4000000000}"
 
 # Names the model is advertised under in the OpenAI-compatible API,
 # space-separated (expanded unquoted in `docker run` on purpose, so that
@@ -330,6 +333,7 @@ docker run --restart=unless-stopped --gpus all --ipc=host --shm-size "${SHM_SIZE
     "kv_connector": "OffloadingConnector",
     "kv_role": "kv_both",
     "kv_connector_extra_config": {
-      "cpu_bytes_to_use": '"$CPU_TIER_BYTES"'
+      "cpu_bytes_to_use": '"$CPU_TIER_BYTES"',
+      "offload_prompt_only": false
     }
   }'

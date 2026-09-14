@@ -74,7 +74,7 @@ Image on Docker Hub: [cstechdev/vllm](https://hub.docker.com/r/cstechdev/vllm)
 
 | path | what it is |
 |---|---|
-| `patched-files/` | **The only vllm files that differ from the image's stock package** (vllm-project/vllm#54743 port + boot-fix + 3 overlays) — 7 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
+| `patched-files/` | **The only vllm files that differ from the image's stock package** (vllm-project/vllm#54743 port + boot-fix + 3 overlays + diagnostics instrumentation) — 8 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
 | `vllm-glm-5.3-flash-nvfp4.sh` | **Primary launcher** — production config with KV offloading (port 1025, auto-restart, per-file mounts from `patched-files/`). |
 | `vllm-glm-5.3-flash-nvfp4-orig.sh` | Fallback launcher — same server WITHOUT KV offloading (stock image package + the 2 overlay files mounted individually). Same container name/port; the launchers guard against each other. |
 | `test.sh` | Needle-battery validation test (boots the offload launcher, 6 tests, tears down). |
@@ -136,7 +136,7 @@ You should see text that contains `"content":"KVTEST-OK"`.
 
 The kit does NOT ship a full patched vllm package — it doesn't need to. The
 docker image's stock vllm package is complete and runnable by itself; the
-kit's `patched-files/` contains only the 7 files that differ from it, and
+kit's `patched-files/` contains only the 8 files that differ from it, and
 the launcher bind-mounts them individually over their stock paths inside
 the container (paths listed in `patched-files/manifest.txt`):
 
@@ -147,11 +147,13 @@ the container (paths listed in `patched-files/manifest.txt`):
 - `v1/kv_offload/cpu/shared_offload_region.py` — CPU tier mmap region hint
 - `model_executor/layers/quantization/modelopt.py` — SM120 NVFP4 overlay
 - `model_executor/warmup/deepseek_v4_mhc_warmup.py` — mHC warmup overlay
+- `v1/core/kv_cache_coordinator.py` — admission instrumentation overlay
+  (APC-HIT log line, added 2026-09-14; diagnostics only, no behavior change)
 
 **Equivalence proof**: the originally-shipped full patched tree (extracted
 from this image, patch applied, boot-fix sed, overlays baked) was diffed in
-full against the image's stock package — exactly these 7 files differ,
-everything else is byte-identical. Mounting these 7 files over a stock
+full against the image's stock package — exactly these files differ,
+everything else is byte-identical. Mounting these files over a stock
 image therefore yields the identical runtime to mounting a full patched
 tree.
 
@@ -174,7 +176,69 @@ re-published under the same name).
   reserves a **CPU tier** sized by the launcher setting `CPU_TIER_GB`
   (default 512 GiB — the validated ceiling, see "Budget physics" below;
   raise/lower via `CPU_TIER_GB=256 ./vllm-glm-5.3-flash-nvfp4.sh`, also
-  validated). It lives in the HOST's
+  validated). The extra config also sets `offload_prompt_only: false`
+  (2026-09-14): the upstream default is `true`, which stores only prompt
+  tokens — the model's own replies were never offloaded, so under
+  concurrent multi-turn use each session lost its own 8k reply between
+  turns (T2 cached 93.6%) while prompts survived. With `false`, replies
+  are stored to the tier as well; validated T1 99.6% and T2 99.7%/99.5%
+  (next-turn, interleaved sessions). Tier fill rate is higher with this
+  knob on — watch host RAM.
+- `VLLM_PREFIX_CACHE_RETENTION_INTERVAL` — **ATTEMPTED AND REVERTED
+  (2026-09-14)**. A `4096` `-e` env var was deployed to stop the whole-path
+  cache losses; the 0% ↔ 97% alternation was IDENTICAL with and without it
+  and deployed-build tracing proved the knob never gated the entries that
+  served the observed hits. Reverted to the default (None = dense). Do not
+  re-add it.
+- Whole-path cache losses (long sessions alternate `cached=0` full recomputes
+  ↔ 97%+ deep hits): current picture after deployed-build source tracing
+  (2026-09-14). Every hash-strip path in the scheduler is enumerated and
+  none wipes the hash map wholesale (frees RETAIN hashes; scan-miss ⇔ entry
+  absent). The observed signature — zero turns with byte-identical request
+  heads (probe-verified), collapsed turns hitting ONLY the shallowest states
+  (2048/4096), and a total KV budget of 414,634 tokens (~405 blocks of 1024,
+  "Maximum concurrency 2.07x for 200k-token requests") — points to
+  **mamba/GDN GPU pool pressure**: concurrent 100k+ sessions overflow the
+  small mamba pool; its freed states are re-allocated (hash-stripped)
+  between turns and the min-intersection hit gate collapses the whole
+  admission to 0/shallow. The CPU tier stores heavily (hundreds of GB
+  cumulative) and — as of the 2026-09-14 evening align-mode boot — serves
+  loads back (see the KV_CACHE_MEMORY bullet above); live-session chain
+  storage is the remaining gap. One-line admission instrumentation is deployed
+  (patched-files/v1/core/kv_cache_coordinator.py): watch
+  `APC-HIT nhash= max= final= per_group=[...] uncached=` in docker logs —
+  group order is FA first, mamba/GDN last; `uncached>0 ∧ final=0` = FA
+  alive + mamba group missed everything (pool churn confirmed);
+  `uncached=0 ∧ final=0` = head-of-chain mismatch.
+- **`KV_CACHE_MEMORY` raised 3.3e9 → 4.0e9 (2026-09-14, ~414,634 → ~502k
+  tokens)**: the captured APC-HIT evidence settled the loss mechanism —
+  concurrent ~140k-token agent sessions (especially parallel-turn bursts,
+  `MAX_NUM_SEQS=4`) need more than the total KV pool holds (~405 blocks of
+  1024), so whole cached chains get evicted between turns and the
+  min-intersection hit gate collapses the admission to `cached=0` (all six
+  groups miss, `uncached=0`). 4.0e9 was previously proven to boot standalone;
+  per-rank VRAM headroom is ~1.1 GB so do not push past ~4.5e9 without a
+  boot test. **The CPU tier now DOES serve loads back (2026-09-14
+  evening)**: first loads observed on the stock align-mode config —
+  ~9.3 GB restored (`CPU_to_GPU` counter, count 40), including a full
+  133,120-token chain at all-group depth (`KV-LOOKUP hit` with the FA group
+  and all four mamba/GDN groups at hit=130). Remaining gap under
+  investigation: live agent-session chains are often absent from the tier
+  while isolated test-client chains store and serve fully.
+- `--mamba-cache-mode all` (dense mamba block ids for the tier) —
+  **ATTEMPTED AND REVERTED (2026-09-14)**: on this hybrid model every block
+  id is charged the FULL per-block byte sum (MLA+indexer pages; the
+  kv_cache_utils memory check), so one 200k-token request needs ~7.1 GiB of
+  GPU KV versus the ~3.73 GiB/rank budget at `KV_CACHE_MEMORY=4.0e9`;
+  `--mamba-block-size 1024` does not change the charge and no launcher knob
+  makes "all" fit on 32 GB cards. The deployed config keeps the stock align
+  mode (auto-selected when prefix caching is on — boot log: `Mamba cache
+  mode is set to 'align' ... by default`). Note the boot behavior: the
+  workers auto-bump the attention block size to 1024 tokens so the
+  attention page is at least the mamba page (interface.py:926/:950, 23.77%
+  padding) — the effective block is 1024 tokens even though `block_size 256`
+  is passed.
+- It lives in the HOST's
   `/dev/shm` because the launcher runs with `--ipc=host`, so Docker's
   `--shm-size` flag is ignored there; when the tier exceeds the shm mount's
   size (default: half of RAM = 504 GiB), the launcher **remounts /dev/shm
@@ -206,7 +270,10 @@ re-published under the same name).
   gates on free space; tier files are root-owned, so a non-root start
   needs passwordless sudo for the auto-wipe — otherwise the gate error
   prints the manual command: `sudo rm -f /dev/shm/vllm_offload_*.mmap`.
-- GPU KV pool: 414,634 tokens (`kv-cache-memory 3.3e9`, fp8, block 256).
+- GPU KV pool: ~502,439 tokens (`KV_CACHE_MEMORY=4000000000`, fp8). The
+  launcher passes `block_size 256`, but the boot auto-bumps the attention
+  block to 1024 tokens to match the hybrid mamba page (23.77% padding) —
+  the effective block is 1024 tokens.
   When the pool fills, evicted prompt KV blocks spill to the CPU tier and
   are **restored from it** when you revisit those prompts — measured
   ~11 GB in ~0.35 s (~32 GB/s), i.e. revisit-after-eviction runs ~11–20×
@@ -378,10 +445,11 @@ ever a concern.
 |---|---|
 | `AssertionError ... tokens_per_block ... tokens_per_hash` at boot | the mounted offloading config is stale/wrong — `grep participates_in_prefix_caching patched-files/distributed/kv_transfer/kv_connector/v1/offloading/config.py` must match (line ~62); if not, re-copy from the fork (README §9) |
 | `'UniformTypeKVCacheSpecs' object has no attribute 'prefix_cacheable'` | same — boot-fix missing in the mounted config.py |
-| launcher aborts with `missing patched file:` | repo incomplete — manifest.txt lists 7 files that must exist under `patched-files/` |
+| launcher aborts with `missing patched file:` | repo incomplete — manifest.txt lists 8 files that must exist under `patched-files/` |
 | launcher aborts with `pinned image ... not present locally` | get the pinned build: `docker load` the backup tarball, or `docker pull cstechdev/vllm@sha256:0bd709e8...fde5`. If the tag exists but "points to" a different hash, the tag drifted — do NOT run it |
 | container dies at boot, GPUs busy | another LLM process holds VRAM: `nvidia-smi --query-compute-apps=pid --format=csv` and stop it |
 | port 1025 in use | previous container alive: `docker rm -f vllm-glm-5.3-flash-nvfp4` |
+| boot aborts with `No available memory for the cache` / `estimated maximum model length` far below expected | `KV_CACHE_MEMORY` too small for the per-request KV charge at `MAX_MODEL_LEN` — raise it (≤ ~4.5e9 proven on 32 GB cards) or lower `MAX_MODEL_LEN`/`MAX_NUM_SEQS` |
 | answers look corrupted / U+FFFD garbage | wrong checkpoint (LibertAIDAI modelopt) — use RedHatAI compressed-tensors (vllm-project/vllm#54150) |
 | offload restores never happen (loads stay 0) | tier present but nothing evicts; check `kv_offload_store_bytes_total` grows when the GPU pool fills |
 
