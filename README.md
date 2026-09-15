@@ -279,6 +279,19 @@ re-published under the same name).
      keys that vanished by 03:14:27 — prepare_store inserts keys before
      the copy lands; aborted/canceled requests leave false-positive
      entries). Mirroring must not touch write-pending keys.
+  6. (2026-09-15, 04:42 decode) **Restored tier keys are re-evicted within
+     ~30 s**: the 04:41:33 report turn was tier-served (119/122 chunks,
+     121,856 tokens) yet the next turn 34 s later (04:42:07) found tier
+     hit=1 — with a byte-identical 91-message shared prefix (proxy-verified;
+     no rewrite, no compaction). Mechanism: `prepare_load` pins loaded keys
+     and `complete_load` unpins WITHOUT an MRU touch, so restored keys drop
+     back to their old (cold) LRU position; the soak's eviction wave
+     (~5 evictions/s) re-evicts them almost immediately. The soak's own
+     contexts survive only via per-iteration entry-touches of their own
+     keys. This also explains the earlier 03:14:01→03:14:27 and
+     03:32:39→03:33:17 anomalies (tier-full→0 in 26-38 s). The deployed
+     patch's lookup-time touch fires BEFORE the load pins, closing this
+     path.
 - **Fix direction (user-approved 2026-09-15)**: (a) mirror locally-hit
   (radix-resident) chunks to the tier so RAM always holds a copy, plus
   (c) touch tier keys to MRU on local hits so active sessions keep tier
