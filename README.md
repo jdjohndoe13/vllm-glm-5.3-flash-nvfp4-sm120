@@ -74,7 +74,7 @@ Image on Docker Hub: [cstechdev/vllm](https://hub.docker.com/r/cstechdev/vllm)
 
 | path | what it is |
 |---|---|
-| `patched-files/` | **The only vllm files that differ from the image's stock package** (vllm-project/vllm#54743 port + boot-fix + 3 overlays + diagnostics instrumentation) — 8 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
+| `patched-files/` | **The only vllm files that differ from the image's stock package** (vllm-project/vllm#54743 port + boot-fix + overlays + diagnostics instrumentation + the `VLLM_KV_OFFLOAD_MIRROR_LOCAL` mirror patch, 2026-09-15) — 12 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
 | `vllm-glm-5.3-flash-nvfp4.sh` | **Primary launcher** — production config with KV offloading (port 1025, auto-restart, per-file mounts from `patched-files/`). |
 | `vllm-glm-5.3-flash-nvfp4-orig.sh` | Fallback launcher — same server WITHOUT KV offloading (stock image package + the 2 overlay files mounted individually). Same container name/port; the launchers guard against each other. |
 | `test.sh` | Needle-battery validation test (boots the offload launcher, 6 tests, tears down). |
@@ -142,9 +142,19 @@ the container (paths listed in `patched-files/manifest.txt`):
 
 - `distributed/kv_transfer/kv_connector/v1/offloading/config.py` — vllm-project/vllm#54743 + boot-fix
 - `distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py` — vllm-project/vllm#54743
-- `v1/kv_offload/base.py` — vllm-project/vllm#54743
+  + KV-LOOKUP diagnostics (2026-09-14) + `VLLM_KV_OFFLOAD_MIRROR_LOCAL`
+  mirror/touch/bypass patch (2026-09-15)
+- `distributed/kv_transfer/kv_connector/v1/offloading/metrics.py` — mirror
+  counters `vllm:kv_offload_mirrored_keys_total` /
+  `vllm:kv_offload_touch_keys_total` (2026-09-15; clone copy + 2 edits)
+- `v1/kv_offload/base.py` — vllm-project/vllm#54743 + `prepare_store`
+  `bypass_threshold` kwarg (2026-09-15)
 - `v1/kv_offload/config.py` — vllm-project/vllm#54743
 - `v1/kv_offload/cpu/shared_offload_region.py` — CPU tier mmap region hint
+- `v1/kv_offload/cpu/manager.py` — diagnostics instrumentation (fix-3,
+  2026-09-14) + counts-gate `bypass_threshold` (2026-09-15)
+- `v1/kv_offload/cpu/common.py`, `v1/kv_offload/cpu/spec.py` — diagnostics
+  instrumentation (fix-3, 2026-09-14)
 - `model_executor/layers/quantization/modelopt.py` — SM120 NVFP4 overlay
 - `model_executor/warmup/deepseek_v4_mhc_warmup.py` — mHC warmup overlay
 - `v1/core/kv_cache_coordinator.py` — admission instrumentation overlay
@@ -152,10 +162,14 @@ the container (paths listed in `patched-files/manifest.txt`):
 
 **Equivalence proof**: the originally-shipped full patched tree (extracted
 from this image, patch applied, boot-fix sed, overlays baked) was diffed in
-full against the image's stock package — exactly these files differ,
-everything else is byte-identical. Mounting these files over a stock
-image therefore yields the identical runtime to mounting a full patched
-tree.
+full against the image's stock package — exactly the 8 originally-listed
+files differ, everything else is byte-identical. Mounting these files over a
+stock image therefore yields the identical runtime to mounting a full patched
+tree. Files added later are each a minimal verified diff vs the stock image:
+the 2026-09-14 diagnostics trio (`cpu/manager.py`, `cpu/common.py`,
+`cpu/spec.py` + the scheduler/base/core overlay edits) and the 2026-09-15
+mirror patch (`offloading/metrics.py` = clone copy + 2 counter edits;
+scheduler/base/manager edits py_compile-verified).
 
 The image itself remains the one artifact this repo cannot carry (torch/
 CUDA/deps substrate, ~29 GB built artifact): pull it from the registry on
@@ -222,9 +236,76 @@ re-published under the same name).
   evening)**: first loads observed on the stock align-mode config —
   ~9.3 GB restored (`CPU_to_GPU` counter, count 40), including a full
   133,120-token chain at all-group depth (`KV-LOOKUP hit` with the FA group
-  and all four mamba/GDN groups at hit=130). Remaining gap under
-  investigation: live agent-session chains are often absent from the tier
-  while isolated test-client chains store and serve fully.
+   and all four mamba/GDN groups at hit=130). The "remaining gap" was
+   solved on 2026-09-15 — see the STALL ROOT CAUSE bullet below: live
+   agent-session chains are absent from the tier because only
+   newly-computed chunks are ever offered for tier store; the locally-hit
+   bulk is never mirrored.
+- **STALL ROOT CAUSE (2026-09-15, decoded from proxy-captured requests +
+  metrics + KV-LOOKUP traces — the multi-turn session "disease")**: a live
+  multi-agent session lives ENTIRELY in the GPU radix pool; the CPU tier
+  never receives its bulk. Evidence chain (testcomp2, 03:07–03:17):
+  1. Proxy capture pair — the 03:09:49 question request and the 03:12:43
+     answer ("pick") request have a **byte-identical 42-message prefix and
+     identical 142-tool payload** → same agent's next turn; no compaction,
+     no context rewrite. (Proxy request logs at
+     `B:\intersub\temp\llm-proxy\logs\<epoch_ms>.req/.resp.json`.)
+  2. KV-LOOKUP traces — question turn: `local=128000 hit=0` (served ~98%
+     from the GPU-local radix pool, tier hit=0). Pick turn after a ~3-min
+     user pause: `local=0 hit=0` (chatcmpl-be8618bc, 138,240 tok) → full
+     re-prefill 03:13:00–03:13:10 at 13,852 tok/s ≈ **10 s**. Next turn
+     03:13:28 was fast again (`local=139264`).
+  3. **The tier never gets chain content**: every chain turn in the window
+     shows tier `hit=0` while local serves 95–98%; the only CPU-TIER-EVICT
+     store batches observed are tiny ~5-key tail      slivers. Metrics confirm
+     scope: all 9,366 tier store/allocation batches are ≤16 keys (avg 5.6;
+     74,928 one-key store ops, zero large batches) — `_build_store_jobs`
+     (offloading/scheduler.py ~:1290) offers the full computed frontier,
+     but the store-frontier semantics (`next_stored_chunk_idx` start +
+     jump-to-frontier after any accepted sliver + already-stored filter)
+     mean locally-hit bulk is never RE-offered once its tier copy is
+     evicted. Fresh
+     full-prefill requests DO tier fully (03:13:37 → 03:14:01 a 140/140
+     full-tier hit), and the soak's repeated contexts survive via
+     restore-touches-MRU every iteration.
+  4. Churn math: tier = 8,854 keys (≈ 512 GiB, ~30.7 MB/key); soak churn
+     ~43,000 evictions in 2 h ≈ 2.5 tier sweeps/h — anything not
+     re-touched within ~10–15 min is gone. GPU pool = 4.0e9 ≈ 502k tokens
+     shared by `MAX_NUM_SEQS=4`; one concurrent 162k-token soak restore
+     alone ≈ a full-pool flush. So: pause + any concurrent traffic →
+     local=0, tier=0 → full re-prefill of the whole chain.
+  5. Known caveat: lookup can match write-pending tier keys before their
+     data lands (03:13:37 attempt showed a full `hit=143360` tier scan for
+     keys that vanished by 03:14:27 — prepare_store inserts keys before
+     the copy lands; aborted/canceled requests leave false-positive
+     entries). Mirroring must not touch write-pending keys.
+- **Fix direction (user-approved 2026-09-15)**: (a) mirror locally-hit
+  (radix-resident) chunks to the tier so RAM always holds a copy, plus
+  (c) touch tier keys to MRU on local hits so active sessions keep tier
+  residency — and the mirrored copy IS the "properly offloaded to RAM"
+  guarantee when VRAM pressure evicts (concurrent request during/after a
+  refresh). Enlarging the GPU pool was explicitly REJECTED: it cannot
+  survive a +1k-context arrival or an idle past the pool's retention —
+  long-term residency must live in the RAM tier. **Patch IMPLEMENTED
+  (2026-09-15, in `patched-files/`, takes effect on next restart)**: env
+  flag `VLLM_KV_OFFLOAD_MIRROR_LOCAL` (default ON; `0`/`false`/`off`
+  disables) — (a) store offers start from chunk 0 so tier-evicted chunks
+  are re-mirrored on every step (the manager's already-stored filter makes
+  still-resident keys a no-op; BOTH store-job loops use the same start so
+  no key is allocated without a copy), (b) ready tier hits are touched to
+  MRU on lookup (HIT_PENDING/write-pending keys never touched), (c) the
+  counts gate gets a `bypass_threshold` kwarg passed by mirror offers
+  behind an introspection guard (the gate is dead in this deployment — the
+  launcher passes no `store_threshold`, default 0). New 12th mounted file
+  `offloading/metrics.py` exposes
+  `vllm:kv_offload_mirrored_keys_total` +
+  `vllm:kv_offload_touch_keys_total`; expected post-restart signature:
+  mirrored_keys ramps to ≈ full-chain keys per turn, large allocation
+  buckets (16-256 keys) become non-zero, chain turns show tier `hit≠0` in
+  the KV-LOOKUP trace, and the multi-turn re-prefill stalls disappear.
+  Write amplification is bounded by the eviction rate (only tier-evicted
+  chunks re-copy; ~137 keys × ~62 MB ≈ 8.5 GB worst case per cold chain —
+  far cheaper than the ~10 s re-prefill it replaces).
 - `--mamba-cache-mode all` (dense mamba block ids for the tier) —
   **ATTEMPTED AND REVERTED (2026-09-14)**: on this hybrid model every block
   id is charged the FULL per-block byte sum (MLA+indexer pages; the

@@ -282,6 +282,8 @@ class OffloadingManager(ABC):
         self,
         keys: Collection[OffloadKey],
         req_context: ReqContext,
+        *,
+        bypass_threshold: bool = False,
     ) -> PrepareStoreOutput | None:
         """
         Prepare the given blocks to be offloaded.
@@ -291,6 +293,8 @@ class OffloadingManager(ABC):
         Args:
             keys: the keys identifying the blocks.
             req_context: per-request context (e.g. kv_transfer_params).
+            bypass_threshold: skip the manager's store-count threshold gate;
+                used by local-mirror offers that re-offer evicted chunks.
 
         Returns:
             A PrepareStoreOutput indicating which blocks need storing,

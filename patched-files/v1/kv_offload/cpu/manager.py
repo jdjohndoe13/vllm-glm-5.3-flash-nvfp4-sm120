@@ -173,8 +173,10 @@ class CPUOffloadingManager(OffloadingManager):
         self,
         keys: Collection[OffloadKey],
         req_context: ReqContext,
+        *,
+        bypass_threshold: bool = False,
     ) -> PrepareStoreOutput | None:
-        if self.counts is not None:
+        if self.counts is not None and not bypass_threshold:
             num_keys = len(keys)
             keys = [k for k in keys if self.counts.get(k, 0) >= self.store_threshold]
             self.stores_skipped_in_current_batch += num_keys - len(keys)

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+import os
 import time
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
@@ -581,6 +582,14 @@ class OffloadingConnectorScheduler:
 
         self._events_tracker = OffloadingEventsTracker(spec.kv_events_config)
 
+        # VLLM_KV_OFFLOAD_MIRROR_LOCAL: mirror locally-computed (radix-resident)
+        # chunks into the offload tier so long-chain context stays warm under
+        # churn. "0"/"false"/"off" disables; default ON.
+        _mirror_env = os.environ.get("VLLM_KV_OFFLOAD_MIRROR_LOCAL", "1")
+        self._mirror_local = _mirror_env.strip().lower() not in ("0", "false", "off")
+        self._mirror_keys_offered_total = 0
+        self._touch_keys_total = 0
+
     def _maybe_observe_lookup_async_delay(
         self, req_status: RequestOffloadState
     ) -> None:
@@ -639,6 +648,12 @@ class OffloadingConnectorScheduler:
                         key,
                     )
                     hit_count += 1
+                    if self._mirror_local:
+                        # Touch ready hits to MRU. HIT_PENDING keys are a
+                        # separate case and are never touched; LRU.touch is a
+                        # no-op for pinned/missing keys anyway.
+                        self.manager.touch((key,), req_context)
+                        self._touch_keys_total += 1
                 case LookupResult.HIT_PENDING:
                     defer_lookup = True
                     hit_count += 1
@@ -1323,7 +1338,13 @@ class OffloadingConnectorScheduler:
                     group_config, group_state, num_offloadable_tokens
                 )
 
-                start_chunk_idx = group_state.next_stored_chunk_idx
+                # VLLM_KV_OFFLOAD_MIRROR_LOCAL: offer from chunk 0 so chunks
+                # whose tier copy was evicted are re-mirrored; the manager's
+                # already-stored filter (policy.get(k) is None) makes this a
+                # no-op for keys still resident.
+                start_chunk_idx = (
+                    0 if self._mirror_local else group_state.next_stored_chunk_idx
+                )
                 if num_chunks <= start_chunk_idx:
                     continue
                 offload_keys = group_state.offload_keys[start_chunk_idx:num_chunks]
@@ -1360,12 +1381,26 @@ class OffloadingConnectorScheduler:
                         continue
                     new_offload_keys.append(offload_key)
 
+            # VLLM_KV_OFFLOAD_MIRROR_LOCAL: count this step's tier-store
+            # offers (all groups, once per request per step).
+            if self._mirror_local:
+                self._mirror_keys_offered_total += len(new_offload_keys)
             if not new_offload_keys:
                 req_status.advance_stored_idx(num_offloadable_tokens)
                 continue
 
+            # VLLM_KV_OFFLOAD_MIRROR_LOCAL: bypass the store_threshold counts
+            # gate when mirroring. Guarded so managers without the keyword
+            # (e.g. composing tier managers) keep the legacy call shape.
+            prepare_store_code = getattr(self.manager.prepare_store, "__code__", None)
+            store_kwargs: dict[str, Any] = (
+                {"bypass_threshold": self._mirror_local}
+                if prepare_store_code is not None
+                and "bypass_threshold" in prepare_store_code.co_varnames
+                else {}
+            )
             store_output = self.manager.prepare_store(
-                new_offload_keys, req_status.req_context
+                new_offload_keys, req_status.req_context, **store_kwargs
             )
             if store_output is None:
                 self._connector_stats.increase_counter(
@@ -1395,7 +1430,9 @@ class OffloadingConnectorScheduler:
                 num_chunks = req_status.storable_chunks(
                     group_config, group_state, num_offloadable_tokens
                 )
-                start_chunk_idx = group_state.next_stored_chunk_idx
+                start_chunk_idx = (
+                    0 if self._mirror_local else group_state.next_stored_chunk_idx
+                )
                 block_ids = group_state.block_ids
                 num_group_blocks = 0
                 start_gpu_block_idx: int | None = None
@@ -1629,6 +1666,20 @@ class OffloadingConnectorScheduler:
         if not self._connector_stats.is_empty():
             stats = self._connector_stats
             self._connector_stats = OffloadingConnectorStats()
+
+        # VLLM_KV_OFFLOAD_MIRROR_LOCAL observability.
+        if self._mirror_keys_offered_total:
+            stats = stats or OffloadingConnectorStats()
+            stats.increase_counter(
+                _ConnectorMetricName.MIRRORED_KEYS, self._mirror_keys_offered_total
+            )
+            self._mirror_keys_offered_total = 0
+        if self._touch_keys_total:
+            stats = stats or OffloadingConnectorStats()
+            stats.increase_counter(
+                _ConnectorMetricName.TOUCH_KEYS, self._touch_keys_total
+            )
+            self._touch_keys_total = 0
 
         manager_stats = self.manager.get_stats()
         if manager_stats is not None:
