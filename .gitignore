@@ -11,3 +11,8 @@ last_kvoff_test_exit_code.txt
 
 # launcher fallback cache (created next to the .sh when the shared cache is unusable)
 .cache/
+
+# agent study artifacts (mirrors of the deployed vLLM source and read-only
+# dependency clones — regenerable, not part of the deployment kit)
+deployed-sources/
+.slim/
