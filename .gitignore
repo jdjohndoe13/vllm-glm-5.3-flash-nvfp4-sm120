@@ -16,3 +16,6 @@ last_kvoff_test_exit_code.txt
 # dependency clones — regenerable, not part of the deployment kit)
 deployed-sources/
 .slim/
+
+# runtime archive (vllm-bin tarball kept out of git intentionally)
+vllm-bin-*.tar.xz

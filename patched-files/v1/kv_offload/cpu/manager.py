@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+import os
 from collections import OrderedDict
 from collections.abc import Collection, Iterable
 
@@ -7,6 +8,7 @@ from typing_extensions import override
 
 from vllm.distributed.kv_transfer.kv_connector.v1.offloading.metrics import (
     OffloadingConnectorStats,
+    _ConnectorMetricName,
 )
 from vllm.logger import init_logger
 from vllm.v1.kv_offload.base import (
@@ -19,6 +21,7 @@ from vllm.v1.kv_offload.base import (
     PrepareStoreOutput,
     ReqContext,
     RequestOffloadingContext,
+    get_offload_block_hash,
 )
 from vllm.v1.kv_offload.cpu.common import (
     CPULoadStoreSpec,
@@ -28,6 +31,41 @@ from vllm.v1.kv_offload.cpu.policies.base import BlockStatus, CachePolicy
 from vllm.v1.kv_offload.cpu.policies.factory import CachePolicyFactory
 
 logger = init_logger(__name__)
+
+# VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES: bounded CPU-tier eviction-tombstone
+# registry. Every block hash evicted from the CPU tier is recorded so the
+# scheduler can attribute "evicted-then-recomputed" blocks on later lookup
+# misses. Unset/empty -> default capacity; "0"/"false"/"off" disables;
+# otherwise an integer entry cap (negative or invalid values fall back to
+# the default with a warning).
+VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES_DEFAULT = 262_144
+
+
+def _eviction_tombstone_capacity() -> int:
+    raw = os.environ.get("VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES")
+    if raw is None or not raw.strip():
+        return VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES_DEFAULT
+    normalized = raw.strip().lower()
+    if normalized in ("0", "false", "off"):
+        return 0
+    try:
+        capacity = int(normalized)
+    except ValueError:
+        logger.warning(
+            "Invalid VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES=%r; using default %d",
+            raw,
+            VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES_DEFAULT,
+        )
+        return VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES_DEFAULT
+    if capacity < 0:
+        logger.warning(
+            "VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES=%d is negative; using "
+            "default %d",
+            capacity,
+            VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES_DEFAULT,
+        )
+        return VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES_DEFAULT
+    return capacity
 
 
 class CPUOffloadingManager(OffloadingManager):
@@ -67,6 +105,22 @@ class CPUOffloadingManager(OffloadingManager):
         # CPU-TIER-EVICT diagnostics 2026-09-14: cumulative blocks evicted by
         # prepare_store since boot (survives reset_cache on purpose).
         self._evicted_total: int = 0
+
+        # VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES: bounded eviction-tombstone
+        # registry (default 262144 entries, 0 disables). Ordered dict keyed
+        # by evicted block hash, giving O(1) insert/discard/member; oldest
+        # hashes age out at capacity (counted as overflows). The eviction
+        # path runs on the scheduler loop like every other counter here
+        # (single-threaded; no new locks). Survives reset_cache like
+        # _evicted_total on purpose.
+        self._eviction_tombstone_capacity: int = _eviction_tombstone_capacity()
+        self._eviction_tombstones: OrderedDict[bytes, None] | None = (
+            OrderedDict() if self._eviction_tombstone_capacity > 0 else None
+        )
+        self._eviction_tombstone_overflows_total: int = 0
+        # Delta of registry overflows already emitted via get_stats, so the
+        # prom counter receives increments (the tracked value is cumulative).
+        self._eviction_tombstone_overflows_emitted: int = 0
 
         self.store_threshold: int = store_threshold
         self.max_tracker_size: int = max_tracker_size
@@ -224,6 +278,13 @@ class CPUOffloadingManager(OffloadingManager):
         # bounded by prepare_store call rate.
         if to_evict:
             self._evicted_total += len(to_evict)
+            # VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES: record the evicted block
+            # hashes for evicted-then-recomputed attribution on later
+            # lookup misses (same lock-free single-threaded pattern as
+            # _evicted_total above).
+            self._record_eviction_tombstones(
+                get_offload_block_hash(key) for key in to_evict
+            )
             logger.info(
                 "CPU-TIER-EVICT n_evicted=%d requested=%d free_before=%d "
                 "allocated=%d evictable_len=%d",
@@ -260,6 +321,35 @@ class CPUOffloadingManager(OffloadingManager):
             store_spec=store_spec,
             evicted_keys=to_evict,
         )
+
+    def _record_eviction_tombstones(self, block_hashes: Iterable[bytes]) -> None:
+        """Add block hashes evicted from the CPU tier to the tombstone registry.
+
+        Insert-only (a re-evicted hash stays tombstoned from its first
+        eviction); oldest entries age out at the configured capacity and are
+        counted as registry overflows. Called on the scheduler loop; no new
+        locks, mirroring the existing counter pattern.
+        """
+        registry = self._eviction_tombstones
+        if registry is None or not block_hashes:
+            return
+        capacity = self._eviction_tombstone_capacity
+        overflows = 0
+        for block_hash in block_hashes:
+            if block_hash in registry:
+                continue
+            registry[block_hash] = None
+            while len(registry) > capacity:
+                registry.popitem(last=False)
+                overflows += 1
+        self._eviction_tombstone_overflows_total += overflows
+
+    def has_eviction_tombstone(self, block_hash: bytes) -> bool:
+        """Scheduler-side membership probe: whether a block hash was stored
+        in the CPU tier and later evicted, and has not yet aged out of the
+        bounded tombstone registry."""
+        registry = self._eviction_tombstones
+        return registry is not None and block_hash in registry
 
     @override
     def complete_store(
@@ -342,6 +432,25 @@ class CPUOffloadingManager(OffloadingManager):
             CPUOffloadingMetrics.CPU_EVICTABLE_LEN, self._num_evictable_cache_blocks
         )
         stats.set_gauge(CPUOffloadingMetrics.CPU_EVICTED_TOTAL, self._evicted_total)
+
+        # VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES observability: registry size
+        # snapshot (gauge) and cumulative registry-overflow discards (emitted
+        # as a delta so the prom counter increments correctly).
+        if self._eviction_tombstones is not None:
+            stats.set_gauge(
+                _ConnectorMetricName.EVICTION_TOMBSTONES,
+                len(self._eviction_tombstones),
+            )
+            overflow_delta = (
+                self._eviction_tombstone_overflows_total
+                - self._eviction_tombstone_overflows_emitted
+            )
+            if overflow_delta > 0:
+                stats.increase_counter(
+                    _ConnectorMetricName.EVICTION_TOMBSTONE_OVERFLOWS,
+                    overflow_delta,
+                )
+                self._eviction_tombstone_overflows_emitted += overflow_delta
 
         for allocation_size in self.allocation_sizes_in_current_batch:
             stats.observe_histogram(

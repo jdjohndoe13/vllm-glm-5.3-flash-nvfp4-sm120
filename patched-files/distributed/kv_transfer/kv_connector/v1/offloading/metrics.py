@@ -39,6 +39,21 @@ class _ConnectorMetricName:
     MIRRORED_KEYS = "vllm:kv_offload_mirrored_keys"
     TOUCH_KEYS = "vllm:kv_offload_touch_keys"
 
+    # Evicted-then-recomputed attribution (VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES).
+    # Blocks whose KV was previously stored in the CPU tier, evicted from it,
+    # and had to be recomputed from scratch on a later offload lookup miss.
+    RECOMPUTED_AFTER_EVICTION_BLOCKS = (
+        "vllm:kv_offload_recomputed_after_eviction_blocks_total"
+    )
+    RECOMPUTED_AFTER_EVICTION_TOKENS = (
+        "vllm:kv_offload_recomputed_after_eviction_tokens_total"
+    )
+    # CPU-tier eviction tombstone registry observability (manager-side).
+    EVICTION_TOMBSTONES = "vllm:kv_offload_eviction_tombstones"
+    EVICTION_TOMBSTONE_OVERFLOWS = (
+        "vllm:kv_offload_eviction_tombstone_overflows_total"
+    )
+
 
 class _TransferType:
     """Transfer direction labels for deprecated CPU offload metrics."""
@@ -136,6 +151,42 @@ def get_connector_metric_definitions() -> dict[str, OffloadingMetricMetadata]:
         ),
         _ConnectorMetricName.TOUCH_KEYS: OffloadingCounterMetadata(
             documentation="Ready tier keys touched to MRU on local lookup hits."
+        ),
+        _ConnectorMetricName.RECOMPUTED_AFTER_EVICTION_BLOCKS: (
+            OffloadingCounterMetadata(
+                documentation=(
+                    "Blocks whose KV was previously stored in the offload "
+                    "tier, evicted from the CPU tier, and had to be "
+                    "recomputed from scratch after a later offload lookup "
+                    "miss (bounded eviction-tombstone registry; see "
+                    "VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES)."
+                ),
+            )
+        ),
+        _ConnectorMetricName.RECOMPUTED_AFTER_EVICTION_TOKENS: (
+            OffloadingCounterMetadata(
+                documentation=(
+                    "Tokens covered by blocks recomputed after CPU-tier "
+                    "eviction (see "
+                    "vllm:kv_offload_recomputed_after_eviction_blocks_total)."
+                ),
+            )
+        ),
+        _ConnectorMetricName.EVICTION_TOMBSTONES: OffloadingGaugeMetadata(
+            documentation=(
+                "Current number of block hashes held by the CPU-tier "
+                "eviction tombstone registry "
+                "(VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES)."
+            ),
+        ),
+        _ConnectorMetricName.EVICTION_TOMBSTONE_OVERFLOWS: (
+            OffloadingCounterMetadata(
+                documentation=(
+                    "Oldest block hashes discarded from the bounded "
+                    "CPU-tier eviction tombstone registry to make room for "
+                    "new entries (registry aging, not tier evictions)."
+                ),
+            )
         ),
     }
 

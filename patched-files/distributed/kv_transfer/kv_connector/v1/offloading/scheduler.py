@@ -53,6 +53,7 @@ from vllm.v1.kv_offload.base import (
     ScheduleEndContext,
     TierFilter,
     TierMatcher,
+    get_offload_block_hash,
     make_offload_key,
 )
 from vllm.v1.outputs import KVConnectorOutput
@@ -347,6 +348,12 @@ class RequestOffloadState:
     partial_tail_boundary: int | None = None
     # True once on_request_finished has been signaled to the manager.
     finished_signaled: bool = False
+    # VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES attribution dedup: block hashes
+    # whose recomputation-after-eviction was already counted for this
+    # request. Guards the per-step lookup re-runs (deferred lookups /
+    # abort re-logging) and the multi-group convergence loop from double
+    # counting the same hash; "count once per (request, block hash)".
+    tombstone_counted_hashes: set[bytes] = field(default_factory=set)
 
     def __post_init__(self) -> None:
         # One state per KV cache group (indexed by original group index):
@@ -590,6 +597,18 @@ class OffloadingConnectorScheduler:
         self._mirror_keys_offered_total = 0
         self._touch_keys_total = 0
 
+        # VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES: CPU-tier eviction tombstone
+        # attribution. The CPU manager (when the registry is enabled)
+        # exposes has_eviction_tombstone() over a bounded registry of block
+        # hashes evicted from the CPU tier; lookup misses on those hashes
+        # count as recomputed-from-scratch blocks. Duck-typed so managers
+        # without the registry (e.g. composing tier managers) stay inert.
+        self._eviction_tombstone_check = getattr(
+            self.manager, "has_eviction_tombstone", None
+        )
+        self._recomputed_evicted_blocks_total = 0
+        self._recomputed_evicted_tokens_total = 0
+
     def _maybe_observe_lookup_async_delay(
         self, req_status: RequestOffloadState
     ) -> None:
@@ -632,11 +651,13 @@ class OffloadingConnectorScheduler:
         req: Request,
         group_config: GroupOffloadConfig,
         start_chunk_idx: int,
+        recompute_counted: set[bytes] | None = None,
     ) -> int | None:
         """Return the number of consecutive offloaded chunks from the start,
         or None if the backend deferred a lookup."""
         hit_count = 0
         defer_lookup = False
+        keys = tuple(keys)
         for local_idx, key in enumerate(keys):
             result = self.manager.lookup(key, req_context)
             match result:
@@ -662,8 +683,74 @@ class OffloadingConnectorScheduler:
                     # async lookups (until a miss is detected).
                     defer_lookup = True
                 case LookupResult.MISS:
+                    # Chunks from the first miss onward are recomputed from
+                    # scratch; attribute the ones whose hashes are held by
+                    # the CPU-tier eviction tombstone registry. Skipped when
+                    # the outcome is still deferred (an earlier HIT_PENDING
+                    # / RETRY), so only resolved misses attribute.
+                    if not defer_lookup and recompute_counted is not None:
+                        self._note_recompute_after_eviction(
+                            req,
+                            group_config,
+                            start_chunk_idx,
+                            keys[local_idx:],
+                            recompute_counted,
+                        )
                     break
         return hit_count if not defer_lookup else None
+
+    def _note_recompute_after_eviction(
+        self,
+        req: Request,
+        group_config: GroupOffloadConfig,
+        start_chunk_idx: int,
+        missed_keys: Sequence[OffloadKey],
+        recompute_counted: set[bytes],
+    ) -> None:
+        """Attribute evicted-then-recomputed blocks on an offload lookup miss.
+
+        ``missed_keys`` holds the request's chunk keys from the first lookup
+        MISS through the end of the scan window: the load path only serves
+        the consecutive hit prefix, so every chunk from the first miss
+        onward is recomputed from scratch. For each one whose block hash is
+        held by the CPU-tier eviction tombstone registry (it was cached,
+        then evicted), count the block and its tokens, and record the
+        recompute depth (the absolute chunk index of the first attributed
+        chunk). Counted once per (request, block hash) via
+        ``tombstone_counted_hashes`` — per-step lookup re-runs for the same
+        request and the convergence loop's re-scans never multiply counts.
+        """
+        check = self._eviction_tombstone_check
+        if check is None:
+            return
+        tokens_per_chunk = group_config.tokens_per_chunk
+        counted_blocks = 0
+        counted_tokens = 0
+        depth_chunk = -1
+        for local_idx, key in enumerate(missed_keys):
+            block_hash = get_offload_block_hash(key)
+            if block_hash in recompute_counted:
+                continue
+            if not check(block_hash):
+                continue
+            recompute_counted.add(block_hash)
+            counted_blocks += 1
+            counted_tokens += tokens_per_chunk
+            if depth_chunk < 0:
+                depth_chunk = start_chunk_idx + local_idx
+        if not counted_blocks:
+            return
+        self._recomputed_evicted_blocks_total += counted_blocks
+        self._recomputed_evicted_tokens_total += counted_tokens
+        logger.info(
+            "KV-TOMBSTONE recompute req=%s group=%d blocks=%d tokens=%d "
+            "depth_chunk=%d",
+            req.request_id,
+            group_config.group_idx,
+            counted_blocks,
+            counted_tokens,
+            depth_chunk,
+        )
 
     def _sliding_window_lookup(
         self,
@@ -813,6 +900,11 @@ class OffloadingConnectorScheduler:
                         req_status.req,
                         group_config,
                         start_chunk_idx,
+                        recompute_counted=(
+                            req_status.tombstone_counted_hashes
+                            if self._eviction_tombstone_check is not None
+                            else None
+                        ),
                     )
                 else:
                     required_window = sliding_window_size_in_chunks
@@ -1680,6 +1772,23 @@ class OffloadingConnectorScheduler:
                 _ConnectorMetricName.TOUCH_KEYS, self._touch_keys_total
             )
             self._touch_keys_total = 0
+
+        # VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES: evicted-then-recomputed
+        # attribution (scheduler-side lookup misses on tombstoned hashes).
+        if self._recomputed_evicted_blocks_total:
+            stats = stats or OffloadingConnectorStats()
+            stats.increase_counter(
+                _ConnectorMetricName.RECOMPUTED_AFTER_EVICTION_BLOCKS,
+                self._recomputed_evicted_blocks_total,
+            )
+            self._recomputed_evicted_blocks_total = 0
+        if self._recomputed_evicted_tokens_total:
+            stats = stats or OffloadingConnectorStats()
+            stats.increase_counter(
+                _ConnectorMetricName.RECOMPUTED_AFTER_EVICTION_TOKENS,
+                self._recomputed_evicted_tokens_total,
+            )
+            self._recomputed_evicted_tokens_total = 0
 
         manager_stats = self.manager.get_stats()
         if manager_stats is not None:

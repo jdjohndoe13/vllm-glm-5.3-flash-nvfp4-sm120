@@ -32,6 +32,14 @@
 #
 # All tunables live in the EDITABLE SETTINGS block right below the header.
 #
+# Usage:
+#   bash vllm-glm-5.3-flash-nvfp4.sh        (start; engine runs inside docker
+#         with --restart=unless-stopped, so it auto-restarts on boot/reboot)
+#   bash vllm-glm-5.3-flash-nvfp4.sh stop   (docker container stop, then
+#         reclaim leaked engine-owned files from host /dev/shm — vllm*/VLLM*
+#         files only, so a live sibling engine's torch psm_/sem.mp files
+#         survive a stop)
+#
 # Provenance / patch refs (see README.md and patches/README.md):
 #   image cstechdev/vllm:glm53-flash-nope-sm120-cu130-20260826-r1
 #     pinned sha256:0bd709e80b8ff13ae5de8f7d7f708a499fade3a26970d56afb1be2ff3860fde5
@@ -42,6 +50,138 @@
 # ============================================================================
 set -euo pipefail
 F="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ----------------------------------------------------------------------------
+# Pre-flight / post-stop shared-memory leak cleanup — mirrors the no-docker
+# launcher's do_shm_cleanup (broadened 2026-09-15). Reclaims ANY engine-owned
+# orphan in the HOST's /dev/shm — the tier mmaps (vllm_offload_*.mmap, which
+# live here because --ipc=host shares the host tmpfs) AND any other
+# vllm*/VLLM* leftover, e.g. leaked VLLM_OBJECT_STORAGE_SHM_BUFFER_* ring
+# buffers (vllm auto-names these UPPERCASE per process tree — vllm/envs.py
+# get_env_or_set_default — which the old vllm_offload_*.mmap-only pattern
+# never matched, forcing a manual rm) — plus torch psm_/sem.mp leftovers.
+# Every removed file is printed with its size and a removed-count/bytes
+# summary closes the run, so misses are never silent. An optional
+# "tier_only" scope (arg 1 of do_shm_cleanup) removes only vllm*/VLLM*
+# files — the stop subcommand uses it so a live sibling engine's torch
+# files survive. NOTE: no hugetlbfs dir here (this kit has no hugetlb
+# tier); /dev/hugepages is deliberately NOT scanned by this kit's cleanup.
+# ----------------------------------------------------------------------------
+SHM_CLEAN_CODE='
+import os
+import stat
+freed = {"tier_mmap": 0, "vllm_other": 0, "torch_psm": 0, "torch_sem": 0}
+removed = 0
+removed_bytes = 0
+denied = 0
+denied_files = 0
+_scope = os.environ.get("SHM_CLEAN_SCOPE", "all")
+clean_dirs = ["/dev/shm"]
+
+def _fmt(b):
+    if b >= 1073741824:
+        return f"{b / 1073741824:.2f} GiB"
+    return f"{b / 1048576:.1f} MiB"
+
+for clean_dir in clean_dirs:
+    try:
+        names = os.listdir(clean_dir)
+    except OSError:
+        continue
+    for name in names:
+        if not (name.startswith("vllm") or name.startswith("VLLM")
+                or name.startswith("psm_") or name.startswith("sem.mp-")):
+            continue
+        path = os.path.join(clean_dir, name)
+        try:
+            st = os.lstat(path)
+        except OSError:
+            continue
+        if not stat.S_ISREG(st.st_mode):
+            continue  # never touch directories, symlinks, sockets, fifos
+        size = st.st_size
+        cls = ("tier_mmap" if name.startswith("vllm_offload_") and name.endswith(".mmap")
+               else "vllm_other" if name.startswith("vllm") or name.startswith("VLLM")
+               else "torch_psm" if name.startswith("psm_")
+               else "torch_sem" if name.startswith("sem.mp-")
+               else None)
+        if cls is None or (_scope == "tier_only" and cls not in ("tier_mmap", "vllm_other")):
+            continue
+        try:
+            os.unlink(path)
+        except PermissionError:
+            denied += size
+            denied_files += 1
+            continue
+        except OSError as exc:
+            print(f"  shm cleanup: could not remove {path} ({exc})")
+            continue
+        freed[cls] += size
+        removed += 1
+        removed_bytes += size
+        print(f"  shm cleanup: removed {path} ({_fmt(size)})")
+if removed:
+    parts = ", ".join(f"{k}={_fmt(v)}" for k, v in freed.items())
+    print(f"Pre-flight shm cleanup: removed {removed} file(s), {_fmt(removed_bytes)} total ({parts})")
+else:
+    print("Pre-flight shm cleanup: nothing to remove (0 files)")
+if denied:
+    print(f"Pre-flight shm cleanup: {denied_files} file(s), {_fmt(denied)} skipped: permission denied — run: sudo rm -f /dev/shm/vllm_* /dev/shm/VLLM_* /dev/shm/psm_* /dev/shm/sem.mp-*")
+'
+do_shm_cleanup() {
+  # $1 optional scope: "tier_only" removes only vllm*/VLLM* engine-owned
+  # files (the stop subcommand uses it so a live sibling engine's torch
+  # psm_/sem.mp files are never touched); default: full wipe.
+  local _scope="${1:-all}"
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "WARNING: python3 not found — skipped /dev/shm orphan cleanup." >&2
+    return 0
+  fi
+  if [ "$(id -u)" = "0" ]; then
+    SHM_CLEAN_SCOPE="$_scope" python3 -c "$SHM_CLEAN_CODE" || true
+  elif sudo -n true 2>/dev/null && sudo -n env SHM_CLEAN_SCOPE="$_scope" python3 -c "$SHM_CLEAN_CODE" 2>/dev/null; then
+    : # full wipe done via passwordless sudo
+  else
+    SHM_CLEAN_SCOPE="$_scope" python3 -c "$SHM_CLEAN_CODE" || true
+  fi
+}
+
+# Docker container name + host port (defaults set HERE, before the stop
+# subcommand dispatch, which needs them to target the container/port — the
+# VAR=value argument loop below still applies to the start path). Both
+# launchers of this kit share the SAME name+port, so starting one stops the
+# other automatically. (test.sh assumes the default port.)
+: "${CONTAINER_NAME:=vllm-glm-5.3-flash-nvfp4}"
+: "${PORT:=1025}"
+
+# ----------------------------------------------------------------------------
+# stop subcommand — `docker container stop` for operator convenience, then
+# reclaim what docker kills leak: the connector unlinks the tier mmap only
+# on graceful engine exit, so every container kill/rm leaves engine-owned
+# files in the HOST's /dev/shm until wiped here (docker rm alone never
+# cleaned them). Scope is deliberately "tier_only" (vllm*/VLLM* files
+# only): torch psm_/sem.mp files are left for the start pre-flight, so a
+# live sibling engine on this host (same port — e.g. the no-docker
+# launcher's) is never disturbed by a stop.
+# ----------------------------------------------------------------------------
+cmd_stop() {
+  echo "[launcher] stopping container $CONTAINER_NAME (docker container stop)..."
+  docker container stop "$CONTAINER_NAME" >/dev/null 2>&1 || true
+  if docker container inspect -f '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null | grep -q '^true$'; then
+    echo "[launcher] container $CONTAINER_NAME is STILL RUNNING — NOT wiping host /dev/shm." >&2
+    exit 1
+  fi
+  echo "[launcher] container $CONTAINER_NAME confirmed down (or absent)."
+  if ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE "[:.]${PORT}\$"; then
+    echo "[launcher] NOTE: port $PORT is still in use — another engine may be live on this host;"
+    echo "           wiping vllm*/VLLM* shm leftovers only (psm_/sem.mp untouched by stop)."
+  fi
+  do_shm_cleanup tier_only
+}
+
+case "${1-}" in
+  stop) cmd_stop; exit 0 ;;
+esac
 
 # ============================================================================
 # EDITABLE SETTINGS — view/edit right here, or override from the command line:
@@ -92,14 +232,14 @@ done
 # Names the model is advertised under in the OpenAI-compatible API,
 # space-separated (expanded unquoted in `docker run` on purpose, so that
 # several names word-split into separate --served-model-name tokens).
-# Default: just "glm-5.3-flash".
+# Default: just "qwen-3.8-flash-next" (unchanged — only the no-docker
+# launcher serves BOTH names by default).
 : "${SERVED_MODEL_NAMES:=qwen-3.8-flash-next}"
 
-# Docker container name + host port. Both launchers of this kit share the
-# SAME name+port, so starting one stops the other automatically.
+# Docker container name + host port: defaults are set ABOVE (before the
+# stop subcommand dispatch, which needs them). Both launchers of this kit
+# share the SAME name+port, so starting one stops the other automatically.
 # (test.sh assumes the default port.)
-: "${CONTAINER_NAME:=vllm-glm-5.3-flash-nvfp4}"
-: "${PORT:=1025}"
 
 # KV offloading CPU tier budget in GiB — a pinned, fully-preallocated mmap
 # in the HOST's /dev/shm (shared via --ipc=host). The launcher remounts
@@ -221,52 +361,18 @@ fi
 # The tier mmap (vllm_offload_*.mmap) lives in the HOST's /dev/shm because
 # --ipc=host shares it. The connector unlinks it only on graceful engine exit;
 # docker stop/rm SIGKILLs the engine, so EVERY restart leaks the tier file
-# until cleaned here. Tier files are root-owned: non-root callers need
-# passwordless sudo for a full wipe. psm_*/sem.mp-* are torch shared-memory
-# leftovers from killed TP-rank worker groups (torch maps them then unlinks,
-# so visible files are always unreferenced). All are safe to delete at this
-# point: the container was just stopped and nothing else on this host uses
-# host shm.
+# until cleaned here. Since 2026-09-15 the wipe covers EVERY engine-owned
+# leftover (any vllm*/VLLM* regular file — tier mmaps AND other vllm-named
+# files such as VLLM_OBJECT_STORAGE_SHM_BUFFER_* ring buffers that the old
+# narrower pattern missed), printing each removal. Files are root-owned:
+# non-root callers need passwordless sudo for a full wipe. psm_*/sem.mp-* are
+# torch shared-memory leftovers from killed TP-rank worker groups (torch maps
+# them then unlinks, so visible files are always unreferenced). All are safe
+# to delete at this point: the container was just stopped and nothing else on
+# this host uses host shm (the stop subcommand above is deliberately
+# narrower — tier_only — for sibling-engine safety).
 # ----------------------------------------------------------------------------
-SHM_CLEAN_CODE='
-import os
-freed = {"tier_mmap": 0, "torch_psm": 0, "torch_sem": 0}
-denied = 0
-for name in os.listdir("/dev/shm"):
-    path = os.path.join("/dev/shm", name)
-    try:
-        size = os.stat(path).st_size
-    except OSError:
-        continue
-    cls = ("tier_mmap" if name.startswith("vllm_offload_") and name.endswith(".mmap")
-           else "torch_psm" if name.startswith("psm_")
-           else "torch_sem" if name.startswith("sem.mp-")
-           else None)
-    if cls is None:
-        continue
-    try:
-        os.unlink(path)
-        freed[cls] += size
-    except PermissionError:
-        denied += size
-    except OSError:
-        pass
-msg = ", ".join(f"{k}={v / 2**30:.1f} GiB" for k, v in freed.items())
-if denied:
-    msg += f" ({denied / 2**30:.1f} GiB skipped: permission denied — run: sudo rm -f /dev/shm/vllm_offload_*.mmap)"
-print("Pre-flight shm cleanup: " + msg)
-'
-if command -v python3 >/dev/null 2>&1; then
-  if [ "$(id -u)" = "0" ]; then
-    python3 -c "$SHM_CLEAN_CODE" || true
-  elif sudo -n true 2>/dev/null && sudo -n python3 -c "$SHM_CLEAN_CODE" 2>/dev/null; then
-    : # full wipe done via passwordless sudo
-  else
-    python3 -c "$SHM_CLEAN_CODE" || true
-  fi
-else
-  echo "WARNING: python3 not found — skipped /dev/shm orphan cleanup." >&2
-fi
+do_shm_cleanup
 
 # tmpfs /dev/shm capacity is a MOUNT OPTION (default: half of RAM), not a
 # hardware limit — raise it automatically when the tier needs more.
