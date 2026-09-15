@@ -36,7 +36,7 @@ F="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # EDITABLE SETTINGS
 # ============================================================================
 : "${PORT:=1025}"
-: "${MODEL_NAME:=glm-5.3-flash}"  # served name to address (see SERVED_MODEL_NAMES in the launcher)
+: "${MODEL_NAME:=qwen-3.8-flash-next}"  # served name to address (see SERVED_MODEL_NAMES in the launcher)
 : "${MAX_TOKENS:=400}"        # must exceed the model's reasoning spend
 : "${BIG_REPS:=12}"           # filler repeats -> ~5-6k tokens, ~20+ blocks
 : "${IDLE_WAIT_S:=45}"        # quiet window for the stability gate
