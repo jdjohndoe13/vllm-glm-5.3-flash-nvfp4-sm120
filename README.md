@@ -343,17 +343,40 @@ re-published under the same name).
   size on boot AND pinned via cudaHostRegister** (`PIN_MEMORY` = CUDA
   available → true here) — i.e. tier GiB are unpageable RAM consumed from
   the moment the engine starts (leave ~60+ GiB for OS + engine processes +
-  psm/sem files). The tier-size ceiling on this host is NOT RAM — it is the
-  NVIDIA driver's per-rank pinned page-table budget (~537–600 MB of driver
-  page tables per rank; a hard driver limit with no knob, not a RAM-size
-  limit): **512 GiB total (8 ranks × 64 GiB pinned each) is the validated
-  maximum**; 576, 640, and 800 GiB tiers all fail on all
-  8 ranks with `cudaHostRegister failed (code=2)` +
+  psm/sem files). The tier-size ceiling record with the stock single-call pinning:
+  **512 GiB was the validated maximum**; 576, 640, and 800 GiB tiers all
+  failed on all 8 ranks with `cudaHostRegister failed (code=2)` +
   `NVRM: failed to allocate page table`, independent of free RAM,
   fragmentation, or compaction (bisected 2026-09-13). Above the ceiling the
-  boot completes but leaves the tier UNPINNED (degraded). The tier region
-  is registered into every TP rank's GPU context, so the budget is charged
-  per rank. The tier file (`vllm_offload_<uuid>.mmap`) is **unlinked
+  boot completes but leaves the tier UNPINNED (degraded). Root cause
+  (verified 2026-09-15 against the driver sources — NOT a RAM, IOMMU, or
+  BAR1 limit): every `cudaHostRegister` call makes the NVIDIA RM build a
+  flat 16 B-per-4-KiB-page bookkeeping table via `kvzalloc()`
+  (`nvos_create_alloc` in open-gpu-kernel-modules,
+  https://github.com/NVIDIA/open-gpu-kernel-modules/blob/main/kernel-open/nvidia/nv.c),
+  and Linux `kvzalloc` silently rejects sizes above INT_MAX (2 GiB) —
+  capping ONE registration call at ~512 GiB of pages. Driver timeline:
+  ≤575.x unaffected, 580–610 affected (this host: 590.48.01), ≥615.71 fixed
+  upstream with a vmalloc fallback. **Fix deployed 2026-09-15: chunked
+  registration** — `pin_mmap_region` in
+  `patched-files/v1/kv_offload/cpu/gpu_worker.py` registers the tier in
+  ≤64-GiB chunks (env `VLLM_KV_OFFLOAD_REGISTER_CHUNK_GB`, default 64,
+  clamped to [64 MiB, 512 GiB] and rounded down to 2-MiB multiples;
+  800 GiB = 13 chunks), drains the sticky CUDA error and rolls back
+  earlier chunks on any chunk failure (same safe unpinned fallback as
+  before, same warning text so log greps keep working);
+  `shared_offload_region.py` `cleanup()` unwinds the chunk list in reverse
+  at teardown. Both launchers get the fix — no-docker via the `vllm-bin`
+  tree, docker via the `patched-files/manifest.txt` per-file mounts. First
+  800-GiB pinned boot verification pending as of this writing. Upstream
+  refs: exact-boundary measurement
+  https://github.com/vllm-project/vllm/issues/51080 ; chunked-registration
+  fix pattern https://github.com/vllm-project/vllm/pull/51081 ; merged
+  sglang equivalent (env `SGLANG_HICACHE_HOST_REGISTER_CHUNK_GB`)
+  https://github.com/sgl-project/sglang/pull/36798 ; per-call cap +
+  sticky-error-drain evidence https://github.com/xcena-dev/maru/pull/64 and
+  https://github.com/xcena-dev/maru/pull/65 .
+  The tier file (`vllm_offload_<uuid>.mmap`) is **unlinked
   only on graceful engine exit**:
   `docker stop` SIGKILLs the engine first, so every restart LEAKS the
   tier file (measured: 5 orphaned files = 412 GiB filled host /dev/shm to

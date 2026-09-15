@@ -302,16 +302,16 @@ class SharedOffloadRegion:
         # Prefer 2 MiB huge pages for the tier. With shmem THP enabled on
         # the host (shmem_enabled=advise, set by tune-host-for-tier.sh),
         # pages faulted after this MADV_HUGEPAGE materialize as PMD
-        # (2 MiB) folios instead of 4 KiB pages: the cudaHostRegister
-        # page walk and the NVIDIA driver's DMA page-table footprint
-        # shrink ~64x, which speeds up tier init dramatically. It does
-        # NOT raise the tier-size ceiling: that is the driver's per-rank
-        # pinned page-table budget (~537-600 MB/rank), and even 2 MiB
-        # pages hit it at >=576 GiB (cudaHostRegister code=2 / "NVRM:
-        # failed to allocate page table"). Best-effort: silently
-        # stays on 4 KiB pages when huge pages are unavailable. MUST come
-        # before the MADV_POPULATE_WRITE pre-fault below so the faults
-        # allocate huge folios.
+        # (2 MiB) folios instead of 4 KiB pages, which speeds up tier
+        # init. Verified tier-size ceiling: cudaHostRegister failure is
+        # NOT RAM/IOMMU/BAR1 bound — the RM's nvos_create_alloc()
+        # kvzallocs a 16 B-per-4-KiB-page table per call, capped at
+        # INT_MAX (~512 GiB of pages per call; drivers 580-610 affected,
+        # <=575 unaffected, >=615.71 fixed) — so pin_mmap_region now
+        # registers in chunks (default 64 GiB) to lift it. Best-effort:
+        # silently stays on 4 KiB pages when huge pages are unavailable.
+        # MUST come before the MADV_POPULATE_WRITE pre-fault below so the
+        # faults allocate huge folios.
         if self.huge_tlb:
             # hugetlbfs tier: the pages are huge by construction, so
             # madvise(MADV_HUGEPAGE) is at best a no-op on a hugetlbfs
@@ -369,6 +369,8 @@ class SharedOffloadRegion:
         self._views: list[torch.Tensor] = []
         self._canonical_offset = 0
         self.is_pinned: bool = False
+        # (ptr, size) tuples set by gpu_worker.pin_mmap_region chunked registration; unwound by cleanup().
+        self.registered_chunks: list = []
 
     def _open_hugetlb_region(self, engine_id: str) -> bool:
         """Try to back the tier with a hugetlbfs file (opt-in, default OFF).
@@ -644,14 +646,33 @@ class SharedOffloadRegion:
     def cleanup(self) -> None:
         if self.is_pinned and self._base is not None:
             if current_platform.is_cuda_alike():
-                base_ptr = self._base.data_ptr()
-                result = torch.cuda.cudart().cudaHostUnregister(base_ptr)
-                if result.value != 0:
-                    logger.warning(
-                        "cudaHostUnregister failed for rank=%d (code=%d)",
-                        self.rank,
-                        result,
-                    )
+                if self.registered_chunks:
+                    # Unwind the chunked registration in reverse order.
+                    num_chunks = len(self.registered_chunks)
+                    for i in range(num_chunks - 1, -1, -1):
+                        ptr, _ = self.registered_chunks[i]
+                        result = torch.cuda.cudart().cudaHostUnregister(ptr)
+                        if result.value != 0:
+                            logger.warning(
+                                "cudaHostUnregister failed for rank=%d "
+                                "chunk=%d/%d (code=%d)",
+                                self.rank,
+                                i + 1,
+                                num_chunks,
+                                result,
+                            )
+                else:
+                    # Legacy defensive path (chunks list empty): unregister
+                    # the whole region with a single call.
+                    base_ptr = self._base.data_ptr()
+                    result = torch.cuda.cudart().cudaHostUnregister(base_ptr)
+                    if result.value != 0:
+                        logger.warning(
+                            "cudaHostUnregister failed for rank=%d (code=%d)",
+                            self.rank,
+                            result,
+                        )
+            self.registered_chunks = []
             self.is_pinned = False
         # Release views before _base: each view holds a _base reference and a
         # direct StorageImpl reference.  Freeing views first lets both refcounts
