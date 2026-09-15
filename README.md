@@ -546,6 +546,8 @@ ever a concern.
 | boot aborts with `No available memory for the cache` / `estimated maximum model length` far below expected | `KV_CACHE_MEMORY` too small for the per-request KV charge at `MAX_MODEL_LEN` — raise it (≤ ~4.5e9 proven on 32 GB cards) or lower `MAX_MODEL_LEN`/`MAX_NUM_SEQS` |
 | answers look corrupted / U+FFFD garbage | wrong checkpoint (LibertAIDAI modelopt) — use RedHatAI compressed-tensors (vllm-project/vllm#54150) |
 | offload restores never happen (loads stay 0) | tier present but nothing evicts; check `kv_offload_store_bytes_total` grows when the GPU pool fills |
+| `docker: ... The container name "/vllm-glm-5.3-flash-nvfp4" is already in use by container ...` (observed 2026-09-15) | FIXED in both launchers (2026-09-15): the switch guard now retries the removal up to 10 times, 5 s apart (~50 s total), printing per-attempt progress — `rm -f` can fail transiently right after a stop ("removal already in progress") and the old code swallowed that. If the launcher ever exits with its own `still in use after 10 remove attempts` error instead, the docker daemon is wedged: `docker rm -f vllm-glm-5.3-flash-nvfp4` manually and retry |
+| post-restart cache verification (mirror patch, 2026-09-15) | `curl -s localhost:1025/metrics \| grep -a "kv_offload_mirrored_keys\|kv_offload_touch_keys"` — both counters registered = patched code live (values stay 0 until tier restores/churn occur); real-session KV-LOOKUP lines should show tier `hit>0` persisting across turns |
 
 ## 11. Reference upstream items
 

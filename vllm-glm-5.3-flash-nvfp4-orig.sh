@@ -126,6 +126,30 @@ fi
 docker container stop "$CONTAINER_NAME" 2>/dev/null || true
 docker container rm -f "$CONTAINER_NAME" 2>/dev/null || true
 
+# name-conflict guard (added 2026-09-15, extended same day per user request):
+# `rm -f` right after a stop can fail transiently ("removal of container ...
+# is already in progress") — the old code swallowed that with `|| true`, so
+# the later `docker run` aborted with 'The container name "/..." is already
+# in use by container ...'. Poll until the name is genuinely free: up to 10
+# attempts, 5 s apart, each attempt printing progress (so an interactive
+# caller can see it working instead of a silent pause) and retrying the
+# removal. If the name is STILL occupied after ~50 s, fail loudly instead
+# of with the cryptic docker conflict.
+_name_free=0
+for _attempt in 1 2 3 4 5 6 7 8 9 10; do
+  _existing=$(docker ps -a --filter "name=^/${CONTAINER_NAME}$" --format '{{.ID}}' 2>/dev/null || true)
+  if [ -z "$_existing" ]; then _name_free=1; break; fi
+  echo "[launcher] attempt ${_attempt}/10: container name '$CONTAINER_NAME' still in use (${_existing}) — removing and waiting 5 s ..."
+  docker container rm -f "$_existing" >/dev/null 2>&1 || true
+  sleep 5
+done
+if [ "$_name_free" -ne 1 ]; then
+  echo "ERROR: container name '$CONTAINER_NAME' still in use after 10" \
+       "remove attempts over ~50 s — docker daemon may be wedged or another" \
+       "engine is holding the name. NOT starting a duplicate." >&2
+  exit 1
+fi
+
 docker run --restart=unless-stopped --gpus all --ipc=host --shm-size 64g -p "$PORT:$PORT" \
   --name "$CONTAINER_NAME" \
   --cap-add SYS_NICE \
