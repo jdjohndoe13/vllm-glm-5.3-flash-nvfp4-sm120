@@ -5,10 +5,10 @@
 #
 # This is the primary launcher. Config verified on testcomp2 on 2026-09-12
 # (tier ceiling re-validated 2026-09-13):
-#   * mounts the 7 PATCHED FILES from patched-files/ over the image's stock
+#   * mounts the 14 PATCHED FILES from patched-files/ over the image's stock
 #     vllm package (per-file mounts; proven byte-identical to the original
 #     full-tree mount: a full diff of the tree vs the image's stock package
-#     showed exactly these 7 files differ — see patched-files/manifest.txt
+#     showed exactly these files differ — see patched-files/manifest.txt
 #     and patches/README.md)
 #   * KV offloading: OffloadingConnector, kv_both, CPU_TIER_GB CPU budget
 #     (default 512 GiB — the validated ceiling; see EDITABLE SETTINGS)

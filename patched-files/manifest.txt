@@ -11,3 +11,4 @@ v1/kv_offload/cpu/common.py
 v1/kv_offload/cpu/spec.py
 v1/core/kv_cache_coordinator.py
 distributed/kv_transfer/kv_connector/v1/offloading/metrics.py
+model_executor/layers/fused_moe/runner/moe_runner.py

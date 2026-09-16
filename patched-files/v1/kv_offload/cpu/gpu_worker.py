@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+import ctypes
 import functools
+import json
 import os
+import re
+import threading
 import time
 from collections import deque
 from collections.abc import Sequence
@@ -35,6 +39,542 @@ from vllm.v1.kv_offload.cpu.swap_blocks_triton import (
 
 logger = init_logger(__name__)
 
+# ---------------------------------------------------------------------------
+# NOTE (kit patch, 2026-09-16 — crash-3/#4 instrumented swap path): every
+# swap_blocks_batch submission is capped to _SWAP_CAP descriptors (env
+# VLLM_KV_OFFLOAD_SWAP_BATCH_CAP, legacy VLLM_KV_OFFLOAD_MAX_BATCH_
+# DESCRIPTORS, default 32; 1 = per-entry everywhere). Rationale: on RTX 5090
+# + driver 590.48.01 the deployed _C_stable_libtorch.abi3.so batch op dies
+# with "cuMemcpyBatchAsync failed at index N with error 1"
+# (CUDA_ERROR_INVALID_VALUE) on some GPU->CPU preemption/eviction-flush
+# batches (crash #3: index 34 of a 560-entry batch; crash #4: index 7 INSIDE
+# a <=32 chunk — batch size alone is not the discriminator; small <=7-entry
+# evictions and 560-entry CPU->GPU loads always passed). Upstream added an
+# in-op env knob (same env name) in a LATER build than ours, so we own the
+# chunk loop here. On any driver rejection we: probe the failed chunk
+# item-by-item with the same op at n=1 to identify the first defective
+# descriptor, log everything to /tmp/vllm_swap_diag/log_swap_T<pid>.jsonl
+# (env VLLM_KV_OFFLOAD_DIAG_DIR), then complete the failed span per-entry
+# via libcuda.so.1 cuMemcpyAsync on the CURRENT stream (the driver infers
+# HtoD/DtoH from pointer kinds — the same fallback class the op itself uses
+# and what vllm#49276 verified bit-exact). After the first recovery this
+# handler goes sticky-per-entry: every later call is submitted descriptor by
+# descriptor (~3 ms extra per 560-item flush, bandwidth still PCIe-bound) so
+# the engine SURVIVES flushes while diagnostics accumulate. If a per-entry
+# copy itself fails, the defect is item-level data: the exact
+# pointers/size/stream are logged and the exception re-raised.
+# NOTE (kit patch, 2026-09-16 #2): crash #5 reproduced IDENTICALLY on
+# driver 615.71.09 (same n=78 flush, first chunk, item 6, probe-at-n=1 and
+# per-entry cuMemcpyAsync all rejected with error 1) — confirms the defect
+# is item-level data, not the driver/batch path. Stock (unpatched) -orig
+# died the same way. The poison descriptor MOVES with the job (item 56/78
+# boot 062647, item 6/78 boot 072727; size 542720 vs 671744). /tmp is
+# tmpfs and was wiped by reboots twice, so the default diag dir moved to
+# persistent storage; handler geometry is now also mirrored to the engine
+# log, and the failing item is classified at failure time (in-tier?
+# in-range? pointer mem-type?) so the next boot yields the root cause
+# without relying on JSONL surviving.
+_SWAP_CAP = 32
+for _cap_env in (
+    os.environ.get("VLLM_KV_OFFLOAD_SWAP_BATCH_CAP"),
+    os.environ.get("VLLM_KV_OFFLOAD_MAX_BATCH_DESCRIPTORS"),
+):
+    if _cap_env:
+        try:
+            _cap_parsed = int(_cap_env)
+        except ValueError:
+            _cap_parsed = 0
+        if 1 <= _cap_parsed <= 1024:
+            _SWAP_CAP = _cap_parsed
+            break
+_RECOVER_RE = re.compile(r"failed at index (\d+) with error (\d+)")
+# NOTE: /tmp is tmpfs on this host — wiped by reboots, which destroyed the
+# decode data twice. Default to persistent storage; env override still wins.
+_DIAG_DIR = os.environ.get(
+    "VLLM_KV_OFFLOAD_DIAG_DIR",
+    "/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/swap_diag",
+)
+_PROBE_MAX = 48
+_CU_LIB = None
+
+
+def _get_cu_lib():
+    """Lazy libcuda handle with all signatures the diag path needs."""
+    global _CU_LIB
+    if _CU_LIB is None:
+        lib = ctypes.CDLL("libcuda.so.1")
+        lib.cuMemcpyAsync.restype = ctypes.c_int
+        lib.cuMemcpyAsync.argtypes = [
+            ctypes.c_uint64, ctypes.c_uint64, ctypes.c_size_t,
+            ctypes.c_void_p,
+        ]
+        lib.cuMemcpyDtoHAsync_v2.restype = ctypes.c_int
+        lib.cuMemcpyDtoHAsync_v2.argtypes = [
+            ctypes.c_void_p, ctypes.c_uint64, ctypes.c_size_t,
+            ctypes.c_void_p,
+        ]
+        lib.cuMemcpyHtoDAsync_v2.restype = ctypes.c_int
+        lib.cuMemcpyHtoDAsync_v2.argtypes = [
+            ctypes.c_void_p, ctypes.c_uint64, ctypes.c_size_t,
+            ctypes.c_void_p,
+        ]
+        lib.cuPointerGetAttribute.restype = ctypes.c_int
+        lib.cuPointerGetAttribute.argtypes = [
+            ctypes.c_void_p, ctypes.c_int, ctypes.c_uint64,
+        ]
+        lib.cuStreamSynchronize.restype = ctypes.c_int
+        lib.cuStreamSynchronize.argtypes = [ctypes.c_void_p]
+        _CU_LIB = lib
+    return _CU_LIB
+
+
+def _extent_bytes(t) -> int:
+    """True addressable span of a tier view: row-interleaved slot views are
+    STRIDED (stride(0) = material-row pitch), so numel*element_size understates
+    them by ~8x. 1-D/0-D tensors degrade to numel exactly."""
+    if t.numel() == 0:
+        return 0
+    if t.dim() <= 1:
+        return t.numel() * t.element_size()
+    stride0_b = int(t.stride(0)) * t.element_size()
+    row_b = int(t[0].numel()) * t.element_size()
+    return (int(t.shape[0]) - 1) * stride0_b + row_b
+
+
+class _SwapDiag:
+    """Cap + probe + per-entry-fallback instrumentation around the batch op.
+
+    Never lets its own diagnostics crash the worker; never trusts the
+    partially-enqueued contents of a failed batch (the failed span is
+    rewritten idempotently per-entry).
+    """
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self.sticky = False
+        self._handlers: list[dict] = []
+
+    # -- logging (best effort) -------------------------------------------
+    def _log(self, event: str, **kw) -> None:
+        try:
+            line = json.dumps(
+                {"ev": event, "t": round(time.time(), 6), **kw}) + "\n"
+            with self._lock:
+                os.makedirs(_DIAG_DIR, exist_ok=True)
+                with open(os.path.join(
+                        _DIAG_DIR,
+                        "log_swap_T%s.jsonl" % os.getpid()), "a") as fh:
+                    fh.write(line)
+        except Exception:
+            pass
+        try:
+            if event in ("batch_rejected", "probe_result",
+                         "per_entry_failed"):
+                logger.warning("swap_diag %s %s", event, kw)
+        except Exception:
+            pass
+
+    def register(self, handler) -> None:
+        """Log handler geometry once so failing items can be decoded
+        offline (event ptr - base -> byte offset -> block ids)."""
+        try:
+            info = {
+                "gpu_to_cpu": handler.gpu_to_cpu,
+                "blocks_per_chunk": handler.dst_blocks_per_chunk,
+                "src": [int(t.data_ptr()) for t in handler.src_tensors],
+                "dst": [int(t.data_ptr()) for t in handler.dst_tensors],
+                "src_nbytes": [t.numel() * t.element_size()
+                               for t in handler.src_tensors],
+                "dst_nbytes": [t.numel() * t.element_size()
+                               for t in handler.dst_tensors],
+                # Stride-aware classification fields: the tier layer views
+                # are row-interleaved STRIDED views whose true addressable
+                # span is (rows-1)*stride0 + row_bytes, NOT numel.
+                "src_extent": [_extent_bytes(t) for t in
+                               handler.src_tensors],
+                "dst_extent": [_extent_bytes(t) for t in
+                               handler.dst_tensors],
+                "src_stride0": [int(t.stride(0)) * t.element_size()
+                                for t in handler.src_tensors],
+                "dst_stride0": [int(t.stride(0)) * t.element_size()
+                                for t in handler.dst_tensors],
+                "rows": int(handler.src_tensors[0].shape[0]),
+                "row_bytes": int(handler.src_tensors[0].stride(0)),
+            }
+            self._handlers.append(info)
+            self._log("handler_init", **info)
+            # Mirror the geometry to the engine log so the decode survives
+            # even if the JSONL write path is unavailable (tmpfs, disk, etc).
+            try:
+                logger.info(
+                    "swap_diag handler_init gpu_to_cpu=%s bpc=%s rows=%s "
+                    "row_bytes=%s dst_bases=%s src_bases=%s",
+                    info["gpu_to_cpu"], info["blocks_per_chunk"],
+                    info["rows"], info["row_bytes"],
+                    [hex(b) for b in info["dst"]],
+                    [hex(b) for b in info["src"]])
+            except Exception:
+                pass
+        except Exception:
+            # NEVER swallow: a broken register() silently disables
+            # classification (in_tier=False false negative) — crash loudly
+            # at handler init instead.
+            logger.exception("swap_diag register failed")
+            raise
+
+    @staticmethod
+    def _mem_type(ptr: int) -> int:
+        """CU_MEMORYTYPE_* via cuPointerGetAttribute; 0 on any failure."""
+        try:
+            lib = _get_cu_lib()
+            val = ctypes.c_uint64(0)
+            # CU_POINTER_ATTRIBUTE_MEMORY_TYPE == 2
+            rc = lib.cuPointerGetAttribute(
+                ctypes.byref(val), 2, ctypes.c_uint64(ptr))
+            return int(val.value) if rc == 0 else 0
+        except Exception:
+            return 0
+
+    # CU_POINTER_ATTRIBUTE_RANGE_START_ADDR / _RANGE_SIZE (registered-range
+    # witnesses for a single pointer).
+    _ATTR_RANGE_START = 11
+    _ATTR_RANGE_SIZE = 12
+
+    def _probe_registration(self, cls: dict, sp: int, dp: int, sz: int,
+                            item: int, tag: str) -> dict:
+        """Witness which cudaHostRegister'd range(s) host the failing span.
+
+        If the first and the last byte of the HOST-side span report
+        DIFFERENT range start addresses, the descriptor straddles an
+        internal registration seam — which is exactly what the driver
+        rejects with CUDA_ERROR_INVALID_VALUE (crash-#7 root cause). The
+        verdict fields: split_ranges, boundary, bytes_before/bytes_past.
+        """
+        out: dict = {}
+        try:
+            host_is_dst = cls.get("dst_mt") == 1
+            hp = dp if host_is_dst else sp
+            lib = _get_cu_lib()
+            for pos, ptr in (("first", hp), ("last", hp + sz - 1)):
+                v = ctypes.c_uint64(0)
+                rc = lib.cuPointerGetAttribute(
+                    ctypes.byref(v), self._ATTR_RANGE_START,
+                    ctypes.c_uint64(ptr))
+                out[f"{pos}_rc"] = rc
+                if rc == 0:
+                    out[f"{pos}_start"] = int(v.value)
+            if ("first_start" in out and "last_start" in out):
+                out["split_ranges"] = out["first_start"] != out["last_start"]
+                if out["split_ranges"]:
+                    b = out["last_start"]
+                    out["boundary"] = b
+                    out["bytes_before_boundary"] = b - hp
+                    out["bytes_past_boundary"] = (hp + sz) - b
+        except Exception as exc:
+            out["probe_error"] = str(exc)[:200]
+        self._log("probe_registration", tag=tag, item=item,
+                  src_ptr=sp, dst_ptr=dp, size=sz, **out)
+        return out
+
+    def _split_retry(self, cls: dict, sp: int, dp: int, sz: int,
+                     boundary: int, stream: int, item: int,
+                     tag: str) -> bool:
+        """Split the rejected descriptor AT the registration seam and copy
+        both halves. Success proves the straddle cause behaviorally AND
+        completes the transfer that the batch op could not."""
+        host_is_dst = cls.get("dst_mt") == 1
+        s1 = boundary - (dp if host_is_dst else sp)
+        s2 = sz - s1
+        if s1 <= 0 or s2 <= 0:
+            self._log("split_retry", tag=tag, item=item, ok=False,
+                      reason="bad_split", s1=s1, s2=s2)
+            return False
+        self._log("split_retry_begin", tag=tag, item=item, boundary=boundary,
+                  part_a=s1, part_b=s2)
+        if host_is_dst:
+            rc1 = self._cu_memcpy(dp, sp, s1, stream)
+            rc2 = self._cu_memcpy(boundary, sp + s1, s2, stream)
+        else:
+            rc1 = self._cu_memcpy(dp, sp, s1, stream)
+            rc2 = self._cu_memcpy(dp + s1, boundary, s2, stream)
+        ok = rc1 == 0 and rc2 == 0
+        if ok:
+            self._stream_sync(stream)
+        self._log("split_retry", tag=tag, item=item, ok=ok, rc_a=rc1,
+                  rc_b=rc2, boundary=boundary)
+        return ok
+
+    def _stream_sync(self, stream: int) -> None:
+        """Make a recovered (async, hand-issued) copy durable before the
+        caller's success path proceeds."""
+        try:
+            lib = _get_cu_lib()
+            lib.cuStreamSynchronize(ctypes.c_void_p(stream))
+        except Exception:
+            pass
+
+    def _classify(self, src_ptr: int, dst_ptr: int, size: int) -> dict:
+        """Decode a poison descriptor against known handler geometry.
+
+        In-tier (store): dst inside a pinned tier view, not past its
+        stride-aware end. In-tier (load): src likewise. A descriptor that is
+        in-tier yet still rejected rules out producer index math and points
+        at the driver/registration; one that is out-of-tier is a producer
+        bug. For strided row-interleaved views we additionally decode
+        material row / layer cell / intra-row offset.
+        """
+        out = {"src_mt": self._mem_type(src_ptr),
+               "dst_mt": self._mem_type(dst_ptr)}
+        for h in self._handlers:
+            if h["gpu_to_cpu"]:
+                tier_bases = h["dst"]
+                tier_extents = h.get("dst_extent") or h["dst_nbytes"]
+                tier_strides = h.get("dst_stride0") or []
+                tier_ptr = dst_ptr
+            else:
+                tier_bases = h["src"]
+                tier_extents = h.get("src_extent") or h["src_nbytes"]
+                tier_strides = h.get("src_stride0") or []
+                tier_ptr = src_ptr
+            for k, (base, nb) in enumerate(zip(tier_bases, tier_extents)):
+                if base <= tier_ptr < base + nb:
+                    out["in_tier"] = True
+                    out["tier_base"] = base
+                    out["tier_off"] = tier_ptr - base
+                    out["tier_tail"] = base + nb - tier_ptr  # bytes to end
+                    out["fits"] = (tier_ptr - base) + size <= nb
+                    if k < len(tier_strides) and tier_strides[k] > 0:
+                        pitch = tier_strides[k]
+                        out["tier_row"] = (tier_ptr - base) // pitch
+                        out["tier_cell"] = ((tier_ptr - base) % pitch)
+                        # material rows are slot-interleaved; record both
+                        # the cell offset and the absolute row index so
+                        # seams (k*registration-chunk) can be correlated.
+                        out["tier_row_pitch"] = pitch
+                    break
+            if "in_tier" in out:
+                break
+        out.setdefault("in_tier", False)
+        return out
+
+    @staticmethod
+    def _stream_handle() -> int:
+        try:
+            return int(torch.cuda.current_stream().cuda_stream)
+        except Exception:
+            return 0
+
+    def _cu_memcpy(self, dst_ptr: int, src_ptr: int, nbytes: int,
+                   stream: int) -> int:
+        """libcuda cuMemcpyAsync; direction inferred from pointer kinds
+        (device src + registered host dst => DtoH), mirroring the op's own
+        per-copy cudaMemcpyDefault fallback."""
+        global _CU_LIB
+        if _CU_LIB is None:
+            _CU_LIB = ctypes.CDLL("libcuda.so.1")
+            _CU_LIB.cuMemcpyAsync.restype = ctypes.c_int
+            _CU_LIB.cuMemcpyAsync.argtypes = [
+                ctypes.c_uint64, ctypes.c_uint64, ctypes.c_size_t,
+                ctypes.c_void_p,
+            ]
+        return int(_CU_LIB.cuMemcpyAsync(
+            ctypes.c_uint64(dst_ptr), ctypes.c_uint64(src_ptr),
+            ctypes.c_size_t(nbytes), ctypes.c_void_p(stream)))
+
+    def _run_per_entry(self, src, dst, sizes, cnt: int, off: int,
+                       tag: str) -> None:
+        s_v, d_v, z_v = src.numpy(), dst.numpy(), sizes.numpy()
+        stream = self._stream_handle()
+        for i in range(off, cnt + off):
+            sp, dp, sz = int(s_v[i]), int(d_v[i]), int(z_v[i])
+            rc = self._cu_memcpy(dp, sp, sz, stream)
+            if rc != 0:
+                # Retry with the EXPLICIT direction API: if the driver's
+                # default-direction inference is what's broken on this
+                # pointer, an explicit DtoH/HtoD call succeeds and we log
+                # the escape hatch; if it fails too, the pointer itself is
+                # invalid to the driver (classification below pins whether
+                # it is inside the registered tier).
+                cls = self._classify(sp, dp, sz)
+                rc2 = None
+                try:
+                    lib = _get_cu_lib()
+                    if cls.get("src_mt") == 2 and cls.get("dst_mt") == 1:
+                        # device src -> host dst: explicit DtoH
+                        rc2 = int(lib.cuMemcpyDtoHAsync_v2(
+                            ctypes.c_void_p(dp), ctypes.c_uint64(sp),
+                            ctypes.c_size_t(sz), ctypes.c_void_p(stream)))
+                    elif cls.get("src_mt") == 1 and cls.get("dst_mt") == 2:
+                        # host src -> device dst: explicit HtoD
+                        rc2 = int(lib.cuMemcpyHtoDAsync_v2(
+                            ctypes.c_void_p(dp), ctypes.c_uint64(sp),
+                            ctypes.c_size_t(sz), ctypes.c_void_p(stream)))
+                except Exception:
+                    rc2 = -1
+                if rc2 == 0:
+                    self._log("per_entry_explicit_ok", tag=tag, item=i,
+                              src_ptr=sp, dst_ptr=dp, size=sz,
+                              default_rc=rc, **cls)
+                    logger.warning(
+                        "swap_diag per_entry_explicit_ok item %d "
+                        "(default-inference rc=%s, explicit rc=0) %s",
+                        i, rc, cls)
+                    continue
+                # Registration-seam witness: does the failing span straddle
+                # an internal cudaHostRegister chunk boundary? If yes, split
+                # the copy at the seam — the root cause of crash #7 was a
+                # LEGIT descriptor crossing two registered ranges, which the
+                # driver rejects as a single copy (both directions, both
+                # driver families). Splitting is the behavioral proof AND
+                # completes the transfer. Disable only for A/B evidence
+                # runs with VLLM_KV_OFFLOAD_DIAG_SPLIT_PROBE=0.
+                pr = self._probe_registration(cls, sp, dp, sz, i, tag)
+                _split_enabled = os.environ.get(
+                    "VLLM_KV_OFFLOAD_DIAG_SPLIT_PROBE", "1") not in (
+                    "0", "false", "False")
+                if (pr.get("split_ranges") and pr.get("boundary")
+                        and _split_enabled):
+                    if self._split_retry(cls, sp, dp, sz, int(
+                            pr["boundary"]), stream, i, tag):
+                        self._log("per_entry_split_recovered", tag=tag,
+                                  item=i, src_ptr=sp, dst_ptr=dp, size=sz,
+                                  boundary=int(pr["boundary"]))
+                        logger.warning(
+                            "swap_diag per_entry_split_recovered item %d "
+                            "(straddled registration seam at %s, default "
+                            "rc=%d) ptrs=%s", i, hex(int(pr["boundary"])),
+                            rc,
+                            {k: v for k, v in cls.items()
+                             if k not in ("src_mt", "dst_mt")})
+                        continue
+                self._log("per_entry_failed", tag=tag, item=i,
+                          src_ptr=sp, dst_ptr=dp, size=sz, cu_rc=rc,
+                          cu_rc_explicit=rc2, stream=stream, **cls)
+                raise RuntimeError(
+                    "swap_diag: per-entry cuMemcpyAsync failed at item %d"
+                    " of %d (cu_rc=%d, explicit_rc=%s, class=%s, probe=%s)"
+                    % (i, cnt, rc, rc2, cls,
+                       {k: v for k, v in pr.items()
+                        if k in ("split_ranges", "boundary",
+                                 "bytes_before_boundary",
+                                 "bytes_past_boundary")}))
+        self._log("per_entry_done", tag=tag, off=off, cnt=cnt,
+                  n=int(s_v.shape[0]))
+
+    # -- the dispatcher the swap-selection sites return --------------------
+    def dispatcher(self, swapper):
+        def wrapped(src_ptrs, dst_ptrs, sizes, is_src_access_order_any):
+            n = int(src_ptrs.shape[0])
+            if self.sticky:
+                self._run_per_entry(src_ptrs, dst_ptrs, sizes, n, 0,
+                                    "sticky")
+                return
+            for off in range(0, n, _SWAP_CAP):
+                end = min(off + _SWAP_CAP, n)
+                try:
+                    swapper(
+                        src_ptrs[off:end], dst_ptrs[off:end],
+                        sizes[off:end],
+                        is_src_access_order_any=is_src_access_order_any)
+                except Exception as exc:
+                    self._recover(
+                        swapper, src_ptrs, dst_ptrs, sizes,
+                        off, end - off, is_src_access_order_any, exc)
+        return wrapped
+
+    def _dump_span(self, src, dst, sizes, off: int, cnt: int,
+                   found: int | None) -> None:
+        """Classify EVERY descriptor in the rejected chunk against the tier
+        geometry. The producer's pattern (which items are out-of-tier, how
+        the pointers/strides step) is the root-cause evidence — the poison
+        item alone is not enough."""
+        if not self._handlers:
+            self._log("span_dump", note="no_geometry", off=off, cnt=cnt)
+            return
+        s_v, d_v, z_v = src.numpy(), dst.numpy(), sizes.numpy()
+        items = []
+        for i in range(off, off + cnt):
+            sp, dp, sz = int(s_v[i]), int(d_v[i]), int(z_v[i])
+            c = self._classify(sp, dp, sz)
+            items.append({
+                "i": i, "src": hex(sp), "dst": hex(dp), "size": sz,
+                "in_tier": bool(c.get("in_tier")),
+                "dst_off": c.get("tier_off"),
+                "fits": c.get("fits"),
+                "poison": i == found,
+            })
+        self._log("span_dump", off=off, cnt=cnt, n=int(s_v.shape[0]),
+                  found=found, items=items)
+        try:
+            bad = [it["i"] for it in items if not it["in_tier"]]
+            logger.warning(
+                "swap_diag span_dump off=%d cnt=%d poison=%s "
+                "out_of_tier=%s", off, cnt, found, bad)
+        except Exception:
+            pass
+
+    def _recover(self, swapper, src, dst, sizes, off, cnt, any_attr,
+                 exc) -> None:
+        m = _RECOVER_RE.search(str(exc))
+        fail_rel = int(m.group(1)) if m else None
+        driver_err = int(m.group(2)) if m else None
+        s_v, d_v, z_v = src.numpy(), dst.numpy(), sizes.numpy()
+        self._log(
+            "batch_rejected", off=off, cnt=cnt, n=int(s_v.shape[0]),
+            cap=_SWAP_CAP, any_attr=any_attr, fail_idx_rel=fail_rel,
+            fail_idx_abs=(off + fail_rel) if fail_rel is not None else None,
+            driver_err=driver_err, error=str(exc)[:300])
+        # Pristine registration witness for the known-failing item BEFORE
+        # the per-entry rewrite (later copies may already have fixed the
+        # pages, and attribute reads are pure queries, so this cheap probe
+        # adds zero mutation risk).
+        if fail_rel is not None and self._handlers:
+            hit = off + fail_rel
+            try:
+                self._probe_registration(
+                    self._classify(int(s_v[hit]), int(d_v[hit]),
+                                   int(z_v[hit])),
+                    int(s_v[hit]), int(d_v[hit]), int(z_v[hit]),
+                    hit, tag="recover_pristine")
+            except Exception as exc2:
+                self._log("probe_registration", tag="recover_pristine",
+                          item=hit, probe_error=str(exc2)[:200])
+        found = None
+        probe_note = None
+        for rel in range(min(cnt, _PROBE_MAX)):
+            i = off + rel
+            try:
+                swapper(src[i:i + 1], dst[i:i + 1], sizes[i:i + 1],
+                        is_src_access_order_any=any_attr)
+            except Exception as pe:
+                found = i
+                self._log("probe_result", found=i, src_ptr=int(s_v[i]),
+                          dst_ptr=int(d_v[i]), size=int(z_v[i]),
+                          error=str(pe)[:300])
+                break
+        if found is None and cnt > _PROBE_MAX:
+            probe_note = "probed first %d only" % _PROBE_MAX
+            self._log("probe_result", found=None, note=probe_note)
+        # Root-cause evidence: classify the whole rejected span (which
+        # items are out-of-tier, and the pointer/size pattern) BEFORE the
+        # per-entry rewrite mutates anything.
+        self._dump_span(src, dst, sizes, off, cnt, found)
+        # Failed span may be partially enqueued (batch failure is not
+        # atomic); rewrite the FULL span per-entry to be safe either way.
+        self._run_per_entry(src, dst, sizes, cnt, off, "recovered")
+        self.sticky = True
+        self._log("recovered_ok", off=off, cnt=cnt,
+                  found=found, note=probe_note,
+                  sticky_enabled=True)
+
+
+_SWAP_DIAG = _SwapDiag()
+
+
+def _capped_swap_blocks_batch(swapper):
+    """(crash-fix, 2026-09-16) cap + probe + per-entry-fallback dispatch."""
+    return _SWAP_DIAG.dispatcher(swapper)
+
 
 def _select_swap_blocks_fn(
     layer_refs_per_group: list[list[CanonicalKVCacheRef]],
@@ -43,13 +583,13 @@ def _select_swap_blocks_fn(
     """Resolve the swap_blocks function for a handler at init time."""
     # GPU->CPU is bandwidth-bound; the dedicated copy engine beats Triton.
     if gpu_to_cpu:
-        return ops.swap_blocks_batch
+        return _capped_swap_blocks_batch(ops.swap_blocks_batch)
     # Fall back to the C++ DMA path on platforms where Triton isn't usable
     # (e.g. ROCm host mappings) or where GPU kernels cannot directly
     # dereference CPU pointers (XPU lacks CUDA's unified virtual address space,
     # so the Triton kernel's tl.load(cpu_ptr) is invalid on XPU).
     if not HAS_TRITON or current_platform.is_xpu() or current_platform.is_rocm():
-        return ops.swap_blocks_batch
+        return _capped_swap_blocks_batch(ops.swap_blocks_batch)
     page_sizes = [r.page_size_bytes for g in layer_refs_per_group for r in g]
     # Triton wins only on small, 8-byte-aligned payloads.
     if (
@@ -57,7 +597,7 @@ def _select_swap_blocks_fn(
         or max(page_sizes) >= THRESHOLD_BYTES
         or any(s % 8 for s in page_sizes)
     ):
-        return ops.swap_blocks_batch
+        return _capped_swap_blocks_batch(ops.swap_blocks_batch)
     chunk = min(triton.next_power_of_2(max(page_sizes)), 8192)
     return functools.partial(swap_blocks_batch, bytes_per_chunk=chunk)
 
@@ -201,6 +741,17 @@ def pin_mmap_region(region: SharedOffloadRegion) -> None:
     fixed upstream ~615.71). Chunked registration raises the ceiling
     (vLLM PR #51081, sglang PR #36798; 750 GiB across 4 chunks verified in
     maru PR #64). Chunk size: VLLM_KV_OFFLOAD_REGISTER_CHUNK_GB (default 64).
+
+    Chunk boundaries are additionally aligned to the region's material-row
+    pitch (row stride = kv_bytes_per_block): an offload descriptor is always
+    contained in one row, so seams that land on row starts can never be
+    crossed by a descriptor. This fixes the crash-#7 class (2026-09-16):
+    cuMemcpy(Batch)Async returns CUDA_ERROR_INVALID_VALUE for a span that
+    straddles two cudaHostRegister'd ranges (verified on drivers 590.48 and
+    615.71; the ~615.71 upstream fix only lifted the page-table cap, not the
+    cross-range rejection). The decode proved the poison write started
+    376,832 bytes below the 64 GiB chunk-1/chunk-2 seam and ran 294,912
+    bytes past it.
     """
     if not current_platform.is_cuda_alike():
         logger.info(
@@ -231,6 +782,32 @@ def pin_mmap_region(region: SharedOffloadRegion) -> None:
             chunk_gb = 64
     chunk = max(64 * 1024**2, min(chunk_gb * 1024**3, 512 * 1024**3))
     chunk = (chunk // 2097152) * 2097152
+
+    # Row-align the chunk: no descriptor can then straddle a registration
+    # seam (they live inside one material row of _row_stride bytes). Only
+    # applies when the row pitch is itself a 2 MiB multiple (hugetlbfs tier
+    # geometry) and produces a sane (> 64 MiB) chunk; otherwise keep the
+    # plain 2 MiB-aligned chunk.
+    row_stride = int(getattr(region, "_row_stride", 0) or 0)
+    if row_stride > 0 and chunk > row_stride and row_stride % 2097152 == 0:
+        aligned = (chunk // row_stride) * row_stride
+        if aligned >= 64 * 1024**2:
+            logger.info(
+                "pin_mmap_region: chunk row-aligned %d -> %d bytes "
+                "(row stride %d); registration seams cannot be crossed by "
+                "offload descriptors",
+                chunk,
+                aligned,
+                row_stride,
+            )
+            chunk = aligned
+        else:
+            logger.warning(
+                "pin_mmap_region: row-aligned chunk degenerated to %d bytes "
+                "(< 64 MiB); keeping 2 MiB-aligned chunk %d",
+                aligned,
+                chunk,
+            )
 
     # One cudaHostRegister call per chunk (python-int pointer math is fine).
     n = cdiv(total, chunk)
@@ -361,6 +938,11 @@ class SingleDirectionOffloadingHandler:
         # cpu_page_size = gpu_page_size * blocks_per_chunk.
         self.src_blocks_per_chunk = 1 if self.gpu_to_cpu else blocks_per_chunk
         self.dst_blocks_per_chunk = blocks_per_chunk if self.gpu_to_cpu else 1
+        # NOTE: must run AFTER the *_blocks_per_chunk assignments above —
+        # register() reads them; calling it earlier raised AttributeError
+        # that the old bare-except swallowed, so geometry never landed and
+        # _classify() reported in_tier=False for every poison item.
+        _SWAP_DIAG.register(self)
 
         # Per (group, ref) static copy plans for the canonical layout
         self._canonical_copy_plans: list[list[CopyPlan]] | None = (

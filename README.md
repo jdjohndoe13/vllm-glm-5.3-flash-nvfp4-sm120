@@ -74,7 +74,7 @@ Image on Docker Hub: [cstechdev/vllm](https://hub.docker.com/r/cstechdev/vllm)
 
 | path | what it is |
 |---|---|
-| `patched-files/` | **The only vllm files that differ from the image's stock package** (vllm-project/vllm#54743 port + boot-fix + overlays + diagnostics instrumentation + the `VLLM_KV_OFFLOAD_MIRROR_LOCAL` mirror patch, 2026-09-15) — 12 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
+| `patched-files/` | **The only vllm files that differ from the image's stock package** (vllm-project/vllm#54743 port + boot-fix + overlays + diagnostics instrumentation + the `VLLM_KV_OFFLOAD_MIRROR_LOCAL` mirror patch, 2026-09-15 + chunked `cudaHostRegister` + MoE shared-experts state-leak fix, 2026-09-16) — 14 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
 | `vllm-glm-5.3-flash-nvfp4.sh` | **Primary launcher** — production config with KV offloading (port 1025, auto-restart, per-file mounts from `patched-files/`). |
 | `vllm-glm-5.3-flash-nvfp4-orig.sh` | Fallback launcher — same server WITHOUT KV offloading (stock image package + the 2 overlay files mounted individually). Same container name/port; the launchers guard against each other. |
 | `test.sh` | Needle-battery validation test (boots the offload launcher, 6 tests, tears down). |

@@ -28,7 +28,7 @@
 #                         dist-packages so .pth processing matches the
 #                         container's site-dir behavior exactly
 #     EXTRACTION_INFO.txt
-# The 12 files from patched-files/manifest.txt were overlaid into the
+# The 14 files from patched-files/manifest.txt were overlaid into the
 # extracted vllm package (byte-identical to the per-file bind mounts the
 # docker launcher performs; MD5-verified at extraction AND re-verified below
 # on every start).
