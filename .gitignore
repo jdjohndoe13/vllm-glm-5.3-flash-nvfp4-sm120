@@ -5,6 +5,7 @@ __pycache__/
 # run artifacts
 kvoff-server.log
 kvoff-report.txt
+kvblock-report.txt
 last_kvoff_test_exit_code.txt
 *.rej
 *.orig
@@ -19,3 +20,6 @@ deployed-sources/
 
 # runtime archive (vllm-bin tarball kept out of git intentionally)
 vllm-bin-*.tar.xz
+
+# folder contaioning soak test diagnostics files
+swap_diag

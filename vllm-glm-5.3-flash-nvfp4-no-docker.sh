@@ -328,7 +328,7 @@ done
 # 5000000000 -> ~628k tokens (proven to boot WITH the tier in a
 # 196k-token, 2-concurrent-request test). If a boot with a larger pool
 # + tier fails, drop back to the default.
-: "${KV_CACHE_MEMORY:=4000000000}"
+: "${KV_CACHE_MEMORY:=3300000000}"
 
 # Names the model is advertised under in the OpenAI-compatible API,
 # space-separated (expanded unquoted in the engine command on purpose, so

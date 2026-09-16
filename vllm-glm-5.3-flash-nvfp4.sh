@@ -15,7 +15,12 @@
 #     (the tier region is allocated once in the HOST's /dev/shm —
 #     512 GiB = 8 ranks x 64 GiB pinned each — and registered into every
 #     TP rank's GPU context; that is why /dev/shm
-#     is auto-sized (SHM_SIZE) and why tier-sized RAM is charged)
+#     is auto-sized (SHM_SIZE) and why tier-sized RAM is charged).
+#     CPU_TIER_HUGETLB=1 (no-docker parity, added 2026-09-16) instead hosts
+#     the tier on a 2 MiB-page hugetlbfs file in $VLLM_KV_OFFLOAD_HUGETLB_DIR
+#     (bind-mounted read-write into the container), where the driver's
+#     per-rank pinned page-table budget shrinks ~64x so >= 800 GiB tiers
+#     pin — see EDITABLE SETTINGS + the hugetlb pre-flight below.
 #   * GPU KV pool: KV_CACHE_MEMORY-sized (default 4.0e9 -> ~502k tokens, fp8;
 #     raised 2026-09-14 from 3.3e9/414,634 tokens — captured APC-HIT evidence
 #     showed concurrent ~140k agent sessions (esp. parallel-turn bursts,
@@ -64,8 +69,10 @@ F="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # summary closes the run, so misses are never silent. An optional
 # "tier_only" scope (arg 1 of do_shm_cleanup) removes only vllm*/VLLM*
 # files — the stop subcommand uses it so a live sibling engine's torch
-# files survive. NOTE: no hugetlbfs dir here (this kit has no hugetlb
-# tier); /dev/hugepages is deliberately NOT scanned by this kit's cleanup.
+# files survive. With CPU_TIER_HUGETLB=1 the tier mmap lives in
+# $VLLM_KV_OFFLOAD_HUGETLB_DIR (default /dev/hugepages, bind-mounted into
+# the container), so the cleanup scans that dir too as soon as it exists —
+# same as the no-docker launcher's leak-cleanup (2026-09-16 parity).
 # ----------------------------------------------------------------------------
 SHM_CLEAN_CODE='
 import os
@@ -77,6 +84,9 @@ denied = 0
 denied_files = 0
 _scope = os.environ.get("SHM_CLEAN_SCOPE", "all")
 clean_dirs = ["/dev/shm"]
+_hugetlb_dir = os.environ.get("VLLM_KV_OFFLOAD_HUGETLB_DIR", "/dev/hugepages")
+if _hugetlb_dir not in clean_dirs and os.path.isdir(_hugetlb_dir):
+    clean_dirs.append(_hugetlb_dir)
 
 def _fmt(b):
     if b >= 1073741824:
@@ -255,6 +265,20 @@ done
 # lower this (or stop other big software) if the box runs other big jobs.
 : "${CPU_TIER_GB:=512}"
 
+# Opt-in hugetlbfs backing for the tier (default 0 = stock /dev/shm tier).
+# CPU_TIER_HUGETLB=1 mirrors the no-docker launcher (added 2026-09-16): the
+# tier file is created on a hugetlbfs mount (2 MiB pages) in
+# $VLLM_KV_OFFLOAD_HUGETLB_DIR (bind-mounted read-write into the container),
+# where the NVIDIA driver's per-rank pinned page-table budget (~537-600
+# MB/rank at 4 KiB pages — the >= 576 GiB "NVRM: failed to allocate page
+# table" ceiling) shrinks ~64x, so 800 GiB tiers can pin at all. The engine
+# env gets VLLM_KV_OFFLOAD_TIER_HUGETLB=1; any hugetlb failure at boot
+# falls back loudly to the stock /dev/shm tier (where 576+ GiB still fails).
+: "${CPU_TIER_HUGETLB:=0}"
+# hugetlbfs mount for the tier (used by the engine patch; exported so the
+# leak-cleanup wipe covers it too, and bind-mounted into the container).
+: "${VLLM_KV_OFFLOAD_HUGETLB_DIR:=/dev/hugepages}"
+
 # Container --shm-size flag (GiB). NOTE: with --ipc=host Docker IGNORES this
 # flag — the engine shares the HOST's /dev/shm (host default: half of RAM,
 # ~504 GiB here, shared with every other --ipc=host container). This only
@@ -376,7 +400,14 @@ do_shm_cleanup
 
 # tmpfs /dev/shm capacity is a MOUNT OPTION (default: half of RAM), not a
 # hardware limit — raise it automatically when the tier needs more.
-SHM_NEED=$(( CPU_TIER_BYTES + 16 * 1073741824 ))  # tier + torch psm/sem headroom
+# With CPU_TIER_HUGETLB=1 the tier file lives on the hugetlbfs mount instead
+# of /dev/shm: only torch's psm/sem files need host shm there.
+if [ "$CPU_TIER_HUGETLB" = "1" ]; then
+  SHM_TIER_BYTES=$(( 8 * 1073741824 ))
+else
+  SHM_TIER_BYTES=$CPU_TIER_BYTES
+fi
+SHM_NEED=$(( SHM_TIER_BYTES + 16 * 1073741824 ))  # tier + torch psm/sem headroom
 SHM_TOTAL=$(df -B1 --output=size /dev/shm 2>/dev/null | tail -1)
 if [ -n "$SHM_TOTAL" ] && [ "$SHM_TOTAL" -lt "$SHM_NEED" ]; then
   NEED_G=$(( (SHM_NEED + 1073741823) / 1073741824 ))
@@ -391,9 +422,13 @@ fi
 
 # Hard pre-flight gate: the tier mmap needs its full size FREE in host
 # /dev/shm, plus headroom for torch's TP-rank shared-memory files.
+# With CPU_TIER_HUGETLB=1 the tier lives on hugetlbfs instead (8 GiB +
+# headroom gate — the full CPU_TIER_BYTES are charged to the hugepages
+# pool, checked right below), NOT the full size in /dev/shm.
 SHM_AVAIL=$(df -B1 --output=avail /dev/shm 2>/dev/null | tail -1)
 SHM_HEADROOM=$(( 4 * 1073741824 ))
-if [ -n "$SHM_AVAIL" ] && [ "$SHM_AVAIL" -lt $(( CPU_TIER_BYTES + SHM_HEADROOM )) ]; then
+SHM_GATE_NEED=$(( SHM_TIER_BYTES + SHM_HEADROOM ))
+if [ -n "$SHM_AVAIL" ] && [ "$SHM_AVAIL" -lt "$SHM_GATE_NEED" ]; then
   if [ -n "$SHM_TOTAL" ] && [ "$SHM_TOTAL" -lt "$SHM_NEED" ]; then
     NEED_G=$(( (SHM_NEED + 1073741823) / 1073741824 ))
     echo "ERROR: /dev/shm is only $(( SHM_TOTAL / 1073741824 )) GiB total and the automatic remount failed (no passwordless sudo?). Run as root:" >&2
@@ -401,14 +436,46 @@ if [ -n "$SHM_AVAIL" ] && [ "$SHM_AVAIL" -lt $(( CPU_TIER_BYTES + SHM_HEADROOM )
     echo "       For persistence across reboots, add to /etc/fstab:" >&2
     echo "         tmpfs /dev/shm tmpfs rw,nosuid,nodev,size=${NEED_G}G 0 0" >&2
   else
-    echo "ERROR: /dev/shm has only $(( SHM_AVAIL / 1073741824 )) GiB free; the ${CPU_TIER_GB} GiB" >&2
-    echo "       offload tier needs $(( (CPU_TIER_BYTES + SHM_HEADROOM) / 1073741824 )) GiB. Lower CPU_TIER_GB, or free host" >&2
+    echo "ERROR: /dev/shm has only $(( SHM_AVAIL / 1073741824 )) GiB free; this config" >&2
+    echo "       needs $(( (SHM_GATE_NEED + 1073741823) / 1073741824 )) GiB there (CPU_TIER_GB=${CPU_TIER_GB} CPU_TIER_HUGETLB=${CPU_TIER_HUGETLB}). Lower CPU_TIER_GB, or free host" >&2
     echo "       shared memory with:  sudo rm -f /dev/shm/vllm_offload_*.mmap   (leaked tier files)" >&2
     df -h /dev/shm >&2
   fi
   exit 1
 fi
-echo "KV offload tier: ${CPU_TIER_GB} GiB (${CPU_TIER_BYTES} bytes) — /dev/shm has $(( SHM_AVAIL / 1073741824 )) GiB free"
+if [ "$CPU_TIER_HUGETLB" = "1" ]; then
+  echo "KV offload tier: ${CPU_TIER_GB} GiB (${CPU_TIER_BYTES} bytes) on hugetlbfs (${VLLM_KV_OFFLOAD_HUGETLB_DIR}) — /dev/shm has $(( SHM_AVAIL / 1073741824 )) GiB free (torch psm/sem only)"
+else
+  echo "KV offload tier: ${CPU_TIER_GB} GiB (${CPU_TIER_BYTES} bytes) — /dev/shm has $(( SHM_AVAIL / 1073741824 )) GiB free"
+fi
+
+# ----------------------------------------------------------------------------
+# Hugepages pool sanity + container wiring (hugetlb mode only, PARITY with
+# the no-docker launcher). The engine creates vllm_offload_*.mmap itself in
+# $VLLM_KV_OFFLOAD_HUGETLB_DIR and falls back loudly to the /dev/shm tier
+# when hugetlb cannot back CPU_TIER_BYTES — warn early here instead of
+# dying mid-boot. Read-only pool check (the pool is reserved host-wide, NOT
+# by this launcher); then bind-mount the dir read-write and feed the engine
+# patch its two env vars via docker -v/-e.
+# ----------------------------------------------------------------------------
+HUGETLB_ARGS=()
+if [ "$CPU_TIER_HUGETLB" = "1" ]; then
+  if [ ! -d "$VLLM_KV_OFFLOAD_HUGETLB_DIR" ]; then
+    echo "ERROR: CPU_TIER_HUGETLB=1 but '$VLLM_KV_OFFLOAD_HUGETLB_DIR' does not exist on the host." >&2
+    exit 1
+  fi
+  _HP_FREE=$(awk '/^HugePages_Free:/ {print $2}' /proc/meminfo 2>/dev/null || true)
+  _HP_SIZE_KB=$(awk '/^Hugepagesize:/ {print $2}' /proc/meminfo 2>/dev/null || true)
+  if [ -z "$_HP_FREE" ] || [ -z "$_HP_SIZE_KB" ]; then
+    echo "WARNING: /proc/meminfo has no HugePages info — cannot pre-check the hugepages pool; relying on the engine's loud hugetlb fallback." >&2
+  elif [ "$(( _HP_FREE * _HP_SIZE_KB * 1024 ))" -lt "$CPU_TIER_BYTES" ]; then
+    echo "WARNING: hugepages pool has only $(( (_HP_FREE * _HP_SIZE_KB * 1024 + 1073741823) / 1073741824 )) GiB free (< tier ${CPU_TIER_GB} GiB)" >&2
+    echo "         — engine still boots, but falls back loudly to the /dev/shm tier." >&2
+  fi
+  HUGETLB_ARGS+=( -v "$VLLM_KV_OFFLOAD_HUGETLB_DIR":"$VLLM_KV_OFFLOAD_HUGETLB_DIR" \
+                  -e VLLM_KV_OFFLOAD_TIER_HUGETLB=1 \
+                  -e VLLM_KV_OFFLOAD_HUGETLB_DIR="$VLLM_KV_OFFLOAD_HUGETLB_DIR" )
+fi
 
 # Host tuning for the tier (best-effort; skipped with a warning when no
 # passwordless sudo): a synchronous memory compaction before launch
@@ -433,6 +500,7 @@ docker run --restart=unless-stopped --gpus all --ipc=host --shm-size "${SHM_SIZE
   -e DG_JIT_CACHE_DIR=/root/.cache/deep_gemm \
   -e TRITON_CACHE_DIR=/root/.cache/triton \
   -e TORCHINDUCTOR_CACHE_DIR=/root/.cache/torchinductor \
+  ${HUGETLB_ARGS[@]+"${HUGETLB_ARGS[@]}"} \
   "$IMAGE_ID" "$MODEL_ID" \
   --served-model-name $SERVED_MODEL_NAMES \
   --host 0.0.0.0 --port "$PORT" \
