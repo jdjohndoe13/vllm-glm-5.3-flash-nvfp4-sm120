@@ -571,6 +571,7 @@ ever a concern.
 | container dies at boot, GPUs busy | another LLM process holds VRAM: `nvidia-smi --query-compute-apps=pid --format=csv` and stop it |
 | port 1025 in use | previous container alive: `docker rm -f vllm-glm-5.3-flash-nvfp4` |
 | boot aborts with `No available memory for the cache` / `estimated maximum model length` far below expected | `KV_CACHE_MEMORY` too small for the per-request KV charge at `MAX_MODEL_LEN` — raise it (≤ ~4.5e9 proven on 32 GB cards) or lower `MAX_MODEL_LEN`/`MAX_NUM_SEQS` |
+| engine healthy at boot, then runtime CUDA OOM + `WorkerProc hit an exception` a few minutes after first big prompt, all ranks die | the OPPOSITE sign of the row above: activation headroom too tight for `MAX_MODEL_LEN` × MTP — at 262144 + MTP-3 on 32 GB cards keep `KV_CACHE_MEMORY` ≤ 2.6e9 (2026-09-17: 2.7-2.9e9 OOM ~6 min after ready on ~166-169k cached replays; §12.3) |
 | answers look corrupted / U+FFFD garbage | wrong checkpoint (LibertAIDAI modelopt) — use RedHatAI compressed-tensors (vllm-project/vllm#54150) |
 | offload restores never happen (loads stay 0) | tier present but nothing evicts; check `kv_offload_store_bytes_total` grows when the GPU pool fills |
 | `docker: ... The container name "/vllm-glm-5.3-flash-nvfp4" is already in use by container ...` (observed 2026-09-15) | FIXED in both launchers (2026-09-15): the switch guard now retries the removal up to 10 times, 5 s apart (~50 s total), printing per-attempt progress — `rm -f` can fail transiently right after a stop ("removal already in progress") and the old code swallowed that. If the launcher ever exits with its own `still in use after 10 remove attempts` error instead, the docker daemon is wedged: `docker rm -f vllm-glm-5.3-flash-nvfp4` manually and retry |
@@ -678,6 +679,28 @@ SPEC_TOKENS=4 bash vllm-glm-5.3-flash-nvfp4-mtp.sh  # depth 4 (valid: 1..6)
   slots + draft CUDA graphs); the MTP launchers keep the 3.3e9 default
   (~414k tokens), which boots clean. The non-MTP docker launcher keeps
   4.0e9.
+- VRAM note (2026-09-17 evening, MTP no-docker twin): raising
+  `MAX_MODEL_LEN` 200000 → 262144 shifts the safe KV ceiling DOWN. The
+  failure mode is not a boot abort — the engine comes up clean, then the
+  first big cached-replay prompt (~165-169k tokens) OOMs ~5-8 min after
+  ready: `CUDACachingAllocator` warnings (148-166 MB allocations, free
+  decaying to ~76-80 MB), `WorkerProc hit an exception` in all 8 ranks,
+  total teardown. Observed on this host: 2.9e9 / 2.8e9 / 2.7e9 all died
+  at exactly that point (22:08 / 22:18 / 22:26 boots); 2.6e9 (22:36
+  boot) survived the same replays with zero 500s; the noon proven
+  200000 + 3.0e9 combo ran 10 h stable. Mechanism: per-step
+  activation/workspace (incl. per-request draft KV slots) scales with
+  `MAX_MODEL_LEN` (~+31% at 262144) and squeezes the headroom that used
+  to cover these peaks — the pool size itself is fixed by
+  `KV_CACHE_MEMORY`, so the fight is over slack, not pool size.
+  32-GB-card rule of thumb with MTP-3: `KV_CACHE_MEMORY` ≤ 2.6e9 at
+  `MAX_MODEL_LEN=262144`; 3.0e9 is proven only at `MAX_MODEL_LEN=
+  200000`. The 2.6e9 margin is thin (~+100 MB vs the fatal 2.7e9 free
+  state) — if prompts grow well past ~170k, expect to lower KV further
+  or drop max-model-len. (A reported "3e9 + 262144" crash left no engine
+  log — nothing booted between 22:06:32 and 22:08:15, consistent with a
+  pre-log/port-bind failure — so that combination is untested, not
+  failed, on this kit.)
 
 ### 12.4 no-docker launcher parity
 
@@ -693,7 +716,8 @@ as the docker MTP launcher (§12.3): `--speculative-config
 '{"cudagraph_capture_sizes":[1,2,3,4]}'`, guard 1..6, default 3. All
 no-docker knobs apply unchanged (`CPU_TIER_GB`, `CPU_TIER_HUGETLB`,
 `EVICTION_TOMBSTONES`, `KV_CACHE_MEMORY` default 3.3e9 — the MTP-validated
-pool; 4.0e9 CUDA-OOMs with MTP-3).
+pool; 4.0e9 CUDA-OOMs with MTP-3; at `MAX_MODEL_LEN=262144` even 2.7-2.9e9
+OOMs at runtime (§12.3 2026-09-17 note) — the live profile runs 2.6e9).
 
 Single tenant like the no-docker launcher: it releases nothing and stops
 nothing — while the docker container **or** the no-docker engine holds port
