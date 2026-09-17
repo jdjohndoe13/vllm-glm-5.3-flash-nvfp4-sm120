@@ -26,3 +26,5 @@ vllm-bin
 # folder contaioning soak test diagnostics files
 swap_diag
 
+/logs/*
+/vllm-no-docker.pid
