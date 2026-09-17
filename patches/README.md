@@ -282,6 +282,34 @@ territory). Handler geometry is logged at init (`handler_init`) so a
     wall includes scheduling + prefix hashing + first token).
   * KV bytes/token: 61,441 B = 858.97e9-tier / 13,653 blocks / 1024
     tokens per block (block_size="1024" per cache_config_info).
-  * soak probes for reference: iter-0 M1G growth restore 1.95 s, iter-1
-    M1 GPU-hit 0.56 s (the 21.45 s iter-0 M1 is cold prefill compute,
-    NOT a restore).
+   * soak probes for reference: iter-0 M1G growth restore 1.95 s, iter-1
+   M1 GPU-hit 0.56 s (the 21.45 s iter-0 M1 is cold prefill compute,
+   NOT a restore).
+
+## 2026-09-17 — log-noise demotion + MoE count-kernel warmup
+
+1. `offloading/scheduler.py` — the three `KV-LOOKUP abort` log lines demoted
+   INFO→debug. These are the per-request offload-tier MISS signal (the
+   connector "abandons" the tier lookup and the request proceeds on the
+   GPU radix cache; nothing is aborted/dropped). At production volume they
+   were 23,707 of 70,066 log lines for boot 121436. `KV-LOOKUP hit` and
+   `KV-LOOKUP defer` remain INFO.
+2. `model_executor/warmup/deepseek_v4_mhc_warmup.py` — folded in
+   `_warmup_moe_expert_count_kernels(model)`, called right after the
+   model-type gate inside `deepseek_v4_mhc_warmup`, wrapped in
+   try/except (never blocks startup). It pre-compiles Triton
+   `fused_moe._count_expert_num_tokens` specs at boot — BLOCK_SIZE
+   buckets 128/256/512/1024 × divisibility variant (numel % 16 == 0 or
+   not — the tt.divisibility hint set differs) × expert_map None/present
+   = 10 launches on id-shape (1,numel) int32 zeros, grid 16. Rationale:
+   the kernel is only reached on the eager fused-MoE path (outside
+   cudagraph capture sizes), so boot dummies never compile it and the
+   first real chunked prefill pays the JIT latency spike per boot
+   (observed 15:17 on all 8 ranks of boot 121436; jit_monitor hint:
+   "consider extending warmup to cover this shape/config"). No launcher
+   or manifest change: the file is already overlaid (manifest entry 6)
+   and `kernel_warmup()` calls `deepseek_v4_mhc_warmup` unconditionally
+   ahead of the `enable_jit_warmup` gate.
+   Effective at next engine boot; verified by
+   `Warmup: fused_moe _count_expert_num_tokens Triton specs compiled.`
+   in the boot log and by the absence of the 15:17-style JIT warnings.

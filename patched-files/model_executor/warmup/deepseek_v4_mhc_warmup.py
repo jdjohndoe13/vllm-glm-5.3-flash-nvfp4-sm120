@@ -232,6 +232,38 @@ def _warmup_layer_mhc_glm(
             )
 
 
+def _warmup_moe_expert_count_kernels(model: torch.nn.Module) -> None:
+    """Pre-compile fused_moe's Triton _count_expert_num_tokens specs.
+
+    The counting kernel is only reached on the eager fused-MoE path (outside
+    the CUDA-graph capture sizes), so boot-time dummy runs never compile it
+    and the first real chunked prefill pays a JIT spike per boot (observed
+    2026-09-17 15:17 synchronously on all 8 ranks). Warm every BLOCK_SIZE
+    bucket the wrapper can select (next_power_of_2(min(numel, 1024))), in
+    both divisibility variants (tt.divisibility hint depends on numel % 16),
+    with and without an expert map, so no serving-time token count can land
+    on a cold key. num_experts=16 (divisible by 16) keeps the div-16 layout
+    hint set of the real invocation; the grid size does not enter the
+    Triton compile key otherwise.
+    """
+    from vllm.model_executor.layers.fused_moe.utils import (
+        count_expert_num_tokens,
+    )
+
+    device = next(model.parameters()).device
+    num_experts = 16
+    ids_full = torch.zeros((1, 1024), dtype=torch.int32, device=device)
+    expert_map = torch.arange(num_experts, dtype=torch.int32, device=device)
+    for bucket in (128, 256, 512, 1024):
+        for numel in (bucket, bucket - 8):
+            ids = ids_full[:, :numel]
+            count_expert_num_tokens(ids, num_experts, None)
+            count_expert_num_tokens(ids, num_experts, expert_map)
+    logger.info(
+        "Warmup: fused_moe _count_expert_num_tokens Triton specs compiled."
+    )
+
+
 @instrument(span_name="DeepSeek V4 mHC warmup")
 def deepseek_v4_mhc_warmup(
     model: torch.nn.Module,
@@ -246,6 +278,14 @@ def deepseek_v4_mhc_warmup(
     model_type = getattr(config, "model_type", None) if config is not None else None
     if model_type is not None and model_type not in ("deepseek_v4", "glm5_next", "glm5_next_text"):
         return
+
+    try:
+        _warmup_moe_expert_count_kernels(model)
+    except Exception:
+        logger.exception(
+            "MoE count-expert Triton warmup failed; continuing startup "
+            "(first chunked prefill may pay JIT cost)."
+        )
 
     layer = _find_first_mhc_layer(model)
     if layer is None:

@@ -870,7 +870,7 @@ class OffloadingConnectorScheduler:
                 )
                 if max_hit_size_tokens - num_computed_tokens < tokens_per_chunk:
                     # We can only load less than a chunk, so skip.
-                    logger.info("KV-LOOKUP abort req=%s local=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, " ".join(trace))
+                    logger.debug("KV-LOOKUP abort req=%s local=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, " ".join(trace))
                     return 0
 
                 sliding_window_size_in_chunks = (
@@ -925,7 +925,7 @@ class OffloadingConnectorScheduler:
                     f" max_hit={max_hit_size_tokens}"
                 )
                 if num_hit_chunks == 0:
-                    logger.info("KV-LOOKUP abort req=%s local=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, " ".join(trace))
+                    logger.debug("KV-LOOKUP abort req=%s local=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, " ".join(trace))
                     return 0
 
                 if num_hit_chunks is None:
@@ -943,7 +943,7 @@ class OffloadingConnectorScheduler:
                 new_num_hit_tokens = max_hit_size_tokens - num_computed_tokens
                 if new_num_hit_tokens < tokens_per_chunk:
                     # We can only load less than a chunk, so skip.
-                    logger.info("KV-LOOKUP abort req=%s local=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, " ".join(trace))
+                    logger.debug("KV-LOOKUP abort req=%s local=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, " ".join(trace))
                     return 0
 
                 if new_num_hit_tokens < num_hit_tokens:
