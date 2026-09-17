@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 # ============================================================================
-# GLM-5.3-Flash-NVFP4 on vLLM — 8x RTX 5090 (sm_120) — PRODUCTION CONFIG
-# with KV CPU offloading enabled (CPU_TIER_GB, default 512 GiB).
+# GLM-5.3-Flash-NVFP4 on vLLM — 8x RTX 5090 (sm_120) — MTP VARIANT
+# with KV CPU offloading enabled (CPU_TIER_GB, default 512 GiB) and
+# NEXTN MTP speculative decoding at SPEC_TOKENS depth (default 3).
 #
-# This is the primary launcher. Config verified on testcomp2 on 2026-09-12
-# (tier ceiling re-validated 2026-09-13):
+# Byte-identical to vllm-glm-5.3-flash-nvfp4.sh (2026-09-16 build with the
+# CPU_TIER_HUGETLB parity work), opening banner aside, except:
+#   + --speculative-config '{"method":"mtp","num_speculative_tokens":N}'
+#   + --compilation-config '{"cudagraph_capture_sizes":[1,2,3,4]}'
+# Same container name + port as the production launcher, so starting this
+# stops the production engine automatically (single-tenant swap). All the
+# production launcher's notes below still apply to THIS file:
+#
+# Production launcher provenance. Config verified on testcomp2 on
+# 2026-09-12 (tier ceiling re-validated 2026-09-13):
 #   * mounts the 14 PATCHED FILES from patched-files/ over the image's stock
 #     vllm package (per-file mounts; proven byte-identical to the original
 #     full-tree mount: a full diff of the tree vs the image's stock package
@@ -212,6 +221,18 @@ for arg in "$@"; do
   esac
 done
 
+# MTP depth sanity (MTP variant): positive integer, 1..6.
+case "${SPEC_TOKENS:-3}" in
+  ''|*[!0-9]*)
+    echo "ERROR: SPEC_TOKENS must be a positive integer (got '${SPEC_TOKENS-}')." >&2
+    exit 1 ;;
+esac
+if [ "${SPEC_TOKENS:-3}" -lt 1 ] || [ "${SPEC_TOKENS:-3}" -gt 6 ]; then
+  echo "ERROR: SPEC_TOKENS=${SPEC_TOKENS-} is outside [1..6] — 3 is the default matching the" >&2
+  echo "       sglang qwen-3.8-flash-next profile; 1 = the no-gain 260910 mtp-1 profile." >&2
+  exit 1
+fi
+
 # Docker image: tag (readable name) + PINNED build (what actually runs).
 # The guard below refuses to start when the pinned ID is absent or the tag
 # points at a different build.
@@ -237,7 +258,25 @@ done
 # 5000000000 -> ~628k tokens (proven to boot WITH the tier in a
 # 196k-token, 2-concurrent-request test). If a boot with a larger pool
 # + tier fails, drop back to the default.
-: "${KV_CACHE_MEMORY:=4000000000}"
+: "${KV_CACHE_MEMORY:=3300000000}"
+
+# ---------------------------------------------------------------------------
+# MTP speculative decoding (variant-specific knob, SUBJECT of this profile):
+# SPEC_TOKENS = num_speculative_tokens — how many draft tokens the engine
+# draws from the checkpoint's single MTP head every decode step, looping it
+# EAGLE-style (single-module path in this fork: vllm/config/speculative.py
+# use_multi_module_mtp() = min(num_nextn_predict_layers, N) — 1 layer here,
+# config.json:1116, so any N stays single-module). Same mechanism as the
+# sglang qwen-3.8-flash-next profile's --speculative-num-steps 3.
+# Depth 1 caps a step at 2 tokens — measured as no gain (the
+# 260910-01-200k-mtp-1.sh profile). Default 3 = the sglang-matching number.
+# Confirm MTP engaged via the boot log's SpeculativeConfig print and
+# per-spec stats in engine-*.log once decode-time acceptance starts.
+# NOTE: MTP x OffloadingConnector (the KV CPU tier) is UNVALIDATED on this
+# stack — the first boot IS the smoke test; on failure bisect with
+# CPU_TIER_GB=0 (tier disabled) to isolate.
+# ---------------------------------------------------------------------------
+: "${SPEC_TOKENS:=3}"
 
 # Names the model is advertised under in the OpenAI-compatible API,
 # space-separated (expanded unquoted in `docker run` on purpose, so that
@@ -526,6 +565,8 @@ docker run --restart=unless-stopped --gpus all --ipc=host --shm-size "${SHM_SIZE
   --max-num-seqs "$MAX_NUM_SEQS" \
   --kv-cache-memory "$KV_CACHE_MEMORY" \
   --kv-cache-dtype fp8 \
+  --speculative-config '{"method":"mtp","num_speculative_tokens":'"$SPEC_TOKENS"'}' \
+  --compilation-config '{"cudagraph_capture_sizes":[1,2,3,4]}' \
   --kernel-config '{"enable_jit_warmup":true,"enable_cutedsl_warmup":true}' \
   --no-enable-flashinfer-autotune \
   --enable-prefix-caching \

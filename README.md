@@ -77,6 +77,10 @@ Image on Docker Hub: [cstechdev/vllm](https://hub.docker.com/r/cstechdev/vllm)
 | `patched-files/` | **The only vllm files that differ from the image's stock package** (vllm-project/vllm#54743 port + boot-fix + overlays + diagnostics instrumentation + the `VLLM_KV_OFFLOAD_MIRROR_LOCAL` mirror patch, 2026-09-15 + chunked `cudaHostRegister` + MoE shared-experts state-leak fix, 2026-09-16) — 14 files + `manifest.txt`, mounted individually over the image's vllm at runtime. Verified by full diff against the image (see section 5). |
 | `vllm-glm-5.3-flash-nvfp4.sh` | **Primary launcher** — production config with KV offloading (port 1025, auto-restart, per-file mounts from `patched-files/`). |
 | `vllm-glm-5.3-flash-nvfp4-orig.sh` | Fallback launcher — same server WITHOUT KV offloading (stock image package + the 2 overlay files mounted individually). Same container name/port; the launchers guard against each other. |
+| `vllm-glm-5.3-flash-nvfp4-no-docker.sh` | Bare-metal (no Docker) launcher running the same config against an on-disk runtime tree — the host-vs-container A/B twin (§7, §12.4). |
+| `vllm-glm-5.3-flash-nvfp4-mtp.sh` | MTP variant of the primary launcher — speculative decoding on the checkpoint's MTP head (§12.3). Same container name/port per kit convention. |
+| `vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh` | MTP variant of the bare-metal launcher — same SPEC_TOKENS deltas, engine-bound directly on the host (§12.5). |
+| `tune-host-for-hugepages.sh` | Reserves the kernel hugepage pool (`HugePages_Total = <GiB>`) for the hugetlbfs KV tier (§12.1); run by the launchers automatically with `CPU_TIER_HUGETLB=1`. |
 | `test.sh` | Needle-battery validation test (boots the offload launcher, 6 tests, tears down). |
 | `backup-image.sh` | Saves the docker image to a tarball (run BEFORE wiping the old machine). |
 | `patches/` | The raw PR diff + provenance/how-to (`patches/README.md`). |
@@ -583,3 +587,119 @@ ever a concern.
 - vllm-project/vllm#52656 — CPU offload budgets >64 GiB crash.
 - vllm-project/vllm#55035 — offloading throughput A/B (the ~33%
   decode-penalty claim for sustained churn).
+
+## 12. 2026-09-16 updates: hugetlbfs KV tier, tombstone capacity, MTP launcher
+
+Three additive changes on top of the primary configuration; all default OFF or
+behavior-preserving.
+
+### 12.1 KV tier on hugetlbfs (`CPU_TIER_HUGETLB=1`)
+
+The KV tier file can live on a hugetlbfs mount (2 MiB pages) instead of
+/dev/shm (4 KiB pages):
+
+```bash
+CPU_TIER_HUGETLB=1 CPU_TIER_GB=128 bash vllm-glm-5.3-flash-nvfp4.sh
+```
+
+- Why: the NVIDIA driver's per-rank pinned page-table budget (~537-600 MB/rank
+  at 4 KiB pages) makes ~576 GiB the hard ceiling for the /dev/shm tier on
+  this host (`NVRM: failed to allocate page table` at boot beyond it). 2 MiB
+  page-table entries are ~64x fewer, so that ceiling does not apply to the
+  hugetlbfs tier. Validated on this host at 128 GiB (tier attach +
+  eviction/restore churn) and at 800 GiB — the 2026-09-16 production
+  profile (docker launcher, full soak; the `llmglmf` alias pins exactly
+  this).
+- Mechanics: with `CPU_TIER_HUGETLB=1` the launcher (1) runs
+  `tune-host-for-hugepages.sh <CPU_TIER_GB>` to reserve the kernel pool
+  (`HugePages_Total`), (2) exports `VLLM_KV_OFFLOAD_TIER_HUGETLB=1` and
+  `VLLM_KV_OFFLOAD_HUGETLB_DIR=/dev/hugepages` for the engine, (3) skips the
+  /dev/shm remount gate. Tier file: `/dev/hugepages/vllm_offload_<uuid>.mmap`.
+  Any hugetlb boot failure falls back to the stock /dev/shm tier with a loud
+  warning. Default `CPU_TIER_HUGETLB=0` = the previous behavior exactly.
+- `tune-host-for-hugepages.sh` can be run standalone
+  (`bash tune-host-for-hugepages.sh 600` reserves a 600 GiB pool); a
+  `CPU_TIER_HUGETLB=1` boot re-runs it for its own tier size. Reserved-but-
+  unused pages sit idle — a 128 GiB tier boot against a 600 GiB pool wastes
+  nothing.
+- `llmglmf` (server-side alias, `~/.bashrc`) = `SERVED_MODEL_NAMES="glm-5.3-flash qwen-3.8-flash-next" CPU_TIER_GB=800 CPU_TIER_HUGETLB=1 bash vllm-glm-5.3-flash-nvfp4.sh`.
+
+### 12.2 Eviction-tombstone registry capacity (`EVICTION_TOMBSTONES`)
+
+The three KV-offloading launchers (primary, no-docker, MTP) now export
+`VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES` (kit default `8000000`; engine default
+`262144`). This is the patched connector's evicted-then-recomputed
+attribution registry (bounded FIFO of block hashes,
+`patched-files/v1/kv_offload/cpu/manager.py`):
+
+- When full, the oldest entries age out silently (FIFO
+  `popitem(last=False)`; `vllm:kv_offload_eviction_tombstone_overflows_total`
+  climbs) — nothing in the cache path gates on it. Capacity only buys a
+  longer horizon for the attribution gauges.
+- 8M entries ≈ 1.0-1.1 GB engine RSS (~130 B/entry) — one scheduler-side
+  registry, not per TP rank. Covers ~12 h of the 2026-09-16 VLLM-kit-soak
+  churn (~1.1k tombstones/iteration) before any overflow.
+- `0` disables the registry (attribution metrics go dark).
+- Harmless boot noise: vllm's env watchdog prints
+  `Unknown vLLM environment variable detected: VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES`
+  — the variable is patch-local and stock `envs.py` doesn't know it.
+
+### 12.3 MTP launcher (`vllm-glm-5.3-flash-nvfp4-mtp.sh`)
+
+Copy of the primary launcher that adds speculative decoding over the
+checkpoint's single MTP head (`model_mtp.safetensors`,
+`config.json: num_nextn_predict_layers = 1`):
+
+```bash
+bash vllm-glm-5.3-flash-nvfp4-mtp.sh              # SPEC_TOKENS=3 default
+SPEC_TOKENS=4 bash vllm-glm-5.3-flash-nvfp4-mtp.sh  # depth 4 (valid: 1..6)
+```
+
+- Server args: `--speculative-config '{"method":"mtp","num_speculative_tokens":<SPEC_TOKENS>}'`
+  plus `--compilation-config '{"cudagraph_capture_sizes":[1,2,3,4]}'`.
+  With one MTP head, `method "mtp"` loops the same head over
+  `num_speculative_tokens` draft steps (EAGLE-family multi-step drafting —
+  the direct analogue of sglang's `--speculative-num-steps 3` MTP profile).
+  Boot guard rejects `SPEC_TOKENS` outside 1..6.
+- Shares container name + port with the primary launcher — starting it swaps
+  engines automatically, like all kit launchers.
+- Composes with the KV tier unchanged (`CPU_TIER_GB`, `CPU_TIER_HUGETLB`,
+  `EVICTION_TOMBSTONES`); the patched connector keeps the draft model's KV
+  groups out of the offload path, so tier integrity doesn't depend on the
+  draft state.
+- Status 2026-09-16: operator boot validated — MTP 3 active with a 32 GiB
+  /dev/shm tier, zero error-class log lines; live SpecDecoding metrics:
+  mean acceptance length **2.56/4.0**, avg draft acceptance 52.1%,
+  per-position 0.69/0.50/0.38 (in sglang's MTP-3 band, 2.58). still verify
+  strictly: no accept-threshold knob exists in this fork; expect a smaller
+  relative gain than sglang's on long-burst workloads.
+- VRAM note (2026-09-16): with MTP depth 3 on these 32 GB cards,
+  `KV_CACHE_MEMORY=4000000000` **CUDA-OOMs at boot** (per-request draft KV
+  slots + draft CUDA graphs); the MTP launchers keep the 3.3e9 default
+  (~414k tokens), which boots clean. The non-MTP docker launcher keeps
+  4.0e9.
+
+### 12.4 no-docker launcher parity
+
+`vllm-glm-5.3-flash-nvfp4-no-docker.sh` (bare-metal A/B twin, §7) received
+the same `EVICTION_TOMBSTONES` default; its tier knobs (`CPU_TIER_GB`,
+`CPU_TIER_HUGETLB`) already matched the docker launchers.
+
+### 12.5 MTP no-docker twin (`vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh`)
+
+`vllm-glm-5.3-flash-nvfp4-no-docker.sh` + the identical `SPEC_TOKENS` deltas
+as the docker MTP launcher (§12.3): `--speculative-config
+'{"method":"mtp","num_speculative_tokens":N}'` + `--compilation-config
+'{"cudagraph_capture_sizes":[1,2,3,4]}'`, guard 1..6, default 3. All
+no-docker knobs apply unchanged (`CPU_TIER_GB`, `CPU_TIER_HUGETLB`,
+`EVICTION_TOMBSTONES`, `KV_CACHE_MEMORY` default 3.3e9 — the MTP-validated
+pool; 4.0e9 CUDA-OOMs with MTP-3).
+
+Single tenant like the no-docker launcher: it releases nothing and stops
+nothing — while the docker container **or** the no-docker engine holds port
+1025 it refuses to start (loud abort, deliberate: the /dev/shm pre-flight
+would otherwise touch a running engine's tier mmap). Shares the
+`vllm-no-docker.pid` pidfile + `logs/engine-*.log` with its sibling.
+
+Foreground-friendly via the `llmglmfnd` wrapper's override:
+`LLMGLMFND_LAUNCHER=$KIT/vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh bash vllm-glm-5.3-flash-nvfp4-no-docker-fg.sh`.

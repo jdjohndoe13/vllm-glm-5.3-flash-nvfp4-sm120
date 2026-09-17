@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
 # ============================================================================
-# GLM-5.3-Flash-NVFP4 on vLLM — 8x RTX 5090 (sm_120) — PRODUCTION CONFIG
-# with KV CPU offloading enabled (CPU_TIER_GB, default 512 GiB) — NO DOCKER.
+# GLM-5.3-Flash-NVFP4 on vLLM — 8x RTX 5090 (sm_120) — MTP VARIANT, NO DOCKER
+# with KV CPU offloading enabled (CPU_TIER_GB, default 512 GiB) and NEXTN MTP
+# speculative decoding at SPEC_TOKENS depth (default 3).
+#
+# Byte-identical to the no-docker launcher
+# vllm-glm-5.3-flash-nvfp4-no-docker (2026-09-16 build with the
+# eviction-tombstone capacity knob), banner + SPEC_TOKENS aside, except:
+#   + --speculative-config '{"method":"mtp","num_speculative_tokens":N}'
+#   + --compilation-config '{"cudagraph_capture_sizes":[1,2,3,4]}'
+# Same port + pidfile/logs as the no-docker launcher (single-tenant kit):
+# unlike the docker launchers, a bare-metal start REFUSES while anything
+# (docker container or the no-docker engine) holds port 1025 — it never
+# stops a running engine by itself. All of the no-docker launcher's notes
+# below apply to THIS file, so only the MTP deltas are described here.
 #
 # This is the BARE-METAL (no-docker) parity launcher, extracted from the
 # running container's filesystem. Purpose (2026-09-15): A/B-test whether the
@@ -68,18 +80,18 @@
 #     repo id is passed and vLLM downloads it
 #
 # Usage:
-#   bash vllm-glm-5.3-flash-nvfp4-no-docker.sh            (start; blocks until
+#   bash vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh            (start; blocks until
 #         the readiness gate passes, then returns — engine keeps running)
-#   bash vllm-glm-5.3-flash-nvfp4-no-docker.sh stop       (TERM the process
+#   bash vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh stop       (TERM the process
 #         group, escalate to KILL, then run the same /dev/shm wipe as docker
 #         rm would have needed)
-#   bash vllm-glm-5.3-flash-nvfp4-no-docker.sh status    (state summary, then
+#   bash vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh status    (state summary, then
 #         live-follows the newest engine log while the engine runs — Ctrl+C
 #         stops the follow, NOT the engine; when the engine is down the
 #         summary alone is printed)
-#   MAX_MODEL_LEN=150000 bash vllm-glm-5.3-flash-nvfp4-no-docker.sh
-#   bash vllm-glm-5.3-flash-nvfp4-no-docker.sh KV_CACHE_MEMORY=4000000000
-#   CPU_TIER_HUGETLB=1 CPU_TIER_GB=800 bash vllm-glm-5.3-flash-nvfp4-no-docker.sh
+#   MAX_MODEL_LEN=150000 bash vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh
+#   bash vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh KV_CACHE_MEMORY=4000000000
+#   CPU_TIER_HUGETLB=1 CPU_TIER_GB=800 bash vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh
 #         (opt-in hugetlbfs/2 MiB-page tier backing: the pre-flight reserves
 #         host hugepages via tune-host-for-hugepages.sh and the engine env
 #         gets VLLM_KV_OFFLOAD_TIER_HUGETLB=1, so the tier file is created in
@@ -192,10 +204,10 @@ do_shm_cleanup() {
 
 # ============================================================================
 # EDITABLE SETTINGS — view/edit right here, or override from the command line:
-#   MAX_MODEL_LEN=150000 bash vllm-glm-5.3-flash-nvfp4-no-docker.sh (env prefix)
-#   bash vllm-glm-5.3-flash-nvfp4-no-docker.sh MAX_MODEL_LEN=150000 (as argument)
-#   MAX_MODEL_LEN=150000 ./vllm-glm-5.3-flash-nvfp4-no-docker.sh   (direct exec)
-#   KV_CACHE_MEMORY=4000000000 bash vllm-glm-5.3-flash-nvfp4-no-docker.sh
+#   MAX_MODEL_LEN=150000 bash vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh (env prefix)
+#   bash vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh MAX_MODEL_LEN=150000 (as argument)
+#   MAX_MODEL_LEN=150000 ./vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh   (direct exec)
+#   KV_CACHE_MEMORY=4000000000 bash vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh
 # NOTE: 'bash MAX_MODEL_LEN=150000 <script>.sh' does NOT work — bash treats
 #       the assignment as the script's filename.
 # NOTE: the 'stop'/'status' subcommands do NOT honor VAR=value arguments.
@@ -231,15 +243,18 @@ cmd_stop() {
     rm -f "$PIDFILE"
     exit 1
   fi
-  echo "[launcher] stopping engine process group $PID (SIGTERM; SIGKILL after 90 s)..."
+  echo "[launcher] stopping engine process group $PID (SIGTERM; SIGKILL after 150 s)..."
   kill -TERM -- "-$PID" 2>/dev/null || kill -TERM "$PID" 2>/dev/null || true
   _gone=0
-  for _i in $(seq 1 90); do
+  for _i in $(seq 1 150); do
     if ! kill -0 -- "-$PID" 2>/dev/null; then _gone=1; break; fi
+    if [ $((_i % 15)) -eq 0 ]; then
+      echo "[launcher] ... '${_i}s elapsed, process group ${PID} still alive — rechecking every 1s, will escalate to SIGKILL at $_i s'"
+    fi
     sleep 1
   done
   if [ "$_gone" != 1 ]; then
-    echo "[launcher] group $PID still alive after 90 s — sending SIGKILL"
+    echo "[launcher] group $PID still alive after 150 s — sending SIGKILL"
     kill -KILL -- "-$PID" 2>/dev/null || kill -KILL "$PID" 2>/dev/null || true
     sleep 2
   fi
@@ -306,6 +321,18 @@ for arg in "$@"; do
   esac
 done
 
+# MTP depth sanity (MTP variant): positive integer, 1..6.
+case "${SPEC_TOKENS:-3}" in
+  ''|*[!0-9]*)
+    echo "ERROR: SPEC_TOKENS must be a positive integer (got '${SPEC_TOKENS-}')." >&2
+    exit 1 ;;
+esac
+if [ "${SPEC_TOKENS:-3}" -lt 1 ] || [ "${SPEC_TOKENS:-3}" -gt 6 ]; then
+  echo "ERROR: SPEC_TOKENS=${SPEC_TOKENS-} is outside [1..6] — 3 is the default matching the" >&2
+  echo "       sglang qwen-3.8-flash-next profile; 1 = the no-gain 260910 mtp-1 profile." >&2
+  exit 1
+fi
+
 # Extracted runtime tree (replaces the docker IMAGE/IMAGE_ID pair):
 : "${ENGINE_HOME:=/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/vllm-bin}"
 
@@ -323,12 +350,40 @@ done
 # Server sizing / behavior:
 : "${MAX_MODEL_LEN:=200000}"
 : "${MAX_NUM_SEQS:=4}"
+# Chunked-prefill scheduler budget per engine step (tokens). Halving this to
+# 1024 shrinks the fp8/fp4 mqa-logits transient workspace (~312 MiB/card at
+# 2048) that OOM-killed a 2.75e9-KV bare-metal boot on 2026-09-17 07:26, at
+# no cost to decode rate (decode batch width is MAX_NUM_SEQS; prefill
+# ingestion pays per-step overhead instead — measure with test-prefill-sweep.sh).
+: "${MAX_NUM_BATCHED_TOKENS:=1024}"
 # GPU KV cache budget in BYTES per engine (fp8 KV). Default 3.3e9 ->
 # 414,634 tokens of pool (validated). 4000000000 -> ~502k tokens;
 # 5000000000 -> ~628k tokens (proven to boot WITH the tier in a
 # 196k-token, 2-concurrent-request test). If a boot with a larger pool
 # + tier fails, drop back to the default.
-: "${KV_CACHE_MEMORY:=3300000000}"
+: "${KV_CACHE_MEMORY:=3000000000}"
+
+# ---------------------------------------------------------------------------
+# MTP speculative decoding (variant-specific knob, SUBJECT of this profile):
+# SPEC_TOKENS = num_speculative_tokens — how many draft tokens the engine
+# draws from the checkpoint's single MTP head every decode step, looping it
+# EAGLE-style (single-module path in this fork: vllm/config/speculative.py
+# use_multi_module_mtp() = min(num_nextn_predict_layers, N) — 1 layer here,
+# config.json:1116, so any N stays single-module). Same mechanism as the
+# sglang qwen-3.8-flash-next profile's --speculative-num-steps 3.
+# Depth 1 caps a step at 2 tokens — measured as no gain (the
+# 260910-01-200k-mtp-1.sh profile). Default 3 = the sglang-matching number.
+# Confirm MTP engaged via the boot log's SpeculativeConfig print and
+# per-spec stats in engine-*.log once decode-time acceptance starts.
+# VRAM note (2026-09-16): with MTP depth 3 on these 32 GB cards,
+# KV_CACHE_MEMORY=4000000000 CUDA-OOMs at boot (per-request draft KV slots
+# + draft CUDA graphs eat the headroom); the no-docker 3.3e9 default
+# (~414k tokens) boots clean under MTP-3 — keep the pool at 3.3e9 or below.
+# NOTE: MTP x OffloadingConnector (the KV CPU tier): validated 2026-09-16
+# in the docker MTP boot (MTP 3 + 32 GiB /dev/shm tier, zero errors, mean
+# acceptance length 2.56/4.0); a hugetlbfs-tier MTP boot remains untested.
+# ---------------------------------------------------------------------------
+: "${SPEC_TOKENS:=3}"
 
 # Names the model is advertised under in the OpenAI-compatible API,
 # space-separated (expanded unquoted in the engine command on purpose, so
@@ -662,6 +717,8 @@ setsid "$ENGINE_CMD" serve "$MODEL_ID" \
   --max-num-seqs "$MAX_NUM_SEQS" \
   --kv-cache-memory "$KV_CACHE_MEMORY" \
   --kv-cache-dtype fp8 \
+  --speculative-config '{"method":"mtp","num_speculative_tokens":'"$SPEC_TOKENS"'}' \
+  --compilation-config '{"cudagraph_capture_sizes":[1,2,3,4]}' \
   --kernel-config '{"enable_jit_warmup":true,"enable_cutedsl_warmup":true}' \
   --no-enable-flashinfer-autotune \
   --enable-prefix-caching \
@@ -669,7 +726,7 @@ setsid "$ENGINE_CMD" serve "$MODEL_ID" \
   --tool-call-parser glm47 \
   --reasoning-parser deepseek_r1 \
   --block-size 256 \
-  --max-num-batched-tokens 2048 \
+  --max-num-batched-tokens "$MAX_NUM_BATCHED_TOKENS" \
   --kv-cache-metrics \
   --enable-mfu-metrics \
   --enable-prompt-tokens-details \
