@@ -321,7 +321,7 @@ done
 : "${JIT_CACHE:=/mnt/data/shared/models/vllm-moet-cache}"
 
 # Server sizing / behavior:
-: "${MAX_MODEL_LEN:=200000}"
+: "${MAX_MODEL_LEN:=262144}"
 : "${MAX_NUM_SEQS:=4}"
 # GPU KV cache budget in BYTES per engine (fp8 KV). Default 3.3e9 ->
 # 414,634 tokens of pool (validated). 4000000000 -> ~502k tokens;

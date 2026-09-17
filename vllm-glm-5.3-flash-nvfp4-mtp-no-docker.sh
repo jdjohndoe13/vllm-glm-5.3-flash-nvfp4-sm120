@@ -348,7 +348,7 @@ fi
 : "${JIT_CACHE:=/mnt/data/shared/models/vllm-moet-cache}"
 
 # Server sizing / behavior:
-: "${MAX_MODEL_LEN:=200000}"
+: "${MAX_MODEL_LEN:=262144}"
 : "${MAX_NUM_SEQS:=4}"
 # Chunked-prefill scheduler budget per engine step (tokens). Halving this to
 # 1024 shrinks the fp8/fp4 mqa-logits transient workspace (~312 MiB/card at
