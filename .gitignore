@@ -20,6 +20,9 @@ deployed-sources/
 
 # runtime archive (vllm-bin tarball kept out of git intentionally)
 vllm-bin-*.tar.xz
+# the runtime itself
+vllm-bin
 
 # folder contaioning soak test diagnostics files
 swap_diag
+
