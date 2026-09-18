@@ -1030,13 +1030,18 @@ class OffloadingConnectorScheduler:
             num_computed_tokens,
         )
 
-        _rep_count = req_status.stale_hit_repeat_count
-        if (
-            num_hit_tokens
-            and _rep_count
-            and num_hit_tokens == req_status.stale_hit_last_hit_tokens
-            and num_computed_tokens == req_status.stale_hit_last_num_computed
-        ):
+        try:
+            _rep_count = req_status.stale_hit_repeat_count
+            _rep_is_repeat = bool(
+                num_hit_tokens
+                and _rep_count
+                and num_hit_tokens == req_status.stale_hit_last_hit_tokens
+                and num_computed_tokens == req_status.stale_hit_last_num_computed
+            )
+        except Exception:
+            _rep_count = 0
+            _rep_is_repeat = False
+        if _rep_is_repeat:
             _rep_total = _rep_count + 1
             if _rep_total % 64 == 0:
                 logger.info(

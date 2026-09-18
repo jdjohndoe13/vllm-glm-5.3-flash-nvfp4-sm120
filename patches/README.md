@@ -362,14 +362,16 @@ territory). Handler geometry is logged at init (`handler_init`) so a
   `/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/vllm-bin/dist-packages/vllm`,
   mirrored into `patched-files/` + `deployed-sources/`):
   - `distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py`
-    `0b9ee2989447ffb2acb1a9bbdd51c701`
+    `6e601eee63a8a1f887898a188bb2edfb`
     (env knob init at ~:608 + 5 stale-hit fields on the slots dataclass
-    at ~:361 + tail fallback guard at ~:1190; fallback log DEBUG→INFO and
-    KV-LOOKUP repeat-flood dedup logging, 2026-09-18b/c)
+    at ~:361 + tail fallback guard at ~:1190; fallback log DEBUG→INFO,
+    KV-LOOKUP repeat-flood dedup, and fail-safe try/except on the dedup
+    state, 2026-09-18b/c/d; supersedes `0b9ee2989447ffb2acb1a9bbdd51c701`)
   - `v1/core/kv_cache_coordinator.py`
-    `335c0663851b336fc9ed58b6c2c9bc5f` (change-detect APC-HIT dedup at
-    ~:854, 2026-09-18c; supersedes the conditional-INFO version
-    `e6582917f8f586e77298d1523005fc6d`)
+    `6c84290877580d539f078a861568b9b2` (change-detect APC-HIT dedup at
+    ~:854 + fail-safe try/except, 2026-09-18c/d; supersedes the crash
+    `ea1199b87c7806f1fd0179b3339b127c`, `335c0663851b336fc9ed58b6c2c9bc5f`,
+    and the conditional-INFO `e6582917f8f586e77298d1523005fc6d`)
   - `v1/kv_offload/cpu/manager.py`
     `39800ec45f1cc82fb115c87eee652c14` (CPU-TIER-EVICT → DEBUG at ~:288)
   - Pre-patch runtime backups on testcomp2:
@@ -426,3 +428,19 @@ territory). Handler geometry is logged at init (`handler_init`) so a
     Returns the last per-step INFO flood to log-on-change (07:10 jam
     class: identical `final=12288` lines at ~530/s). State lives on a
     coordinator-instance getattr field; no `__init__` patch.
+    * CRASH + HOTFIX (2026-09-18 14:32:31, boot `engine-20260918-142448`):
+      A6 v1 crashed EngineCore on the FIRST prefix-hit request —
+      `AttributeError: 'list' object has no attribute 'values'` at
+      kv_cache_coordinator.py:855 — because `hit_length_by_group` is
+      `list[int]` (init at ~:748), not a dict; the log format
+      (`%s`-printed) rendered it as a list and the dedup signature
+      wrongly assumed dict. Fix: `tuple(hit_length_by_group)` (already
+      order-stable + hashable). Verified: py_compile OK; setattr probe
+      confirms `HybridKVCacheCoordinator` (the live class, the one that
+      crashed) accepts the lazy `_last_apc_sig` (ABC `__slots__=()`
+      inherited from ABC ≠ slot-blocked; classes define no own
+      `__slots__`). Post-fix md5 `ea1199b87c7806f1fd0179b3339b127c` in
+      runtime + kit + local mirror. Lesson: the A6 v1 signature
+      assumed a dict from a `.values()` call that never existed —
+      the pre-crash log evidence (per_group=[...] brackets) was the
+      tell; py_compile cannot catch attribute-type errors.
