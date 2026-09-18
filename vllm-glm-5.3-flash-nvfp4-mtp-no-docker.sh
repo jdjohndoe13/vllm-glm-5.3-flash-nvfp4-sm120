@@ -98,8 +98,9 @@
 #         $VLLM_KV_OFFLOAD_HUGETLB_DIR (default /dev/hugepages) instead of
 #         /dev/shm. Real 2 MiB pages shrink the NVIDIA driver's per-rank
 #         pinned page-table budget ~64x, lifting the >=576 GiB
-#         "NVRM: failed to allocate page table" ceiling. Requires hugepages
-#         reserved first (sudo bash tune-host-for-hugepages.sh 800); any
+#         "NVRM: failed to allocate page table" ceiling. Hugepages are
+#         auto-reserved at start (tune-host-for-hugepages.sh; hugefree to
+#         release); any
 #         hugetlb failure falls back to the stock /dev/shm tier loudly.)
 # ============================================================================
 set -euo pipefail
@@ -414,7 +415,9 @@ fi
 # cudaHostRegister code=2) WITH VS WITHOUT THE CONTAINER.
 : "${CPU_TIER_GB:=512}"
 
-# Opt-in hugetlbfs backing for the tier (default 0 = stock /dev/shm tier).
+# Hugetlbfs backing for the tier. Default 1 (2026-09-18): the pre-flight
+# below auto-reserves the hugepages at start; CPU_TIER_HUGETLB=0 forces
+# the stock /dev/shm tier.
 # CPU_TIER_HUGETLB=1 moves the tier file to a hugetlbfs mount (2 MiB pages):
 # the NVIDIA driver's per-rank pinned page-table budget (~537-600 MB/rank
 # at 4 KiB pages — the >= 576 GiB "NVRM: failed to allocate page table"
@@ -422,7 +425,7 @@ fi
 # the hugepages (tune-host-for-hugepages.sh) and the engine env gets
 # VLLM_KV_OFFLOAD_TIER_HUGETLB=1; any hugetlb failure at boot falls back to
 # the stock /dev/shm tier with a loud warning (where 576+ GiB still fails).
-: "${CPU_TIER_HUGETLB:=0}"
+: "${CPU_TIER_HUGETLB:=1}"   # 2026-09-18: auto-reserve default (see hugefree)
 # hugetlbfs mount for the tier (used by tune-host-for-hugepages.sh and the
 # engine patch); exported so the leak-cleanup wipe covers it too.
 export VLLM_KV_OFFLOAD_HUGETLB_DIR="${VLLM_KV_OFFLOAD_HUGETLB_DIR:-/dev/hugepages}"
