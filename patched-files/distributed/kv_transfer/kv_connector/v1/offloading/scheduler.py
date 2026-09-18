@@ -362,6 +362,7 @@ class RequestOffloadState:
     stale_hit_last_hit_tokens: int = -1
     stale_hit_last_num_computed: int = -1
     stale_hit_last_ts: float = 0.0
+    stale_hit_repeat_count: int = 0
 
     def __post_init__(self) -> None:
         # One state per KV cache group (indexed by original group index):
@@ -1029,7 +1030,34 @@ class OffloadingConnectorScheduler:
             num_computed_tokens,
         )
 
-        logger.info("KV-LOOKUP hit req=%s local=%d hit=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, num_hit_tokens, " ".join(trace))
+        _rep_count = req_status.stale_hit_repeat_count
+        if (
+            num_hit_tokens
+            and _rep_count
+            and num_hit_tokens == req_status.stale_hit_last_hit_tokens
+            and num_computed_tokens == req_status.stale_hit_last_num_computed
+        ):
+            _rep_total = _rep_count + 1
+            if _rep_total % 64 == 0:
+                logger.info(
+                    "KV-LOOKUP hit req=%s local=%d hit=%d repeats=%d trace=[%s]",
+                    req_status.req.request_id,
+                    num_computed_tokens,
+                    num_hit_tokens,
+                    _rep_total,
+                    " ".join(trace),
+                )
+            else:
+                logger.debug(
+                    "KV-LOOKUP hit req=%s local=%d hit=%d repeats=%d trace=[%s]",
+                    req_status.req.request_id,
+                    num_computed_tokens,
+                    num_hit_tokens,
+                    _rep_total,
+                    " ".join(trace),
+                )
+        else:
+            logger.info("KV-LOOKUP hit req=%s local=%d hit=%d trace=[%s]", req_status.req.request_id, num_computed_tokens, num_hit_tokens, " ".join(trace))
         return num_hit_tokens
 
     def _make_boundary_key(
@@ -1168,9 +1196,10 @@ class OffloadingConnectorScheduler:
             and now - req_status.stale_hit_last_ts < 2.0
         ):
             req_status.stale_hit_streak += 1
+            req_status.stale_hit_repeat_count += 1
             if req_status.stale_hit_streak >= self._stale_hit_max_lookups:
                 req_status.stale_hit_streak = 0
-                logger.debug(
+                logger.info(
                     "KV-LOOKUP stale-hit fallback req=%s hit=%d budget=%d",
                     req_status.req.request_id,
                     num_hit_tokens,
@@ -1179,6 +1208,7 @@ class OffloadingConnectorScheduler:
                 return 0, False
         else:
             req_status.stale_hit_streak = 0
+            req_status.stale_hit_repeat_count = 0
         req_status.stale_hit_last_hit_tokens = num_hit_tokens
         req_status.stale_hit_last_num_computed = num_computed_tokens
         req_status.stale_hit_last_ts = now

@@ -362,11 +362,14 @@ territory). Handler geometry is logged at init (`handler_init`) so a
   `/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/vllm-bin/dist-packages/vllm`,
   mirrored into `patched-files/` + `deployed-sources/`):
   - `distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py`
-    `1cc53fdc9f2f9eff1b6b0f769806daf3`
-    (env knob init at ~:608 + 4 stale-hit fields on the slots dataclass
-    at ~:357 + tail fallback guard at ~:1156)
+    `0b9ee2989447ffb2acb1a9bbdd51c701`
+    (env knob init at ~:608 + 5 stale-hit fields on the slots dataclass
+    at ~:361 + tail fallback guard at ~:1190; fallback log DEBUG→INFO and
+    KV-LOOKUP repeat-flood dedup logging, 2026-09-18b/c)
   - `v1/core/kv_cache_coordinator.py`
-    `e6582917f8f586e77298d1523005fc6d` (conditional APC-HIT logger at ~:854)
+    `335c0663851b336fc9ed58b6c2c9bc5f` (change-detect APC-HIT dedup at
+    ~:854, 2026-09-18c; supersedes the conditional-INFO version
+    `e6582917f8f586e77298d1523005fc6d`)
   - `v1/kv_offload/cpu/manager.py`
     `39800ec45f1cc82fb115c87eee652c14` (CPU-TIER-EVICT → DEBUG at ~:288)
   - Pre-patch runtime backups on testcomp2:
@@ -382,3 +385,44 @@ territory). Handler geometry is logged at init (`handler_init`) so a
   tombstone counting unchanged (attribution path untouched); third-party
   Deferred lane untouched (kept out of scope by design); canary baseline
   reset on the new bootlog.
+- 2026-09-18b refinements (runtime + kit + mirrors in lock-step, md5 row
+  updated above; effective at next engine restart):
+  * fallback log `KV-LOOKUP stale-hit fallback` DEBUG→INFO so the
+    bounded-rescue oscillation is auditable at default log level (its DEBUG
+    lines are invisible in the INFO bootlog — the 06:34:40–48 pool-jam wait
+    showed ~461 repeats ending in a 200 after ~8 s, vs the pre-patch 600 s
+    hang; the ~9-call repeat staircase per fallback cycle is BY DESIGN).
+  * Post-restart probe: M1 clone restored in 0 s wall / 200 / single
+    KV-LOOKUP line / zero repeats (tier-warm fast path healthy).
+  * Storm runner v1 crashed on a `grep -c || echo 0` arithmetic pitfall
+    (EVI=0 count reads "0\n0"); v2 removes the pitfall and raises the
+    per-rid repeat hard-alarm to disease-scale (>6000 repeats).
+  * Storm v2 (post-A3) iteration 0-8 (06:53:50–07:12:25, all 200s): M1
+    restore times STABLE 0.7/36/9.2/27/20/21/5.2/24/40 s — NO ramp vs the
+    pre-patch 25→56→125→282 s escalation; tier filled to 12,412 tokens,
+    evicted_total ~4.3k, tombstones ~1.2k; 0×500, 0×OOM. The 461-repeat
+    residual waits end in 200s (bounded ~8 s pool-jam waits, fallback
+    firing as designed — invisible-then; now INFO-auditable).
+  * 07:10 "no GPU computing" incident decoded: user's ~113k request
+    queued FCFS behind the storm's iter-8 monster prefills (X8=77.7 s +
+    M1G=132 s full 165k pool-churn passes); 64,299 repeat lines (~530/s,
+    ~30 MB log bloat) ended at the user's own 07:12:25 shutdown. Starved
+    queue + stepwise-rescan NOISE under monopoly, not the old livelock.
+  * A5 repeat-flood dedup (md5 `0b9ee2989447ffb2acb1a9bbdd51c701`,
+    runtime + kit + both local mirrors, py_compile OK, staged at 07:38):
+    new slot field `stale_hit_repeat_count`; repeat KV-LOOKUPs (same hit
+    + same num_computed_tokens) log DEBUG except every 64th repeat at
+    INFO with `repeats=N`; first-hit INFO and the A3 fallback gate are
+    unchanged. ~530 repeat-lines/s → ~8 lines/min; 30 MB → ~3 KB per
+    jam. canary5m v2 + storm v3 alert on `repeats=` > 5000 (per-rid INFO
+    counting is blind once dedup is active).
+  * A6 APC-HIT change-detect dedup (md5 `335c0663…`, runtime + kit +
+    local `patched-files` mirror, py_compile OK; requested by user after
+    they flagged the per-step lines): the 2026-09-14 diagnostic
+    (`hit_length > 0` → INFO at ~:854, no request ID in scope) now
+    demotes identical-signature repeats — same nhash/max/final/
+    per_group/uncached — to DEBUG; INFO only on first occurrence or a
+    value change; `hit_length == 0` stays DEBUG (B1 semantics intact).
+    Returns the last per-step INFO flood to log-on-change (07:10 jam
+    class: identical `final=12288` lines at ~530/s). State lives on a
+    coordinator-instance getattr field; no `__init__` patch.
