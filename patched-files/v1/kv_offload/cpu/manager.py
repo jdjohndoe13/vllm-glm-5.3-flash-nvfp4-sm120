@@ -285,7 +285,7 @@ class CPUOffloadingManager(OffloadingManager):
             self._record_eviction_tombstones(
                 get_offload_block_hash(key) for key in to_evict
             )
-            logger.info(
+            logger.debug(
                 "CPU-TIER-EVICT n_evicted=%d requested=%d free_before=%d "
                 "allocated=%d evictable_len=%d",
                 len(to_evict),

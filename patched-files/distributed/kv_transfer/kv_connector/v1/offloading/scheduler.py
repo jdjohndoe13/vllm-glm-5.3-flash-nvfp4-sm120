@@ -354,6 +354,14 @@ class RequestOffloadState:
     # abort re-logging) and the multi-group convergence loop from double
     # counting the same hash; "count once per (request, block hash)".
     tombstone_counted_hashes: set[bytes] = field(default_factory=set)
+    # Stale-hit fallback bookkeeping (VLLM_KV_OFFLOAD_STALE_HIT_MAX_LOOKUPS):
+    # bookkeeping for consecutive get_num_new_matched_tokens calls that
+    # return an identical hit with identical local progress. Reset whenever
+    # the hit value or num_computed_tokens changes.
+    stale_hit_streak: int = 0
+    stale_hit_last_hit_tokens: int = -1
+    stale_hit_last_num_computed: int = -1
+    stale_hit_last_ts: float = 0.0
 
     def __post_init__(self) -> None:
         # One state per KV cache group (indexed by original group index):
@@ -596,6 +604,25 @@ class OffloadingConnectorScheduler:
         self._mirror_local = _mirror_env.strip().lower() not in ("0", "false", "off")
         self._mirror_keys_offered_total = 0
         self._touch_keys_total = 0
+
+        # VLLM_KV_OFFLOAD_STALE_HIT_MAX_LOOKUPS: bound identical no-progress
+        # re-lookups per request (see get_num_new_matched_tokens). Under
+        # tier-full churn a full external hit can stay alive indefinitely
+        # (re-stores from other requests) while its all-or-nothing upfront
+        # conversion never lands, repeating the identical scanner round trip
+        # every scheduler step with zero progress. Past this many consecutive
+        # identical no-progress lookups within a 2s window, the connector
+        # reports 0 so the scheduler takes the incremental recompute path,
+        # which always makes progress. "0" disables (legacy behavior).
+        _stale_hit_env = os.environ.get("VLLM_KV_OFFLOAD_STALE_HIT_MAX_LOOKUPS", "8")
+        try:
+            self._stale_hit_max_lookups = max(0, int(_stale_hit_env.strip()))
+        except ValueError:
+            logger.warning(
+                "Invalid VLLM_KV_OFFLOAD_STALE_HIT_MAX_LOOKUPS=%r; using default 8",
+                _stale_hit_env,
+            )
+            self._stale_hit_max_lookups = 8
 
         # VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES: CPU-tier eviction tombstone
         # attribution. The CPU manager (when the registry is enabled)
@@ -1125,6 +1152,36 @@ class OffloadingConnectorScheduler:
         req_status.update_num_hit_chunks(num_computed_tokens + (num_hit_tokens or 0))
 
         self._touch(req_status)
+
+        # Stale-hit fallback: a resolved external hit is an all-or-nothing
+        # IOU — the scheduler must fit (locally computed + hit tokens) up
+        # front. Legitimate async waits (transfer_jobs gate) and defer/
+        # RETRY outcomes exit above and never reach here, so a streak can
+        # only accrue on identical resolved repeats. Past the budget report
+        # 0 to route into the incremental recompute path.
+        now = time.monotonic()
+        if (
+            num_hit_tokens
+            and self._stale_hit_max_lookups
+            and num_hit_tokens == req_status.stale_hit_last_hit_tokens
+            and num_computed_tokens == req_status.stale_hit_last_num_computed
+            and now - req_status.stale_hit_last_ts < 2.0
+        ):
+            req_status.stale_hit_streak += 1
+            if req_status.stale_hit_streak >= self._stale_hit_max_lookups:
+                req_status.stale_hit_streak = 0
+                logger.debug(
+                    "KV-LOOKUP stale-hit fallback req=%s hit=%d budget=%d",
+                    req_status.req.request_id,
+                    num_hit_tokens,
+                    self._stale_hit_max_lookups,
+                )
+                return 0, False
+        else:
+            req_status.stale_hit_streak = 0
+        req_status.stale_hit_last_hit_tokens = num_hit_tokens
+        req_status.stale_hit_last_num_computed = num_computed_tokens
+        req_status.stale_hit_last_ts = now
 
         return num_hit_tokens, bool(num_hit_tokens)
 

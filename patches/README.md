@@ -313,3 +313,72 @@ territory). Handler geometry is logged at init (`handler_init`) so a
    Effective at next engine boot; verified by
    `Warmup: fused_moe _count_expert_num_tokens Triton specs compiled.`
    in the boot log and by the absence of the 15:17-style JIT warnings.
+
+## 2026-09-18 — KV-offload stale-hit re-lookup livelock fix + log demotion
+
+- Bug caught on boot `engine-20260917-223611` during the 40-iteration
+  marker-revisit soak (2026-09-18 00:42–01:32 UTC): a ~166k-token request
+  hung with NO first Token for 600 s+ while the scheduler repeated the
+  identical `APC-HIT final=0` + `KV-LOOKUP hit` pair every step (~3 Hz;
+  431k APC-HIT lines total). Soak showed the milder form first: marker
+  restore slope 25→56→125→282 s across late iterations. One request kept
+  scanning ~3 min past client abort, then self-cleared (zombie at 01:28:35,
+  frozen forever after — a photosensor for the same loop, not a leak).
+- Root cause (oracle adjudication 2026-09-18): the CPU-tier lookup
+  TRUTHFULLY hits (fresh, ready entries kept alive by churn re-stores —
+  not stale `is_ready`; H1 transfer-job stalls, H2.1
+  `_chunks_being_loaded` leaks, and H2.2 pseudo-hits were all ruled out),
+  but converting the full external hit requires an ALL-OR-NOTHING upfront
+  GPU allocation for the whole ~165k-token span; under tier-full churn
+  (12,412/12,412 blocks, ~1.4k blocks/iteration of eviction pressure,
+  mirrored_keys growing 16k→37k) that conversion never lands, and the
+  connector re-reports the identical hit every scheduler step forever.
+  The connector's third-party Deferred lane parked while the loop burned
+  at full rate; swap throughput stayed flat (~33 GB/s), confirming this
+  is purely a scheduling-side livelock.
+- Fix (`distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py`,
+  one guard, no new locks, no unbounded logging):
+  `get_num_new_matched_tokens` counts CONSECUTIVE identical no-progress
+  repeats (same hit token count + same `num_computed_tokens`) within
+  2.0 s wall clock. Legitimate async waits (`transfer_jobs`) and
+  defer/RETRY outcomes exit above the counter, so only genuinely stuck
+  repeats accrue. Past the budget the connector returns `(0, False)` —
+  the scheduler then takes the incremental recompute path, which always
+  makes progress regardless of who blocked the upfront conversion.
+- Knob: `VLLM_KV_OFFLOAD_STALE_HIT_MAX_LOOKUPS` — default 8; `0` disables
+  (legacy livelock behavior preserved for A/B); unparsable values fall
+  back to 8 with a log warning. Post-restart consequences: bounded
+  first-token latency under tier-full churn (≤ ~2.7 s of scan then
+  recompute), zombie abort-scan self-cleans within ~2 s of abort, and the
+  M1 marker-restore slowness ramp collapses (previously the unconverted
+  scan amplified starvation for minutes at a stretch).
+- Log demotion (2 files, diagnostic only — metrics keep all data):
+  - `v1/core/kv_cache_coordinator.py`: `APC-HIT …` logger is INFO only
+    when the final hit is real (final>0), otherwise DEBUG — this was the
+    431k-line INFO flood under churn (per-line unchanged in content).
+  - `v1/kv_offload/cpu/manager.py`: `CPU-TIER-EVICT …` INFO→DEBUG (the
+    eviction rate stays observable via the `CPU_EVICTED_TOTAL` metric).
+- Files + md5 (runtime tree at
+  `/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/vllm-bin/dist-packages/vllm`,
+  mirrored into `patched-files/` + `deployed-sources/`):
+  - `distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py`
+    `1cc53fdc9f2f9eff1b6b0f769806daf3`
+    (env knob init at ~:608 + 4 stale-hit fields on the slots dataclass
+    at ~:357 + tail fallback guard at ~:1156)
+  - `v1/core/kv_cache_coordinator.py`
+    `e6582917f8f586e77298d1523005fc6d` (conditional APC-HIT logger at ~:854)
+  - `v1/kv_offload/cpu/manager.py`
+    `39800ec45f1cc82fb115c87eee652c14` (CPU-TIER-EVICT → DEBUG at ~:288)
+  - Pre-patch runtime backups on testcomp2:
+    `*.bak-20260918-livelock` (`dffa153df8e7d91d61fd002c72131d73`,
+    `c2f421d3772589d1cbbe6ccb5a0e1550`, `931044c6a4dc433fa1a87d54f3aceeba`).
+- Verified: `py_compile` all 3 files on the runtime tree; remote visual
+  anchor review (6 anchor points); local mirror hashes == runtime post
+  patch hashes everywhere. Effective at the NEXT ENGINE RESTART (the
+  running engine keeps the old code; restart-owned by the operator).
+- Post-restart verification plan (T+boot, marker-revisit storm):
+  KV-LOOKUP hit repeats per request ≤ ~8 (was ~2,180); APC-HIT INFO lines
+  two-digit scale (was 431k); first token ≤ storm p95 (was 600 s hang);
+  tombstone counting unchanged (attribution path untouched); third-party
+  Deferred lane untouched (kept out of scope by design); canary baseline
+  reset on the new bootlog.

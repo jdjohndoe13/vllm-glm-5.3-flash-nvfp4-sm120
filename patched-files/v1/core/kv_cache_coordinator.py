@@ -851,7 +851,7 @@ class HybridKVCacheCoordinator(KVCacheCoordinator):
         # APC-HIT diagnostics 2026-09-14: per-group hit depths at admission.
         # Group order = kv_cache_groups order (FA first, mamba/GDN last).
         # uncached>0 with final=0 => FA alive, mamba group missed everything.
-        logger.info(
+        (logger.info if hit_length else logger.debug)(
             "APC-HIT nhash=%d max=%d final=%d per_group=%s uncached=%d",
             len(block_hashes), max_cache_hit_length, hit_length,
             hit_length_by_group, num_uncached_common_prefix_tokens,
