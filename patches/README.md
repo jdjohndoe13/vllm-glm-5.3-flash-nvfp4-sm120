@@ -501,3 +501,36 @@ territory). Handler geometry is logged at init (`handler_init`) so a
     validation = concurrency-shaped churn repro (real 16:16 pattern;
     the 16-iter single-lane storm demonstrably does NOT recreate it)
     + full storm re-cert.
+  * A7 KVC-PIN deployed 2026-09-19 04:11 (supersedes the candidate
+    fix sketch above; needs an engine restart to load). Root cause
+    corrected from the hit-index hypothesis: the CPU tier is
+    internally consistent — manager.lookup honors policy membership
+    (manager.py:173-187), eviction removes keys synchronously inside
+    prepare_store (:262-272) and complete_store failure removes keys
+    (:372-378) — so there is no stale CPU-tier index to refresh. The
+    observed loop is scheduler-level: a resolved hit whose
+    all-or-nothing upfront conversion cannot land re-arms the 2s
+    identity window (scheduler.py:1195-1219) every engine step —
+    1344 identical full-scanner re-resolutions and 175 fallback flood
+    lines in the 16:16 event, the manager scan repeated each step at
+    zero progress. Fix: after the A3 budget collapses a request into
+    the incremental-recompute path, KVC-PIN fast-paths the connector
+    to (0, False) for a bounded cooldown (default 10.0s) instead of
+    re-resolving; unpin on progress (num_computed_tokens change) or
+    deadline lapse; fast path sits after the transfer_jobs gate so
+    legitimate async waits are untouched. Env knob
+    VLLM_KV_OFFLOAD_STALE_HIT_PIN_SECONDS ("0"/"false"/"off" restores
+    legacy flip-flop; unset = 10.0). Diff: RequestOffloadState field
+    stale_hit_pinned_until; __init__ env parse;
+    get_num_new_matched_tokens fast path before update_offload_keys;
+    pin set in the A3 trigger branch — 4 KVC-PIN 2026-09-19 markers.
+    Deployed md5 0ab8601e095a5e402e4a5c06519d1caa (runtime = kit
+    carrier patched-files/…scheduler.py = local mirror patched-files
+    + deployed-sources; pre-patch 6e601eee63a8a1f887898a188bb2edfb
+    backed up as scheduler.py.bak-20260919-041155). Pre-restart gates
+    passed on the real venv python (engine python is
+    vllm-bin/venv/bin/python, PYTHONPATH=vllm-bin/dist-packages):
+    py_compile OK, marker count 4, runpy file-location import OK
+    (IMPORT_OK True). Deploy script: /tmp/a7-deploy.sh (ABORT guards:
+    runtime md5 mismatch, no python, compile/marker/import failure —
+    aborts leave runtime untouched).

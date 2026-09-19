@@ -363,6 +363,12 @@ class RequestOffloadState:
     stale_hit_last_num_computed: int = -1
     stale_hit_last_ts: float = 0.0
     stale_hit_repeat_count: int = 0
+    # KVC-PIN 2026-09-19: monotonic deadline while this connector fast-paths
+    # (0, False) for the request after a stale-hit fallback, instead of
+    # re-resolving the full manager scan every scheduler step. 0.0 = not
+    # pinned; cleared on progress (num_computed_tokens change), cooldown
+    # lapse, or feature disable.
+    stale_hit_pinned_until: float = 0.0
 
     def __post_init__(self) -> None:
         # One state per KV cache group (indexed by original group index):
@@ -624,6 +630,32 @@ class OffloadingConnectorScheduler:
                 _stale_hit_env,
             )
             self._stale_hit_max_lookups = 8
+
+        # KVC-PIN 2026-09-19 (VLLM_KV_OFFLOAD_STALE_HIT_PIN_SECONDS): after
+        # a stale-hit fallback, fast-path this connector to (0, False) for
+        # the cooldown instead of re-running the identical full manager
+        # scan every scheduler step — the 2s identity window re-arms that
+        # loop, which is what produced the repeats=/fallback floods under
+        # churn. Progress (num_computed_tokens change) or the lapsing
+        # deadline unpins. "0"/"false"/"off" restores the legacy flip-flop
+        # behavior; unset/empty yields the default 10.0.
+        _pin_env = os.environ.get("VLLM_KV_OFFLOAD_STALE_HIT_PIN_SECONDS")
+        if _pin_env is not None and _pin_env.strip().lower() in ("0", "false", "off"):
+            self._stale_hit_pin_seconds = 0.0
+        else:
+            try:
+                self._stale_hit_pin_seconds = (
+                    max(0.0, float(_pin_env.strip()))
+                    if _pin_env is not None and _pin_env.strip()
+                    else 10.0
+                )
+            except ValueError:
+                logger.warning(
+                    "Invalid VLLM_KV_OFFLOAD_STALE_HIT_PIN_SECONDS=%r; "
+                    "using default 10.0",
+                    _pin_env,
+                )
+                self._stale_hit_pin_seconds = 10.0
 
         # VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES: CPU-tier eviction tombstone
         # attribution. The CPU manager (when the registry is enabled)
@@ -1164,6 +1196,30 @@ class OffloadingConnectorScheduler:
             )
             return None, False
 
+        # KVC-PIN 2026-09-19: bounded cooldown fast path (see the field
+        # comment and the pin trigger in the stale-hit fallback branch).
+        # Answers (0, False) without re-scanning the manager while pinned;
+        # any locally-computed progress change or a lapsing deadline
+        # unpins.
+        if self._stale_hit_pin_seconds > 0:
+            if (
+                req_status.stale_hit_pinned_until
+                and time.monotonic() >= req_status.stale_hit_pinned_until
+            ):
+                req_status.stale_hit_pinned_until = 0.0
+            if req_status.stale_hit_pinned_until:
+                if num_computed_tokens != req_status.stale_hit_last_num_computed:
+                    # progress happened: unpin and fall through to a fresh
+                    # lookup with the new local boundary.
+                    req_status.stale_hit_pinned_until = 0.0
+                else:
+                    logger.debug(
+                        "KV-LOOKUP pinned req=%s local=%d",
+                        request.request_id,
+                        num_computed_tokens,
+                    )
+                    return 0, False
+
         req_status.update_offload_keys()
         req_status.num_locally_computed_tokens = num_computed_tokens
 
@@ -1210,6 +1266,14 @@ class OffloadingConnectorScheduler:
                     num_hit_tokens,
                     self._stale_hit_max_lookups,
                 )
+                # KVC-PIN 2026-09-19: hold the (0, False) answer for the
+                # cooldown so the identical-resolve loop does not re-arm
+                # right back into the full scanner round trip (the 2s
+                # identity window would otherwise restart it each step).
+                if self._stale_hit_pin_seconds > 0:
+                    req_status.stale_hit_pinned_until = (
+                        time.monotonic() + self._stale_hit_pin_seconds
+                    )
                 return 0, False
         else:
             req_status.stale_hit_streak = 0
