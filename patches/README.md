@@ -534,3 +534,33 @@ territory). Handler geometry is logged at init (`handler_init`) so a
     (IMPORT_OK True). Deploy script: /tmp/a7-deploy.sh (ABORT guards:
     runtime md5 mismatch, no python, compile/marker/import failure —
     aborts leave runtime untouched).
+  * A7 KVC-PIN certified live 2026-09-19 04:18–05:05 on boot
+    engine-20260919-041840.log (after user restart at 04:17): (a)
+    post-restart sweep — A7 md5 verified, health 200, 0 fallback
+    lines, 0 repeats lines, 0 500s, 0 tracebacks, canary auto-repinned
+    on oom=0/fb=0 baselines; (b) 16-iter soak-verify storm re-cert
+    04:35–04:59 — 16/16 ok, M1 cold 25.5s → warm 0.71s, one normal
+    mid-storm M1 tier rebind (15.5s, ITER 5), CPU tier reached cap
+    (ev=12412) with eviction churn through ITER 15, 0 500s, 0 fb; (c)
+    churn-flood live-fire probe 05:01–05:05 (real 16:16 shape: 16
+    unique ~123K-token prefills concurrent + 4 hounds re-sending
+    flood00's content mid-wave while the tier was at cap and evicting)
+    — all 20 requests 200 OK, fallback delta 0→0, repeats 0,
+    kv_lookup +1 single clean resolution, 0 500s. Post-flood sweep
+    caught the exact pre-fix trigger fingerprint resolving QUIETLY:
+    `KV-LOOKUP hit req=…-a8a2264f local=0 hit=97280
+    trace=[g0FAE hit=96 cov=0/97 max_hit=99328 … g4SW1EM hit=96
+    cov=0/97 …]` (hit advertised but zero stored coverage per group —
+    the 16:16 event produced 175 fallback flood lines + repeats=1344
+    for exactly this shape; the A7 boot produced one resolve line, no
+    budget burn, no flip-flop loop, next request 200 OK). Whole-boot
+    counters at 05:05: fallback lines EMPTY section (zero), repeats
+    lines EMPTY (zero), 0 500s; tier traffic: evicted_total=6976,
+    tombstones=1900, cpu_allocated=12412, spec accept 2.50, serving
+    200 OK live. VERDICT: livelock fix HELD — nil fallback/repeats
+    across boot + storm + churn-flood on a full tier with ongoing
+    evictions. Rollback remains `VLLM_KV_OFFLOAD_STALE_HIT_PIN_SECONDS`
+    =off + restart (also restored instantly by runtime
+    scheduler.py.bak-20260919-041155). Flood script:
+    /tmp/churn-flood.sh (model name "qwen-3.8-flash-next", envelope
+    must close with `}]}` — the first attempt 400'd twice on those).
