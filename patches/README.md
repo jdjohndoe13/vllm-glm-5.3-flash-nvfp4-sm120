@@ -564,3 +564,45 @@ territory). Handler geometry is logged at init (`handler_init`) so a
     scheduler.py.bak-20260919-041155). Flood script:
     /tmp/churn-flood.sh (model name "qwen-3.8-flash-next", envelope
     must close with `}]}` — the first attempt 400'd twice on those).
+
+## 2026-09-19 — boot-041840 crash: CUDA OOM (allocator fragmentation) + PYTORCH_CUDA_ALLOC_CONF hardening
+
+- Crash at 15:32:20 on boot `engine-20260919-041840.log`: CUDA out of
+  memory on TP workers 4/5 (pids 20452/20552): `MemoryError: CUDA out of
+  memory. Tried to allocate 142.00 MiB. GPU has a total capacity of
+  31.45 GiB of which 97.19 MiB is free … 29.76 GiB in use … 246.11 MiB
+  reserved by PyTorch but unallocated` — ~343 MiB nominally free-ish but
+  no contiguous ≥142 MiB block, i.e. allocator fragmentation after
+  11h20m of max-churn huge-context serving (apc 1248, kv 875, tier-2
+  evictions ~240K at the end). Graceful shutdown followed (MPClient
+  cleanup 15:32:21, hugepages mmap released 15:33:43, one benign
+  leaked-shm tracker warning); exactly one HTTP 500 for the in-flight
+  request.
+- Attribution: NOT the A7 stale-hit fix. Whole-boot `repeats_lines=0`,
+  `rep=0`, `h5=0`; fb finalized at 39 single-line/rare-repeat damped
+  events and froze for the last ~3h. This was allocation-side memory
+  fragmentation in the serving path, reaching the edge on GPUs 4/5
+  only after the longest sustained ultra-heavy window.
+- User restarted manually at 15:35:57 → `engine-20260919-153557.log`
+  (APIServer pid 119798, EngineCore pid 120360); healthy (health=200)
+  within ~8 min, connector metrics fully live (`cpu_allocated=764`,
+  mirrored keys 230,832, `evicted_total=0` fresh boot). New monitoring
+  baseline: boot-20260919-153557 (canary auto-switched to the new log;
+  counters reset, fb=0 so far).
+- Hardening (requires user-owned restart to take effect):
+  `vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh` gained
+  `export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"`
+  after the ENV-parity block (~:696), per PyTorch's own hint in the
+  crash error (expandable segments make the device allocator carve
+  contiguous ranges lazily, avoiding exactly this 142 MiB/97 MiB-less
+  fragmentation mode). House style `${VAR:-default}` keeps an explicit
+  launcher override possible. Deployed on the kit box with backup
+  `.bak-20260919-expalloc`; `bash -n` clean; local+remote md5
+  `558e8c4b922c3ce7590b5b6186bb8cac`; mirror copy in this repo updated
+  identically. NOTE: variable was previously absent from all four
+  launchers — a docker-variant parity edit is possible later if the
+  no-docker path proves out.
+- Watchdog bookkeeping: relay cycle 147 was lost to a transient
+  subagent Bad Gateway (that window's check skipped; crash was instead
+  observed in logs on demand); cycle 148's row codifies the new boot.
+

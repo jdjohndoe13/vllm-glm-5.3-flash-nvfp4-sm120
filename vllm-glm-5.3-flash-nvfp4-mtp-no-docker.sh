@@ -685,6 +685,16 @@ export VLLM_USAGE_SOURCE=production-docker-image             # image ENV parity
 # unavailable, so 0 and 1 are both safe to boot.
 export VLLM_KV_OFFLOAD_TIER_HUGETLB="${CPU_TIER_HUGETLB}"
 
+# EXP-SEG 2026-09-19: reduce CUDA allocator fragmentation on the 32GiB GPUs.
+# After ~11h of max-churn huge-context serving the old boot crashed with
+# "CUDA out of memory. Tried to allocate 142.00 MiB ... 97.19 MiB free" on
+# GPUs 4/5 (246.11 MiB reserved-but-unallocated -> no contiguous 142 MiB
+# block); see logs/engine-20260919-041840.log (MPClient shutdown 15:32:21).
+# PyTorch's own hint in that error was PYTORCH_CUDA_ALLOC_CONF with
+# expandable_segments:True. House style ${VAR:-default} keeps an explicit
+# launcher-env override possible; the engine needs a restart to pick this up.
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+
 # Log file next to this script (timestamped) + a stable "latest" symlink.
 mkdir -p "$LOGDIR"
 LOGFILE="$LOGDIR/engine-$(date +%Y%m%d-%H%M%S).log"
