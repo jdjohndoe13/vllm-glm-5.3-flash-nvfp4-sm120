@@ -444,3 +444,60 @@ territory). Handler geometry is logged at init (`handler_init`) so a
       assumed a dict from a `.values()` call that never existed —
       the pre-crash log evidence (per_group=[...] brackets) was the
       tell; py_compile cannot catch attribute-type errors.
+  * Long-storm certification on the fixed boot (2026-09-18 15:25–15:49,
+    boot `engine-20260918-150710`, storm pid 431076, launch note: the
+    v2-era hardcoded bootlog pin in soak-verify.sh was replaced by
+    newest-by-mtime selection after it pinned a dead boot for one
+    aborted launch): 16/16 iterations 200 OK, 0×500, 0×Traceback;
+    M1 restores STABLE 0.64–0.71 s across all 16, including after the
+    tier went full (iter 12+) with evicted_total 28→1968 and
+    tombstones 7→539 flowing — no ramp (old disease: 25→56→125→282 s);
+    whole-boot totals KV-LOOKUP 41 INFO lines / APC-HIT 9 lines
+    (A5+A6 dedup holding vs 69,204 + 80,386 on diseased boots).
+    Gap: A3 fallback and A5 repeats= never fired — a single-lane storm
+    does not recreate the concurrent tier-full jam; live evidence for
+    fallback-under-jam remains the 06:34 probe (461 repeats ending in
+    a 200).
+  * oom=128 ALERT-OOM flashing: the watchers counted the BENIGN
+    transient allocator-churn WARN class (`OOM on device`, 144 MiB
+    single-attempt refusals, zero request impact) cumulatively → both
+    recalibrated to delta-based alerts (baseline at pin/start; alert
+    only on lines NEW since the previous check); canary re-armed
+    (pid 436398, oom_baseline=128).
+  * fb= fallback counter added to the canary after user reported a
+    visible fallback flood at 16:16:34 (event below) — first rollout
+    died at the very next check: the loop-side `FB=` grep extraction
+    line was missing while `set -u` consumed it → CANARY_DEAD caught
+    within one 5-min cycle, root-caused via `grep -n 'FB='` on the
+    remote copy, fixed, re-cycled through finish.sh (pid 442750,
+    baselines `oom=128 fb=203`). Lesson: diff a remote `bash -n`-clean
+    .new against the delta it was supposed to introduce before
+    cycling — syntax-clean does not mean feature-complete.
+  * LIVE sightings of the stale-hit livelock on real traffic (not
+    tests; boot `engine-20260918-150710`, never restarted — user owns
+    restarts). (1) 16:16:34–16:16:41: req
+    chatcmpl-a640f44e3cfccd4c-b84990e3 advertised hit=152576 under
+    concurrent full-tier churn → ~1,344 scan repeats (A5 printed
+    repeats=1216/1280/1344) and 175 A3 fallback lines; plus
+    chatcmpl-8f9ef834755cfce2-b31d3bc4 hit=8192 ×28 fallback lines.
+    Self-drained; both requests finished 200; health 200 / procs 9 /
+    0×500 throughout. This replaces the storm text above that cited
+    the 06:34 probe as the only live evidence. (2) 17:05 burst (canary
+    relay cycle 7 fired `ALERT: FB+10(tot213)` at the 17:06:30
+    window): chatcmpl-b12c5723ed5ee639-99542ce1 hit=8192 ×7 + 
+    chatcmpl-bb1132b7f38563a1-911ef89b hit=140288 ×3 fallback lines;
+    no spin growth (max_repeats held 1344), drained 17:05:53. fb
+    frozen at 213 through 19:31+ (28+ CYCLE_OK windows). Verdict: A3
+    + A5 now fingerprint the defect live and the fallback budget (8)
+    bounds it — each affected request pays a multi-second latency
+    spike (the flood the user saw = one INFO line per budget
+    exhaustion), while the engine itself never degraded. ROOT CAUSE
+    REMAINS OPEN: under churn, tier hits are advertised from an index
+    that pages evicted; the lookup trusts stale `hit=` metadata, burns
+    the budget rescanning, and falls back. Candidate deep fix (not
+    started, needs user go: engine restart applies it): eager
+    invalidation/refresh of advertised hits on evictions, or validate
+    the hit index against tier state before lookup — env-gated patch;
+    validation = concurrency-shaped churn repro (real 16:16 pattern;
+    the 16-iter single-lane storm demonstrably does NOT recreate it)
+    + full storm re-cert.
