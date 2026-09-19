@@ -84,6 +84,7 @@ Image on Docker Hub: [cstechdev/vllm](https://hub.docker.com/r/cstechdev/vllm)
 | `test.sh` | Needle-battery validation test (boots the offload launcher, 6 tests, tears down). |
 | `backup-image.sh` | Saves the docker image to a tarball (run BEFORE wiping the old machine). |
 | `patches/` | The raw PR diff + provenance/how-to (`patches/README.md`). |
+| `docs/vllm-bin-recreation.md` | How the bare-metal runtime tree `vllm-bin/` is created from the pinned image (docker cp extraction, thin venv, tarball fast path, patched-files overlay + verification). Only needed for the no-docker launchers. |
 
 ## 4. Quick start (recommended)
 
