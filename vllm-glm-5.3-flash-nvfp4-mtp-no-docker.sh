@@ -362,7 +362,7 @@ fi
 # 5000000000 -> ~628k tokens (proven to boot WITH the tier in a
 # 196k-token, 2-concurrent-request test). If a boot with a larger pool
 # + tier fails, drop back to the default.
-: "${KV_CACHE_MEMORY:=2600000000}"
+: "${KV_CACHE_MEMORY:=2400000000}"
 
 # ---------------------------------------------------------------------------
 # MTP speculative decoding (variant-specific knob, SUBJECT of this profile):
@@ -693,6 +693,9 @@ export VLLM_KV_OFFLOAD_TIER_HUGETLB="${CPU_TIER_HUGETLB}"
 # PyTorch's own hint in that error was PYTORCH_CUDA_ALLOC_CONF with
 # expandable_segments:True. House style ${VAR:-default} keeps an explicit
 # launcher-env override possible; the engine needs a restart to pick this up.
+# 2026-09-20 PAIRING REQUIRED (--enable-cumem-allocator now in the serve args):
+# vLLM g487ecf187 _verify_kv_transfer_compat hard-rejects expandable_segments:True
+# + OffloadingConnector unless the CuMemAllocator routes KV (stable pages).
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 
 # Log file next to this script (timestamped) + a stable "latest" symlink.
@@ -739,6 +742,7 @@ setsid "$ENGINE_CMD" serve "$MODEL_ID" \
   --tool-call-parser glm47 \
   --reasoning-parser deepseek_r1 \
   --block-size 256 \
+  --enable-cumem-allocator \
   --max-num-batched-tokens "$MAX_NUM_BATCHED_TOKENS" \
   --kv-cache-metrics \
   --enable-mfu-metrics \
