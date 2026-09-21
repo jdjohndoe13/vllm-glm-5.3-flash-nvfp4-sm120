@@ -606,3 +606,63 @@ territory). Handler geometry is logged at init (`handler_init`) so a
   subagent Bad Gateway (that window's check skipped; crash was instead
   observed in logs on demand); cycle 148's row codifies the new boot.
 
+## 2026-09-21 — ESC211: giant-prompt stale-hit wedge escape (SERVERKILL)
+
+Observed wedge (boot 20260921-053224, 08:18–08:21): a ~157k-token prompt sat
+in the waiting queue with `local=0` forever; the engine logged one
+`KV-LOOKUP hit req=... hit=155648` + one `KV-LOOKUP stale-hit fallback ...
+budget=8` pair every ~10 s, client frozen, health stayed 200, and the state
+only self-healed ~5 min later when the pool slowly freed room. Root cause is
+two-layered:
+
+1. Connector: `get_num_new_matched_tokens` counts identical (hit, num_computed)
+   repeats only when they are <2s apart, but the stale-hit pin cooldown
+   (`VLLM_KV_OFFLOAD_STALE_HIT_PIN_SECONDS`, default 10s) spaces the
+   re-lookups that far apart, so every pin cycle resets the streak — the
+   zero-progress budget can accrue only 8 fast repeats per ~10s cycle and
+   never escalates; the requests loops hit→fallback→pin forever.
+2. Scheduler core: `scheduler_reserve_full_isl` (fork default TRUE, not
+   overridden by the launcher) makes `allocate_slots` demand the FULL
+   sequence fit upfront for waiting requests — for BOTH the async-load
+   admission (connector returns the hit) and the recompute admission
+   (connector returns (0, False)). A ~157k-token admission can't get
+   whole-sequence room while other giants hold the pool, so the request
+   waits until blocks drain (~5 min), whatever the connector answers.
+
+Fix (env-gated, default-on, deployed without touching the running engine):
+
+- Connector
+  `vllm/distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py`:
+  identical-repeat window widened to `VLLM_KV_OFFLOAD_STALE_HIT_REPEAT_WINDOW`
+  (default 300s; "0" restores legacy 2s); zero-progress fallbacks counted
+  across pin cycles; after `VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT`
+  (default 3) fallbacks or `VLLM_KV_OFFLOAD_STALE_HIT_TTL_SECS` (default
+  150s) on the same (hit, boundary), the connector logs
+  `KV-LOOKUP SERVERKILL req=... -> escape (0, False)` and persistently
+  answers (0, False) without re-arming the pin until the boundary changes
+  (`KV-LOOKUP SERVERKILL release` on progress). New duck-typed scheduler
+  hook method `is_stale_hit_escape(request)`.
+- Scheduler core `vllm/v1/core/sched/scheduler.py`: for escape-mode requests
+  (only, sync path only) the per-request `full_sequence_must_fit` is
+  relaxed so the chunked 1024-token recompute path can schedule under pool
+  pressure (normal per-chunk checks + watermark still apply; other
+  requests' admission unchanged). Disable with
+  `VLLM_KV_OFFLOAD_ESCAPE_RELAX_FULL_FIT=0`. All new envs are VLLM_
+  prefixed (`-V` failover tool safe).
+
+Effect: a wedged giant prompt enters escape within ~20-40s (fallback ticks)
+or 150s (TTL), then schedules locally chunk-by-chunk (~25s full recompute
+for a 155k prompt at this box's measured rate), instead of hanging until
+the pool frees whole-sequence room. Deployed 2026-09-21 with backups
+`.bak-20260921-esc211` on both files; py_compile clean; md5
+connector `4f7c9265a2b27e01013cbaa09b2f6653`, sched core
+`e4d7ed255b2ff01f85d805e237388182` (pre-patch: connector
+`0ab8601e095a5e402e4a5c06519d1caa`, sched core
+`3d8e5c39fba2e919c1c9753a8ff11a99`). Engages on next engine
+restart. Byte-identical mirror copies tracked in `patched-files/`
+(md5-verified against the deployed files):
+`patched-files/distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py`
+(connector; mirrored copy history: `0ab8601e` pre-ESC211 → `4f7c9265`)
+and, newly added to the manifest,
+`patched-files/v1/core/sched/scheduler.py` (scheduler core).
+

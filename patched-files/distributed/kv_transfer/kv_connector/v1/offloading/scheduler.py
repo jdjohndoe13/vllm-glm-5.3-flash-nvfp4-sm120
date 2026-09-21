@@ -369,6 +369,24 @@ class RequestOffloadState:
     # pinned; cleared on progress (num_computed_tokens change), cooldown
     # lapse, or feature disable.
     stale_hit_pinned_until: float = 0.0
+    # ESC211 / SERVERKILL 2026-09-21: escape bookkeeping for wedges that the
+    # fallback budget cannot see. The pin cooldown (default 10s) spaces
+    # identical re-lookups beyond the legacy 2s identity window, so each pin
+    # cycle resets the streak and the zero-progress budget never escalates —
+    # the request then loops (hit -> fallback -> (0, False) + pin) forever
+    # behind the scheduler core's full-sequence admission gate. Here:
+    # - fallback_count counts zero-progress stale-hit fallbacks of this
+    #   request across pin cycles;
+    # - wall_start anchors how long the request has sat on an identical
+    #   (hit, num_computed_tokens) boundary;
+    # - escape, once set, makes this connector persistently answer (0, False)
+    #   without re-arming the pin until the boundary changes, and exposes
+    #   is_stale_hit_escape() so the scheduler core (see
+    #   VLLM_KV_OFFLOAD_ESCAPE_RELAX_FULL_FIT) can relax the full-fit gate
+    #   for this request and let the chunked recompute path schedule it.
+    stale_hit_fallback_count: int = 0
+    stale_hit_wall_start: float = 0.0
+    stale_hit_escape: bool = False
 
     def __post_init__(self) -> None:
         # One state per KV cache group (indexed by original group index):
@@ -656,6 +674,69 @@ class OffloadingConnectorScheduler:
                     _pin_env,
                 )
                 self._stale_hit_pin_seconds = 10.0
+
+        # ESC211 2026-09-21: VLLM_KV_OFFLOAD_STALE_HIT_REPEAT_WINDOW — how
+        # far apart two identical (hit, num_computed_tokens) lookups may be
+        # and still accrue a repeat toward the stale-hit budget. Defaults to
+        # 300s so repeats at the pin cooldown cadence (default 10s) keep
+        # counting instead of resetting each pin cycle (the legacy hard-coded
+        # 2s window cannot see them — the wedge then loops indefinitely).
+        # "0" restores the legacy 2s behavior.
+        _rep_window_env = os.environ.get("VLLM_KV_OFFLOAD_STALE_HIT_REPEAT_WINDOW")
+        try:
+            _rep_window = (
+                max(0.0, float(_rep_window_env.strip()))
+                if _rep_window_env is not None and _rep_window_env.strip()
+                else 300.0
+            )
+        except ValueError:
+            logger.warning(
+                "Invalid VLLM_KV_OFFLOAD_STALE_HIT_REPEAT_WINDOW=%r; "
+                "using default 300.0",
+                _rep_window_env,
+            )
+            _rep_window = 300.0
+        self._stale_hit_repeat_window = 2.0 if _rep_window <= 0.0 else _rep_window
+
+        # ESC211 2026-09-21: escape the pin-cadence stall. After
+        # VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT zero-progress stale-hit
+        # fallbacks (default 3) on the same boundary, or once the request has
+        # sat on an identical boundary for VLLM_KV_OFFLOAD_STALE_HIT_TTL_SECS
+        # (default 150s, whichever comes first), the connector logs
+        # "KV-LOOKUP SERVERKILL", stops re-arming the pin and persistently
+        # answers (0, False) until the boundary changes. is_stale_hit_escape()
+        # lets the scheduler core relax the full-sequence admission gate
+        # (VLLM_KV_OFFLOAD_ESCAPE_RELAX_FULL_FIT) so the chunked recompute
+        # path can actually schedule the request instead of waiting for the
+        # pool to slowly free whole-sequence room. "0" disables the escape.
+        _fall_lim_env = os.environ.get("VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT")
+        try:
+            self._stale_hit_fallback_limit = (
+                max(0, int(_fall_lim_env.strip()))
+                if _fall_lim_env is not None and _fall_lim_env.strip()
+                else 3
+            )
+        except ValueError:
+            logger.warning(
+                "Invalid VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT=%r; "
+                "using default 3",
+                _fall_lim_env,
+            )
+            self._stale_hit_fallback_limit = 3
+        _ttl_env = os.environ.get("VLLM_KV_OFFLOAD_STALE_HIT_TTL_SECS")
+        try:
+            self._stale_hit_ttl_secs = (
+                max(0.0, float(_ttl_env.strip()))
+                if _ttl_env is not None and _ttl_env.strip()
+                else 150.0
+            )
+        except ValueError:
+            logger.warning(
+                "Invalid VLLM_KV_OFFLOAD_STALE_HIT_TTL_SECS=%r; "
+                "using default 150.0",
+                _ttl_env,
+            )
+            self._stale_hit_ttl_secs = 150.0
 
         # VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES: CPU-tier eviction tombstone
         # attribution. The CPU manager (when the registry is enabled)
@@ -1196,6 +1277,33 @@ class OffloadingConnectorScheduler:
             )
             return None, False
 
+        # ESC211 2026-09-21: escape fast path. While escape mode is active
+        # for this request, answer (0, False) directly (the scheduler core
+        # may relax the full-sequence admission gate for escape-mode requests
+        # so the chunked recompute path can schedule them). Progress — any
+        # boundary change — leaves escape mode and falls through to a fresh
+        # lookup.
+        if req_status.stale_hit_escape:
+            if num_computed_tokens != req_status.stale_hit_last_num_computed:
+                logger.info(
+                    "KV-LOOKUP SERVERKILL release req=%s local=%d (progress "
+                    "resumes normal lookup)",
+                    request.request_id,
+                    num_computed_tokens,
+                )
+                req_status.stale_hit_escape = False
+                req_status.stale_hit_streak = 0
+                req_status.stale_hit_repeat_count = 0
+                req_status.stale_hit_fallback_count = 0
+                req_status.stale_hit_wall_start = 0.0
+            else:
+                logger.debug(
+                    "KV-LOOKUP escape req=%s local=%d",
+                    request.request_id,
+                    num_computed_tokens,
+                )
+                return 0, False
+
         # KVC-PIN 2026-09-19: bounded cooldown fast path (see the field
         # comment and the pin trigger in the stale-hit fallback branch).
         # Answers (0, False) without re-scanning the manager while pinned;
@@ -1248,41 +1356,96 @@ class OffloadingConnectorScheduler:
         # RETRY outcomes exit above and never reach here, so a streak can
         # only accrue on identical resolved repeats. Past the budget report
         # 0 to route into the incremental recompute path.
+        # ESC211 2026-09-21: identical repeats accrue within
+        # _stale_hit_repeat_window (default 300s) instead of a hard-coded
+        # 2s the pin cadence always falls outside of, zero-progress
+        # fallbacks count across pin cycles, and an escape ("SERVERKILL")
+        # persists until the boundary changes.
         now = time.monotonic()
         if (
             num_hit_tokens
             and self._stale_hit_max_lookups
             and num_hit_tokens == req_status.stale_hit_last_hit_tokens
             and num_computed_tokens == req_status.stale_hit_last_num_computed
-            and now - req_status.stale_hit_last_ts < 2.0
         ):
-            req_status.stale_hit_streak += 1
-            req_status.stale_hit_repeat_count += 1
-            if req_status.stale_hit_streak >= self._stale_hit_max_lookups:
-                req_status.stale_hit_streak = 0
-                logger.info(
-                    "KV-LOOKUP stale-hit fallback req=%s hit=%d budget=%d",
-                    req_status.req.request_id,
-                    num_hit_tokens,
-                    self._stale_hit_max_lookups,
-                )
-                # KVC-PIN 2026-09-19: hold the (0, False) answer for the
-                # cooldown so the identical-resolve loop does not re-arm
-                # right back into the full scanner round trip (the 2s
-                # identity window would otherwise restart it each step).
-                if self._stale_hit_pin_seconds > 0:
-                    req_status.stale_hit_pinned_until = (
-                        time.monotonic() + self._stale_hit_pin_seconds
+            if req_status.stale_hit_wall_start <= 0.0:
+                req_status.stale_hit_wall_start = now
+            if now - req_status.stale_hit_last_ts < self._stale_hit_repeat_window:
+                req_status.stale_hit_streak += 1
+                req_status.stale_hit_repeat_count += 1
+                if req_status.stale_hit_streak >= self._stale_hit_max_lookups:
+                    req_status.stale_hit_streak = 0
+                    req_status.stale_hit_fallback_count += 1
+                    _path_wall = (
+                        now - req_status.stale_hit_wall_start
+                        if req_status.stale_hit_wall_start > 0.0
+                        else 0.0
                     )
-                return 0, False
+                    _force_escape = (
+                        self._stale_hit_fallback_limit > 0
+                        and req_status.stale_hit_fallback_count
+                        >= self._stale_hit_fallback_limit
+                    ) or (
+                        self._stale_hit_ttl_secs > 0
+                        and req_status.stale_hit_wall_start > 0.0
+                        and _path_wall >= self._stale_hit_ttl_secs
+                    )
+                    logger.info(
+                        "KV-LOOKUP stale-hit fallback req=%s hit=%d budget=%d "
+                        "fallbacks=%d wall=%.1f",
+                        req_status.req.request_id,
+                        num_hit_tokens,
+                        self._stale_hit_max_lookups,
+                        req_status.stale_hit_fallback_count,
+                        _path_wall,
+                    )
+                    if _force_escape:
+                        logger.info(
+                            "KV-LOOKUP SERVERKILL req=%s hit=%d fallbacks=%d "
+                            "wall=%.1f -> escape (0, False) until boundary "
+                            "change",
+                            req_status.req.request_id,
+                            num_hit_tokens,
+                            req_status.stale_hit_fallback_count,
+                            _path_wall,
+                        )
+                        req_status.stale_hit_escape = True
+                        req_status.stale_hit_pinned_until = 0.0
+                        req_status.stale_hit_fallback_count = 0
+                    elif self._stale_hit_pin_seconds > 0:
+                        req_status.stale_hit_pinned_until = (
+                            time.monotonic() + self._stale_hit_pin_seconds
+                        )
+                    return 0, False
+            else:
+                # Identical boundary but outside the repeat window: re-arm
+                # the streak (fresh attempt) while keeping the escape
+                # accounting (fallback_count/wall_start) across slow cycles.
+                req_status.stale_hit_streak = 0
         else:
             req_status.stale_hit_streak = 0
             req_status.stale_hit_repeat_count = 0
+            req_status.stale_hit_fallback_count = 0
+            req_status.stale_hit_wall_start = 0.0
+            req_status.stale_hit_escape = False
         req_status.stale_hit_last_hit_tokens = num_hit_tokens
         req_status.stale_hit_last_num_computed = num_computed_tokens
         req_status.stale_hit_last_ts = now
 
         return num_hit_tokens, bool(num_hit_tokens)
+
+    def is_stale_hit_escape(self, request: Request) -> bool:
+        """ESC211 2026-09-21: scheduler-core hook (duck-typed).
+
+        True while this connector is in escape mode for the request — it is
+        answering (0, False) for an identical (hit, boundary) wedge, and the
+        scheduler core may relax the full-sequence admission gate
+        (VLLM_KV_OFFLOAD_ESCAPE_RELAX_FULL_FIT) so the chunked recompute
+        path can schedule it. Cleared by the connector on any boundary
+        change.
+        """
+        req_status = self._req_status.get(request.request_id)
+        return req_status is not None and req_status.stale_hit_escape
 
     def update_state_after_alloc(
         self, request: Request, blocks: KVCacheBlocks, num_external_tokens: int
