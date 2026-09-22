@@ -844,4 +844,15 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   offload I/O). CLOSED rows ledger add: [18:42:04], [18:47:24],
   [18:52:44] (13; soak peak continues to ~21:09). Envelope stayed
   green the whole window.
+- BAND OSCILLATION (cycles 109-110, 19:01-19:10): cycle 109 CYCLE_OK
+  ([18:57:56] hb=200, zero-window cleared, ev→69,454). Cycle 110 then
+  flagged ONE fresh hb=000 row [19:03:16], sandwiched between clean
+  hb=200 rows [18:57:56]/[19:08:16] with progress climbing straight
+  through it (fb 85→86→90, e2 69,454→73,662→78,037) — the lightest
+  band shape: a single-cell transient whose 5-minute window caught one
+  >20 s wall. Triage 19:10:38: manual heartbeat POST #5 → **HBC=200
+  HB_LAT=1.474637 s**, health=200 (pipe serving fast again within
+  ~7.5 min of the row). CLOSED rows ledger add: [19:03:16] (band
+  ledger = 6 rows + cluster-3; soak runs to ~21:09 with the band
+  expected to keep oscillating; envelope never broke).
 
