@@ -781,4 +781,14 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   `6ba78a624ab898310b4c80c6613c59b6` = `tools/canary5m.sh` mirror. Old
   `/mnt/data/.../logs/canary/` = FROZEN WEDGE ZONE until user reboot.
   Soak continues (evicted_total ~29.5k at 17:39, climbing under churn).
+- Post-re-arm hb congruence check PASSED: a FRESH hb=000 appeared at
+  [17:44:20] (ev 29562→31166, industrial churn window) — cycle-100 lane
+  escalated per rule; orchestrator triaged contemporaneously (17:47:54,
+  3m34s after the row): manual heartbeat POST → HTTP 200 in **3.426813 s**
+  (budget 20 s), health=200 → LOAD-CONGESTION class, same as the
+  16:57/17:13/17:19 cluster. Cycle 101 (fix-64 lane, after one stop/recover
+  round-trip) verified via verbatim probe: CYCLE_OK under the documented
+  pre-triage phrasing (station 27057, health=200, cadence 17:39→17:44
+  5:20~nominal); a parallel direct probe (17:48:46) returned the identical
+  read. The v3.3-era chain is at cycle 101; next rows land ~17:50+.
 
