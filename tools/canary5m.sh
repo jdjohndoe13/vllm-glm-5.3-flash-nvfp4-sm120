@@ -1,13 +1,23 @@
 #!/bin/bash
-# canary v3 — native-engine watchdog (testcomp2, localhost:1025, no docker)
-# One row per 300 s appended to /tmp/canary5m.log; state in /tmp/canary.state.
-# v3 adds shm= (shared-memory broadcast stall), gpu= (GPU lock), NEWBOOTLOG rebase.
+# canary v3.1 — native-engine watchdog (testcomp2, localhost:1025, no docker)
+# One row per 300 s appended to $ROWLOG (relocated off /tmp; survives reboots);
+# state in $STATE. v3 adds shm= (shared-memory broadcast stall), gpu= (GPU lock),
+# NEWBOOTLOG rebase. v3.1 adds hb= (1-token completion heartbeat; 000 = 20 s
+# timeout -> ALERT: SERVE-WEDGE) and the relocation off /tmp.
 set -uo pipefail
 
 LOGDIR=/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/logs
-STATE=/tmp/canary.state
-ROWLOG=/tmp/canary5m.log
+CANARY_DIR=/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/logs/canary
+STATE="$CANARY_DIR/canary.state"
+ROWLOG="$CANARY_DIR/canary5m.log"
+HB_PAYLOAD="$CANARY_DIR/hb.json"
 URL=http://localhost:1025
+
+mkdir -p "$CANARY_DIR" 2>/dev/null
+if [ ! -d "$CANARY_DIR" ] || [ ! -w "$CANARY_DIR" ]; then
+  echo "canary: cannot create/write $CANARY_DIR - bailing (relay reports CANARY_DEAD)" >&2
+  exit 1
+fi
 
 P_PAT='(api_server|EngineCore|Worker_TP)'   # p= discriminator; census-deployed N=9
 SHM_PAT='No available shared memory broadcast block'
@@ -133,9 +143,18 @@ while true; do
     TAG="$TAG ALERT: GPU-LOCK($DGPU)"
   fi
 
-  # ---- emit row ----
-  printf '[%s] h=%s p=%s 500=%s oom=%s shm=%s gpu=%s fb=%s kv=%s rmax=%s rep=%s apc=%s bytes=+%s ev=%s,%s,%s%s\n' \
-    "$(date +%H:%M:%S)" "$H" "$P" "$C500" "$COOM" "$DSHM" "$DGPU" \
+  # ---- heartbeat (v3.1): 1-token completion; 000 = 20 s timeout -> SERVE-WEDGE ----
+  HBC=$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d @"$HB_PAYLOAD" "$URL/v1/chat/completions" 2>/dev/null); HBR=$?
+  if [ "$HBR" = 28 ]; then
+    HBC=000
+    TAG="$TAG ALERT: SERVE-WEDGE"
+  elif [ -z "$HBC" ]; then
+    HBC=000
+  fi
+
+  # ---- emit row (hb= sits between gpu= and fb=) ----
+  printf '[%s] h=%s p=%s 500=%s oom=%s shm=%s gpu=%s hb=%s fb=%s kv=%s rmax=%s rep=%s apc=%s bytes=+%s ev=%s,%s,%s%s\n' \
+    "$(date +%H:%M:%S)" "$H" "$P" "$C500" "$COOM" "$DSHM" "$DGPU" "$HBC" \
     "$FBV" "$KVV" "$rmv" "$REPV" "$APCV" "$BYTES" "$EV1" "$EV2" "$EV3" "$TAG" >> "$ROWLOG"
 
   # ---- persist state for next row ----
