@@ -1,17 +1,19 @@
 #!/bin/bash
-# canary v3.2 — native-engine watchdog (testcomp2, localhost:1025, no docker)
-# One row per 300 s appended to $ROWLOG (relocated off /tmp; survives reboots);
-# state in $STATE. v3 adds shm= (shared-memory broadcast stall), gpu= (GPU lock),
-# NEWBOOTLOG rebase. v3.1 adds hb= (1-token completion heartbeat; 000 = 20 s
-# timeout -> ALERT: SERVE-WEDGE) and the relocation off /tmp. v3.2 drops -u
-# (a single unbound var killed the station silently at 13:31 on 2026-09-22 —
-# disabled entirely as a direct result) and adds the EXIT trap so ANY silent
-# death leaves a CANARY-EXIT row (rc + time) for the relay to catch.
+# canary v3.3 — native-engine watchdog (testcomp2, localhost:1025, no docker)
+# One row per 300 s appended to $ROWLOG; state in $STATE (v3.1 relocated off /tmp;
+# v3.2 added hb= + EXIT trap and dropped -u after the 13:31 silent death; v3.3
+# relocates the canary home to $HOME (ext4) and makes the STATE write APPEND-ONLY:
+# the ntfs3 driver BUG (fs/iomap/buffered-io.c:1061 -> ntfs_file_write_iter Oops,
+# kernel journal 2026-09-22 17:13:29) wedged/killed both v3.2 stations on the
+# truncate-rewrite of canary.state — appending never truncates, so the wedge op
+# class is gone from the canary's own behavior. Readers use last-match-per-key,
+# so the journal grows ~36KB/day and needs no rotation. Rows continue in ONE
+# file: the historical rowlog was cp'd (read-only) from the wedged ntfs3 dir.
 set -o pipefail
 
 LOGDIR=/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/logs
-CANARY_DIR=/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/logs/canary
-STATE="$CANARY_DIR/canary.state"
+CANARY_DIR="$HOME/vllm-glm-5.3-flash-nvfp4-sm120-logs"
+STATE="$CANARY_DIR/canary.state.journal"
 ROWLOG="$CANARY_DIR/canary5m.log"
 HB_PAYLOAD="$CANARY_DIR/hb.json"
 URL=http://localhost:1025
@@ -164,8 +166,9 @@ while true; do
     "$(date +%H:%M:%S)" "$H" "$P" "$C500" "$COOM" "$DSHM" "$DGPU" "$HBC" \
     "$FBV" "$KVV" "$rmv" "$REPV" "$APCV" "$BYTES" "$EV1" "$EV2" "$EV3" "$TAG" >> "$ROWLOG"
 
-  # ---- persist state for next row ----
-  printf '%s\n' "shm_last=$SHM_C" "gpu_last=$GPU_C" "prev_h=$H" "bootlog=$L" "offset=$SZ" > "$STATE"
+  # ---- persist state for next row (v3.3: APPEND-ONLY — never truncate) ----
+  printf 'shm_last=%s\ngpu_last=%s\nprev_h=%s\nbootlog=%s\noffset=%s\n' \
+    "$SHM_C" "$GPU_C" "$H" "$L" "$SZ" >> "$STATE"
 
   sleep 300
 done
