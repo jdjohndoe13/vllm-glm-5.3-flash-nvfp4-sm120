@@ -815,4 +815,16 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   reported per rule and triaged on arrival (the immutable pre-triaged
   set is NOT extended by this wave). Evidence preserved #2:
   `logs/soak-20260922-1820-preserve.log` (cp 18:19, through iter 32).
+- BAND CONTINUATION + DEEPENING (cycles 106-107, 18:18-18:39): rows
+  [18:20:45]/[18:26:03] back to hb=200 (band flicker), then FRESH hb=000
+  rows [18:31:23] + [18:36:43] back-to-back. Cycle-107-era triage at
+  18:39:22: manual heartbeat POST #3 HBC=000 HB_LAT=20.001264 (third
+  consecutive full-budget timeout), health=200; soak iters 33-37 walls
+  DEEPEN — [18:34:12] ITER 36 M1=**219.298 s** X36=107.34 (largest so
+  far), ITER 37 M1=46.37/X37=51.09/M1G=108.01, evt 59,722→62,606. The
+  escalation scale is monotone-ish with churn depth; the 20 s hb budget
+  remains far below current walls. CLOSED rows ledger add: [18:31:23],
+  [18:36:43]. Posture unchanged: soak-peak overload is the EXAMINED
+  phenomenon (not a fault); engine envelope clean throughout (p=9
+  baseline, 500/oom/shm/gpu=0, no CANARY-EXIT, health=200 always).
 
