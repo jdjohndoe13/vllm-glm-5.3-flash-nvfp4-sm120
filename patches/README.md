@@ -717,4 +717,38 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Watch in fresh relay cycles: any wedge recurrence (freshness probe catches a
   stalled-alive station), and any serving-window shm emissions on the new boot
   (2 startup-window shm lines were absorbed at the rebase baseline).
+- 17:00–17:23 relay addendum (cycles 96–99): three `hb=000` SERVE-WEDGE rows
+  (16:57:57, 17:13:29, 17:19:03) clustered across 22 min while the tier hit
+  saturation (`allocated=12412` = `evictable_len` = cap, free list 0,
+  `evicted_total` 152→18042) under soak+client load. Each triaged live:
+  health=200, fb/kv/apc/ev counters still growing, KV-LOOKUP + engine
+  metrics flowing → verified LOAD-CONGESTION class, not a functional wedge;
+  tag and escalation posture unchanged.
+- Canary station death #2 (~17:13–17:16, post-[17:13:29] row): abrupt,
+  NO `CANARY-EXIT` row (hard-signal class — the v3.2 EXIT trap is correctly
+  silent there), no oom-killer trace, unknown actor. Cycle-98's probe
+  detected it via the `station.pid` + `kill -0` check — v3.2 detection depth
+  proving its purpose. Relaunch #2 (17:18:40) succeeded THROUGH a malformed
+  wrapper: in `bash -c "cd canary_dir && nohup bash canary5m.sh & sleep 3; …"`
+  the `&` backgrounded the WHOLE `cd && nohup` group, so the foreground
+  relative reads ran in $HOME (spurious ENOENTs interpreted as a suspected
+  dir wedge #2 — disproved by cd-probes 17:20: the dir was healthy all
+  along; no second kernel wedge occurred). The nohup'd child (pid 23448)
+  survived the ssh-session teardown (HUP-immune), resumed from the saved
+  state offset (same bootlog epoch, no rebase) and itself wrote the
+  [17:19:03] row. `station.pid` hand-aligned to 23448 at 17:22:44 — note
+  the pidfile is written by the launcher step, not the script.
+- FS attribution CORRECTION: `/mnt/data` = **ntfs3** mount
+  (`/dev/nvme0n1p4`, ntfs3 driver). The wedged functions recorded today
+  (`do_truncate`, `lock_two_nondirector`, `iterate_dir`) are fs/ntfs3
+  driver paths; the "XFS wedge" wording above (and any earlier "XFS"
+  mention for this dir) is a misattribution — corrected 09-22 evening.
+  ("no XFS recovery lines" after the 16:24 boot also reads correctly
+  a posteriori: none ever existed.)
+- Soak ladder: iters 10–13 (17:11–17:19) each ALERT — M1 42/37/53/10 s,
+  shard-hits oscillating 8→156→8→172/172 while KV-LOOKUP keeps "reporting"
+  hits, `evt` → 18042: the soak's designed silent-tier-loss detection
+  confirmed live. Evidence preserved: cp `/tmp/soak.log` →
+  `logs/soak-20260922-1720-preserve.log` (17:20:19) since /tmp is wiped on
+  reboot. Ladder continues to ~21:09.
 
