@@ -791,4 +791,28 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   pre-triage phrasing (station 27057, health=200, cadence 17:39→17:44
   5:20~nominal); a parallel direct probe (17:48:46) returned the identical
   read. The v3.3-era chain is at cycle 101; next rows land ~17:50+.
+- SOAK-PEAK SATURATION BAND (18:10–18:19): cycles 102/103/104 all CYCLE_OK
+  (rows [17:54:53], [17:59:59], [18:05:02] hb=200, ev→44,074). Cycle 105
+  then reported fresh hb=000 rows [18:10:22] and [18:15:43] (SERVE-WEDGE
+  tags; envelope clean: h=200 p=9, 500/oom/shm/gpu=0, no CANARY-EXIT).
+  Contemporaneous triage 18:17:30: TWO manual heartbeat POSTs EACH TIMED
+  OUT at the full 20 s budget (HBC=000, HB_LAT=20.001678 / 20.001072)
+  while health=200 and counters climb (ev 44,074→47,366→52,070) — a
+  PERSISTENT serve-pipe band, NOT the 17:44-style transient. Correlation
+  is exact: soak iters 25–32 (17:57–18:18) show M1 walls 22–65 s
+  oscillating severe (two flicker-ok: iters 26 M1=9.1, 30 M1=4.7), M1G
+  (GET) walls 27–57 s, the re-report signature in pure form on every
+  iteration (`hit=NNNNN … cov=0/NN` on ~5-guide traces), and ONE ESC211
+  guard acting as designed (17:59:38 `KV-LOOKUP stale-hit fallback …
+  budget=8 fallbacks=1 wall=3.5`). Cause chain: the soak's marker submit
+  rides the scheduler burn loop at tier full (evt 39,258→54,730 by iter
+  32); the 20 s hb POST budget is simply below the current burn-loop
+  walls, so the canary's hb=000 and the manual probes measure the SAME
+  saturation. Classification: EXPECTED soak-peak behavior (the soak's
+  designed disease-window, ~58 iters remaining to the ~21:09 end),
+  engine ENVELOPE intact (no process/fs/OOM engagement). Rows keep their
+  honest ALERT tags; each future fresh hb=000 row during the run gets
+  reported per rule and triaged on arrival (the immutable pre-triaged
+  set is NOT extended by this wave). Evidence preserved #2:
+  `logs/soak-20260922-1820-preserve.log` (cp 18:19, through iter 32).
 
