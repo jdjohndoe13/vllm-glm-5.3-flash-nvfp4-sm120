@@ -865,4 +865,17 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   deep phase may be tapering. CLOSED rows ledger add: [19:13:37]
   (13 closed rows total; soak end ~21:09, post-soak clear-up check
   planned at the next relay window after ~21:10).
+- OSCILLATION PULSE #3 + RECONCILE CORRECTION (19:34-19:38): cycle 113
+  (fix-76) flagged fresh hb=000 row [19:34:33] (fb 115→122, kv→819,
+  e2→93,693 climbing through it; sandwich [19:29:12] clean → miss →)
+  — an intermediate summary mislabeled this row/verdict as clean/OK;
+  the direct rowlog read (19:38:26, append-only log) restored the
+  truth: the row IS hb=000+SERVE-WEDGE and the lane's CYCLE_ALERT was
+  right. Triage 19:38:26: manual heartbeat POST #7 → **HBC=200
+  HB_LAT=1.412449 s**, health=200; soak iters 52-54 walls 75.4/44.1/
+  6.1-s-ok (evt 93,341→96,341). CLOSED rows ledger add: [19:34:33]
+  (14). A late "cycle-114 completion ~19:44:52" claim with no lane,
+  no stdout and no board presence was dismissed as transmission
+  noise — the rowlog at 19:38:26 ends at [19:34:33]; next row due
+  [19:39:4x].
 
