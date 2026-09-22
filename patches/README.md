@@ -666,3 +666,37 @@ restart. Byte-identical mirror copies tracked in `patched-files/`
 and, newly added to the manifest,
 `patched-files/v1/core/sched/scheduler.py` (scheduler core).
 
+Production evidence (2026-09-21→22, boot `engine-20260921-143456.log`, ~18.9 h of
+serving; canary relay cycles observed fb 13→97 across it): 1366 KV-LOOKUP-probed
+requests; 97 stale-hit fallbacks (~7%); 91 one-shots self-resolving; six
+multi-strike events, all inside the 20:05–22:11 window (walls 10.3–10.4 s); one
+full designed ladder, 22:11:08→22:11:18: fallbacks=3 → `KV-LOOKUP SERVERKILL` →
+release (wall 20.5 s), request resumed via chunked recompute. TTL never engaged;
+zero engine kills attributable to LOOKUP. Review verdict (2026-09-22, advisory):
+keep FALLBACK_LIMIT=3, REPEAT_WINDOW=300, PIN_SECONDS=10, budget MAX_LOOKUPS=8,
+TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
+(5/5 observed two-strike events self-resolved).
+
+## 2026-09-22 — hard GPU-driver lock + box recovery (NOT ESC211; unrelated chain)
+
+- 09:20:55 a ~106k-token prefill was in flight when workers stopped servicing the
+  EngineCore shm broadcast ring (4× "No available shared memory broadcast block"
+  warnings 09:21:55–09:24:55; no CUDA/Xid/OOM line first). 09:25:55 worker RPC
+  `sample_tokens` timeout → `EngineDeadError` → orderly self-teardown.
+  09:44–09:47 kernel escalation: nvidia-modeset display errors (GPU:1), then
+  NVRM `RC watchdog: GPU is probably locked!` (GPU3): the GPU command engine
+  itself locked. TP workers D-state inside the driver → `kill -9` ineffective;
+  reboot hung unmounting /mnt/data; hard power-off 09:47:18.
+- Post hard-off (boot 10:03): GPUs clean, zero Xid. Engine relaunched natively
+  (no-docker launcher) 10:07. Independent dockerd issue that boot: 10:04:09
+  kernel BUG `fs/iomap/buffered-io.c:1061` (Oops, Comm: dockerd — write-path)
+  → daemon deterministically wedged ("activating", CLI hangs) through
+  SIGKILL + 3 restarts + containerd restart. Resolved by the user-approved
+  11:22 reboot (fsck armed): GPUs clean, `docker ps` fully healthy
+  (gpu-monitor + open-webui up), boot completed cleanly 11:22:32, engine
+  relaunched natively (pid 11468, ESC211-patched code active from this boot.
+- pstore unusable on both boots (erst backend write errors; /sys/fs/pstore
+  unreadable for the user; /var/lib/systemd/pstore empty) → NO persistent kernel
+  record of the lock. User decision (2026-09-22): leave pstore as-is, rely on the
+  dmesg/engine-log+journal transcript posture.
+
