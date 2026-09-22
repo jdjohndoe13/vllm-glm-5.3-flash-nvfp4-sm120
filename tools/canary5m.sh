@@ -1,10 +1,13 @@
 #!/bin/bash
-# canary v3.1 — native-engine watchdog (testcomp2, localhost:1025, no docker)
+# canary v3.2 — native-engine watchdog (testcomp2, localhost:1025, no docker)
 # One row per 300 s appended to $ROWLOG (relocated off /tmp; survives reboots);
 # state in $STATE. v3 adds shm= (shared-memory broadcast stall), gpu= (GPU lock),
 # NEWBOOTLOG rebase. v3.1 adds hb= (1-token completion heartbeat; 000 = 20 s
-# timeout -> ALERT: SERVE-WEDGE) and the relocation off /tmp.
-set -uo pipefail
+# timeout -> ALERT: SERVE-WEDGE) and the relocation off /tmp. v3.2 drops -u
+# (a single unbound var killed the station silently at 13:31 on 2026-09-22 —
+# disabled entirely as a direct result) and adds the EXIT trap so ANY silent
+# death leaves a CANARY-EXIT row (rc + time) for the relay to catch.
+set -o pipefail
 
 LOGDIR=/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/logs
 CANARY_DIR=/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/logs/canary
@@ -18,6 +21,10 @@ if [ ! -d "$CANARY_DIR" ] || [ ! -w "$CANARY_DIR" ]; then
   echo "canary: cannot create/write $CANARY_DIR - bailing (relay reports CANARY_DEAD)" >&2
   exit 1
 fi
+
+# v3.2: EXIT trap — any silent death (signal, unbound var, crash) leaves an
+# alert row instead of blind gap. Single-quoted so $date/$? evaluate at fire time.
+trap 'printf "[%s] ALERT: CANARY-EXIT rc=%s\n" "$(date +%H:%M:%S)" "$?" >> "$ROWLOG" 2>/dev/null' EXIT
 
 P_PAT='(api_server|EngineCore|Worker_TP)'   # p= discriminator; census-deployed N=9
 SHM_PAT='No available shared memory broadcast block'
