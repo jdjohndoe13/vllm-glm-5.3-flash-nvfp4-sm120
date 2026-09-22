@@ -904,4 +904,17 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   measured manual-HB + envelope + progress; formal sandwich close
   when the [20:31:3x] recovery row lands (lane-reported). Soak end
   ~21:09 (~10-12 ladder iters left).
+- OSCILLATION PULSE #6 — 3-MISS STREAK (20:20-20:35): no recovery
+  row yet: [20:31:36] is the THIRD consecutive hb=000 (all
+  SERVE-WEDGE, envelope clean, engine 10755 RLl running — NOT
+  D-wedged). Progress climbs through all three (fb 152→171,
+  kv→1146, e2→127,425; zero-progress-FREE — this is burn-loop
+  compression, not the 18:47 GET-occupation freeze shape).
+  Manual heartbeat POST #10 (20:35:01, 3.5 min after [20:31:36])
+  → **HBC=200 HB_LAT=0.256199 s**, health=200 — the pipe stays
+  functional in the gap; misses are canary-query contention inside
+  the burn window while soak walls hold M1 41-66 s (iters 71-73 all
+  ALERT, evt→132,920). CLOSED rows ledger add: [20:31:36] (18). If
+  the streak reaches 5 misses or any zero-progress freeze appears,
+  escalate to engine-metrics capture immediately. Soak end ~21:09.
 
