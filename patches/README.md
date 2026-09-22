@@ -855,4 +855,14 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   ~7.5 min of the row). CLOSED rows ledger add: [19:03:16] (band
   ledger = 6 rows + cluster-3; soak runs to ~21:09 with the band
   expected to keep oscillating; envelope never broke).
+- OSCILLATION PULSE #2 (cycle 111, 19:13-19:22): fresh hb=000 row
+  [19:13:37], again sandwich-shaped (clean [19:08:16] before,
+  [19:18:43] hb=200 after; progress climbed through: fb 90→95→103,
+  e2 78,037→82,309→85,365). Triage 19:22:14: manual heartbeat POST #6
+  → **HBC=200 HB_LAT=0.237372 s** (fastest yet), health=200. Soak
+  walls easing: ITER 48 (19:20:00) M1=44.45 ALERT but ITER 49
+  (19:21:32) **ok: M1=2.49 s, M1G=2.83 s**, evt→87,261 — the ladder's
+  deep phase may be tapering. CLOSED rows ledger add: [19:13:37]
+  (13 closed rows total; soak end ~21:09, post-soak clear-up check
+  planned at the next relay window after ~21:10).
 
