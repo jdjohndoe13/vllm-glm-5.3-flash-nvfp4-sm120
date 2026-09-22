@@ -827,4 +827,21 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   [18:36:43]. Posture unchanged: soak-peak overload is the EXAMINED
   phenomenon (not a fault); engine envelope clean throughout (p=9
   baseline, 500/oom/shm/gpu=0, no CANARY-EXIT, health=200 always).
+- ZERO-PROGRESS WINDOW DECODED (cycle 108, triage 18:54:15): rows
+  [18:42:04]/[18:47:24]/[18:52:44] hb=000, and the latter two show fb/kv/
+  apc deltas = 0 with e2-field frozen 66,254. Root mechanism measured:
+  **[18:53:31] soak ITER 39 completed with M1G=569.879579 s** (one GET
+  request occupied the scheduler burn loop for ~9.5 min — the whole
+  canary cadence window), M1=100.5/X39=67.1, evt=66,254; iters 38-39 all
+  ALERT (M1 39.3/100.5). Engine census ALIVE: APIServer 10195 SLsl,
+  EngineCore 10755 **RLl** (R = burning), both 2h30m uptime; hb probe #4
+  HBC=000 at 20.002046 s; health=200. Engine-metrics anatomy at the
+  window: `kv_offload_cpu_cache_write_usage_perc=0.000645` (0.06%),
+  `..._read_usage_perc=0.0`, allocation_size_count=68/sum=272 — the
+  CPU cache is doing ~nothing while hits continue to be re-reported:
+  the ESC215-class silent-tier-loss anatomy confirmed at saturation
+  (tokens re-report big `hit=` values, zero coverage, zero actual
+  offload I/O). CLOSED rows ledger add: [18:42:04], [18:47:24],
+  [18:52:44] (13; soak peak continues to ~21:09). Envelope stayed
+  green the whole window.
 
