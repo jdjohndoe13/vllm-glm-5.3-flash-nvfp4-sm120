@@ -917,4 +917,17 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   ALERT, evt→132,920). CLOSED rows ledger add: [20:31:36] (18). If
   the streak reaches 5 misses or any zero-progress freeze appears,
   escalate to engine-metrics capture immediately. Soak end ~21:09.
+- POST-SOAK EVIDENCE #3 PRESERVED (21:33): machine-side `cp` →
+  `logs/soak-20260922-2130-preserve.log` (ext4 target; /tmp source still
+  in place). md5 `faff53af6f99815f767bc8df2feaaf6f` IDENTICAL on both
+  sides. 92 lines / 30,650 bytes — last five iters: 85 [21:10:18] ALERT
+  M1=27.4s, 86 [21:12:25] ok 0.69s, 87 [21:15:24] ok 0.75s, 88
+  [21:19:12] ALERT M1=30.95s, 89 [21:22:34] ALERT
+  M1=25.69s/X89=42.54s/M1G=27.50s; log's own end marker
+  `=== soak end ===` at 21:23:58. soak_watch verified GONE at 21:33
+  (pgrep clean; ended on its own, slightly past the designed ~21:09);
+  grep for DONE/END/COMPLETE found no uppercase lines (end marker is
+  lowercase). NOTE: run's log is compact (~330 B/line, ~1 line/iter),
+  NOT the expected ~3200 lines / 250-280 KB — noted and preserved
+  as-is. Copy-mode only lane (no restarts, no state writes, no kills).
 
