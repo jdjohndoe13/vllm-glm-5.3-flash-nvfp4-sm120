@@ -8,6 +8,9 @@
 # against evicted_total and CPU-TIER-EVICT lines to separate legit eviction
 # from the silent uncounted removal (the "disease").
 # Log: /tmp/soak.log — safe to run alongside real traffic.
+# v1.1 (2026-09-22): LK reads the native engine log via latest.log
+# (docker-free boot era — the old docker-logs read was dead and produced
+# an empty LK every iteration); container constant C kept but unused.
 set -uo pipefail
 C=vllm-glm-5.3-flash-nvfp4
 BASE=http://localhost:1025
@@ -47,7 +50,7 @@ for i in $(seq 0 89); do
   T_M1=$(curl -s --max-time 600 -o /dev/null -w '%{time_total}' -X POST "$BASE/v1/chat/completions" -H 'Content-Type: application/json' -d @/tmp/soak-M1.json)
   T_X=$(curl -s --max-time 600 -o /dev/null -w '%{time_total}' -X POST "$BASE/v1/chat/completions" -H 'Content-Type: application/json' -d @/tmp/soak-X$i.json)
   T_G=$(curl -s --max-time 600 -o /dev/null -w '%{time_total}' -X POST "$BASE/v1/chat/completions" -H 'Content-Type: application/json' -d @/tmp/soak-M1G.json)
-  LK=$(docker logs --since 130s "$C" 2>&1 | grep -a 'KV-LOOKUP' | tail -1 | sed 's/.*(EngineCore[^)]*) //')
+  LK=$(grep -a 'KV-LOOKUP' /mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/logs/latest.log 2>/dev/null | tail -1 | sed 's/.*(EngineCore[^)]*) //')
   EVT=$(curl -s -m 5 "$BASE/metrics" | grep -a 'kv_offload_cpu_evicted_total' | grep -av '^#' | grep -oa '[0-9.]*$')
   TAG=ok
   if [ "$i" -gt 0 ] && python3 -c "exit(0 if float('$T_M1') > 10 else 1)"; then TAG=ALERT; fi
