@@ -878,4 +878,16 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   no stdout and no board presence was dismissed as transmission
   noise — the rowlog at 19:38:26 ends at [19:34:33]; next row due
   [19:39:4x].
+- OSCILLATION PULSE #4 (19:54-20:02): cycle 116 (fix-79) flagged
+  fresh hb=000 row [19:54:58] (sandwich [19:49:37] → [19:59:58]
+  clean; fb 133→135→135, kv→951, e2→110,244 climbing through) plus a
+  zero-progress pair note ([19:54:58]→[19:59:58] identical fb=135
+  with rmax=0 — informational GET-burn tail). Triage 20:02:55:
+  manual heartbeat POST #8 → **HBC=200 HB_LAT=15.340971 s** (slowest
+  successful yet — the ladder compressed the pipe nearly to the
+  20 s budget), health=200; soak iter 60 (19:56:22) **M1=63.95 s
+  ALERT sits inside the missed window**; iters 61-62 ok 3.6/7.7 s;
+  evt→110,908. Saturation itself is NOT over — ladder still hot;
+  the row is closed as functional. CLOSED rows ledger add:
+  [19:54:58] (15).
 
