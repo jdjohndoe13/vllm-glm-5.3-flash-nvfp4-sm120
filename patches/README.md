@@ -751,4 +751,34 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   confirmed live. Evidence preserved: cp `/tmp/soak.log` →
   `logs/soak-20260922-1720-preserve.log` (17:20:19) since /tmp is wiped on
   reboot. Ladder continues to ~21:09.
+- FS wedge #3 — ROOT CAUSE CLOSED (17:30–17:36): kernel journal smoking gun
+  at 17:13:29 — `kernel BUG at fs/iomap/buffered-io.c:1061! Oops: invalid
+  opcode [#1] ntfs_file_write_iter+0x263/0x300 [ntfs3]`. This SINGLE event
+  explains the whole wedge cluster on the canary dir: (a) it killed v3.2
+  station 15447 outright INSIDE the per-cycle `canary.state` truncate — no
+  trap, no `CANARY-EXIT` row, no oom (the "mystery" death #2 of cycle 98);
+  the same write path (per-cycle truncate-rewrite) then wedged relaunch
+  station 23448 D-state `WCHAN=do_truncate` (SIGKILL-proof) — kernel-fs ops
+  on the dir are off-limits; 23448 is left unkillable in place and dies with
+  the user's reboot. Note `kill -0` SUCCEEDS against a D-blocked pid — the
+  probe's 8-min freshness bar was what actually caught the wedged-but-
+  "alive" station (validated design decision, twice today).
+- User decision (17:36): temporary canary data → `~/vllm-glm-5.3-flash-
+  nvfp4-sm120-logs` (`$HOME` = /dev/nvme0n1p5, **ext4** — escapes the ntfs3
+  wedge class entirely); reboot deferred to the user.
+- Canary **v3.3** shipped (17:31 local edit → 17:38 deploy): state write
+  changed from truncate (`> STATE`) to **APPEND-ONLY** (`>> STATE`) into
+  `canary.state.journal` (readers already last-match-per-key), so the
+  overwriting write that triggered all three wedge visits no longer exists
+  in the canary's own behavior; home = `$HOME/vllm-glm-5.3-flash-nvfp4-
+  sm120-logs/`; historical rowlog cp'd READ-ONLY from the old dir into the
+  new rowlog (single-file continuity 12:45→now); hb.json byte-copy (md5
+  parity). Station 27057 launched 17:38-39 (correct one-liner shape; ssh
+  timeout on the held session = known-benign), pidfile minted 27057,
+  ALIVE, first row **[17:39:00] h=200 hb=200 fb=27 kv=215** — counters
+  carried across the 17:19:03→17:39:00 park window via the state-journal
+  offset resume; NO NEWBOOTLOG (same bootlog epoch as designed). md5
+  `6ba78a624ab898310b4c80c6613c59b6` = `tools/canary5m.sh` mirror. Old
+  `/mnt/data/.../logs/canary/` = FROZEN WEDGE ZONE until user reboot.
+  Soak continues (evicted_total ~29.5k at 17:39, climbing under churn).
 
