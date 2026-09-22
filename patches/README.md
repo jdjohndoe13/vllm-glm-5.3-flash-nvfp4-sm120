@@ -699,4 +699,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   unreadable for the user; /var/lib/systemd/pstore empty) → NO persistent kernel
   record of the lock. User decision (2026-09-22): leave pstore as-is, rely on the
   dmesg/engine-log+journal transcript posture.
+- Monitoring-lane addendum (~13:55 onward): canary v3.1's station died silently
+  in a bash `do_truncate` on its tiny state file (`canary.state`,
+  reopen-truncated every 5 min since 11:44 — the only operation class that
+  wedged). Subsequent metadata ops on that inode/directory wedged XFS likewise
+  (rename → `lock_two_nondirector`, dir listing → `iterate_dir`) while the
+  engine (append-only writes, new-file creation) stayed fully healthy; 2
+  D-state pids parked until reboot. User ran `sudo -n systemctl reboot -f`
+  ~16:24 (direct force path; bypasses the D-state-prone orderly unmount that
+  hard-hung twice earlier today): journal replay healed the canary directory
+  completely (no partial rename target survived), the wedged kernel state
+  died with the boot, engine relaunched natively (bootlog
+  `engine-20260922-162408.log`, 8/8 GPUs, docker×4, p=9, health=200). Canary
+  v3.2 station restarted (pid 15447); its first row carries the designed
+  informational `NEWBOOTLOG` rebase onto the fresh bootlog. Kernel journal for
+  the fresh boot shows no XFS recovery/repair lines (replay was silent).
+  Watch in fresh relay cycles: any wedge recurrence (freshness probe catches a
+  stalled-alive station), and any serving-window shm emissions on the new boot
+  (2 startup-window shm lines were absorbed at the rebase baseline).
 
