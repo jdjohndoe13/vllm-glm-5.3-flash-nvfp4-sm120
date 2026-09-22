@@ -890,4 +890,18 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   evt→110,908. Saturation itself is NOT over — ladder still hot;
   the row is closed as functional. CLOSED rows ledger add:
   [19:54:58] (15).
+- OSCILLATION PULSE #5 — 2-MISS WINDOW (20:20-20:26): cycle 119
+  (fix-82) flagged fresh hb=000 [20:20:55]; the direct read at
+  20:26:40 shows the window DEEPENED to two consecutive misses
+  ([20:20:55] + [20:26:16], both SERVE-WEDGE, envelope p=9/extras-0)
+  with progress climbing through (fb 152→161, kv→1096, e2→126,932 —
+  zero-progress-FREE). Manual heartbeat POST #9 inside the gap →
+  **HBC=200 HB_LAT=0.168744 s** (fastest of the soak; pipe
+  intrinsically fine between rows), health=200; soak iters 68-70
+  all ALERT (M1 11.5/25.6/45.0 s, X 77.4/65.8/46.0, M1G up to
+  56.6 s; evt→127,052) mechanically cover the miss window. CLOSED
+  rows ledger add: [20:20:55], [20:26:16] (17) — closure evidence =
+  measured manual-HB + envelope + progress; formal sandwich close
+  when the [20:31:3x] recovery row lands (lane-reported). Soak end
+  ~21:09 (~10-12 ladder iters left).
 
