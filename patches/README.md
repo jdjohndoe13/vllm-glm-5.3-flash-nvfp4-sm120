@@ -1001,4 +1001,20 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   user-owned §7 restart whenever convenient — relay continues
   either way; auto-signals for the restart remain (cluster of 2+
   consecutive misses, ANY failed manual-HB, metrics leaving idle).
+- PULSE #5 — 5th NO-SOAK MISS, LATENCY ~15s PLATEAU (23:13-23:21):
+  cycle 130 flagged fresh [23:13:44] hb=000 fb=17 kv=124 apc=311
+  (fb jumps 11→12→17, kv 107→124 through the miss window; sandwich
+  [23:08:24] clean → miss → [23:18:45] clean). Triage 23:21:14:
+  manual-HB **HBC=200 HB_LAT=15.271009** (2nd consecutive ~15 s
+  success — the hb path now spends ~75% of its 20 s budget inside
+  the same window that produces the misses; isolated hb=000 rows =
+  the >20 s tail of the SAME distribution), health=200; kv_offload
+  write/read **0.0/0.0** (4th idle sample). CLOSED: [23:13:44]
+  (09-24 ledger add: 5). ESCALATION STATUS: 5 misses in ~75 min
+  since the 22:06 re-arm, zero consecutive clusters, zero HBC
+  failures, kv-offload idle x4; success-latency ladder:
+  0.294 → 0.212 → 0.527 → 14.901 → 15.271 s. Auto-signals
+  unchanged (2+ consecutive misses, ANY HBC≠200, metrics>0).
+  User decision outstanding from pulse #4: keep verified-run vs
+  user-owned §7 restart; both safe, relay continues either way.
 
