@@ -1035,4 +1035,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   to sub-second heartbeats tonight). A 7th miss → hard re-surface;
   2+ consecutive misses or ANY HBC≠200 → immediate fail-fast
   escalation.
+- PULSE #7 — 7th NO-SOAK MISS, LADDER BREAKS (23:34-23:39): cycle
+  132 flagged fresh [23:34:30] hb=000 fb=34 kv=185 apc=343
+  (bytes+52,702, e2→55,433; sandwich [23:29:09] clean → miss; the
+  lane's stdout echo of historical [22:52:44] showed fb=2 while
+  three independent reads show fb=8 — copy-slip in the echo only,
+  log row untouched). Triage 23:39:38: recovery row [23:39:30]
+  hb=200 (fb HOLDS at 34, kv→188, apc→352, e2→58,473) + manual-HB
+  **HBC=200 HB_LAT=0.155111** — FASTEST of the epoch, at the
+  HIGHEST counters so far. CLOSED: [23:34:30] (09-24 ledger add:
+  7). TREND MODEL CORRECTED: the ladder
+  0.294 → 0.212 → 0.527 → 14.901 → 15.271 → 16.609 was NOT
+  monotonic decay — probes at LOW counters ran fast, mid-ladder
+  probes ran ~15 s, and this probe at the highest counters snapped
+  back sub-second → hb-window contention is BURSTY (coalescing with
+  the giant client's own request stream), not a fill-driven
+  degradation; single-cell hb=000 rows = the hb POST landing inside
+  a burst window. ESCALATION: 7 misses in ~100 min since re-arm,
+  zero consecutive clusters, zero HBC failures, kv-offload idle x6;
+  auto-signals unchanged (2+ consecutive misses, ANY HBC≠200,
+  metrics>0). User keep-vs-restart decision remains open; the
+  bursty model makes keep-as-is fully defensible; restart stays
+  optional for a clean hb-path slate.
 
