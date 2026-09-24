@@ -965,4 +965,20 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   miss cluster (>2 consecutive) or a failed manual-HB → user-owned
   restart decision; both misses here closed with healthy probes; no
   restart indicator.
+- PULSE #3 — 3rd NO-SOAK MISS (epic 22:42-22:48): cycle 126 flagged
+  fresh [22:42:33] hb=000 fb=7 kv=73 apc=238 (bytes+54007, e2→25,988
+  climbing; sandwich [22:37:13] clean → miss → [22:47:34] clean).
+  Triage 22:48:54: manual-HB **HBC=200 HB_LAT=0.527019**, health=200;
+  sandwich recovery row [22:47:34] hb=200 (fb→8, kv→81, e2→30,468);
+  engine metrics re-sampled: kv_offload write/read **0.0/0.0** —
+  STILL IDLE; the 09-22 soak silent-tier-loss mechanism remains
+  ABSENT; the misses read as single-cell sandwich transients under
+  the fresh boot (likely low-intensity overlap of the restarted
+  engine's warmup traffic with the canary heartbeat — all 3 misses
+  closed with healthy probes: 0.294s / 0.212s / 0.527s). CLOSED:
+  [22:42:33] (09-24 ledger add: 3). ESCALATION POSTURE: 3 misses /
+  ~31 min, ZERO consecutive-cluster, zero failed manual-HBs, metrics
+  idle ×2 — no restart indicator yet; the FOURTH miss, an HBC≠200,
+  or any zero-progress window → user-owned restart decision plane
+  (surface to the user, never self-remediate).
 
