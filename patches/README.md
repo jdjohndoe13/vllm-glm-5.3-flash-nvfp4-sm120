@@ -1017,4 +1017,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   unchanged (2+ consecutive misses, ANY HBC≠200, metrics>0).
   User decision outstanding from pulse #4: keep verified-run vs
   user-owned §7 restart; both safe, relay continues either way.
+- PULSE #6 — 6th NO-SOAK MISS, LATENCY LADDER STEEPENS (23:24-23:31):
+  cycle 131 flagged fresh [23:24:05] hb=000 fb=27 kv=156 apc=327
+  (bytes+46,472; fb 19→27 + kv 134→156 through the window — big
+  client clearly back and driving hard; sandwich [23:18:45] clean →
+  miss → [23:29:09] clean). Triage 23:31:16: manual-HB **HBC=200
+  HB_LAT=16.609373** (3rd consecutive ~15-16 s: 14.901 → 15.271 →
+  16.609 — the hb path spends ~80% of its budget CASUALLY now;
+  misses = the beyond-budget tail of the same distribution),
+  health=200; kv_offload write/read **0.0/0.0** (5th idle sample).
+  CLOSED: [23:24:05] (09-24 ledger add: 6). ESCALATION: 6 misses in
+  ~94 min since re-arm, zero consecutive clusters, zero HBC
+  failures, metrics idle x5; success-latency ladder:
+  0.294 → 0.212 → 0.527 → 14.901 → 15.271 → 16.609 s. User decision
+  STILL outstanding (from pulse #4): keep verified-run (working;
+  misses cost nothing) vs user-owned §7 restart (cleanest way back
+  to sub-second heartbeats tonight). A 7th miss → hard re-surface;
+  2+ consecutive misses or ANY HBC≠200 → immediate fail-fast
+  escalation.
 
