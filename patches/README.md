@@ -981,4 +981,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   idle ×2 — no restart indicator yet; the FOURTH miss, an HBC≠200,
   or any zero-progress window → user-owned restart decision plane
   (surface to the user, never self-remediate).
+- PULSE #4 — 4th NO-SOAK MISS + LATENCY TREND (23:03-23:12): cycle
+  129 flagged fresh [23:03:23] hb=000 fb=11 kv=101 apc=290
+  (bytes+29,597, e2→39,174 climbing; sandwich [22:58:03] clean →
+  miss → [23:08:24] clean with rmax=0 single). Triage 23:12:58:
+  manual-HB **HBC=200 HB_LAT=14.901424** — CLOSEST-TO-BUDGET success
+  of the epoch (prev closures 0.294/0.212/0.527 s: a real
+  intra-epoch SLOWING of the hb path), health=200; engine metrics
+  third sample: kv_offload write/read **0.0/0.0** STILL IDLE. CLOSED:
+  [23:03:23] (09-24 ledger add: 4). ESCALATION STATUS: 4 misses /
+  ~47 min, zero consecutive clusters, zero failed manual-HBs,
+  metrics idle x3 — the pulse-#3 RESTART-DECISION PLANE is now
+  SURFACED to the user (fourth-miss trigger fired) with the
+  honest read: envelope unbroken all epoch; hb-path latency
+  degrading inside closures (0.2→0.5→14.9 s — pipe compression
+  building on the fresh boot WITHOUT soak traffic; counters young:
+  fb 1→12, kv 27→107). User picks: keep relay-verified run as-is
+  (misses are single-cell, always enveloped), or take the
+  user-owned §7 restart whenever convenient — relay continues
+  either way; auto-signals for the restart remain (cluster of 2+
+  consecutive misses, ANY failed manual-HB, metrics leaving idle).
 
