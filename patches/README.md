@@ -949,4 +949,20 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   a deeper-wedge candidate: escalate immediately (engine-metrics
   capture, user-owned restart decision), never self-remediate.
   Old ntfs3 pair 23446/23448 CONFIRMED gone (09-24 journal replay).
+- PULSE #2 — NO-SOAK PAIR + METRICS (22:21-22:27): second 09-24
+  miss [22:21:51] hb=000 fb=1 kv=47 apc=177 (bytes+55806, e2→16,628
+  climbing) — consecutive with [22:16:30] → escalation-plane per
+  pulse #1. Triage 22:27:36: manual-HB **HBC=200 HB_LAT=0.211947**
+  (fastest of the epoch), health=200; sandwich recovery row
+  [22:27:05] hb=200 (fb→2, kv→50, e2→18,332); engine metrics sampled:
+  `vllm:kv_offload_cpu_cache_write_usage_perc = 0.0`,
+  `_read_usage_perc = 0.0` — the CPU KV-offload is COMPLETELY IDLE,
+  so the 09-22 silent-tier-loss mechanism is NOT active on 09-24;
+  the miss shape is indicative of light contention (likely the
+  192.168.2.208 giant-client prefill traffic resuming on the fresh
+  boot — counters climb through both misses; apc 159→186). CLOSED:
+  [22:21:51] (09-24 ledger add: 2). Hazard lines STAND: any future
+  miss cluster (>2 consecutive) or a failed manual-HB → user-owned
+  restart decision; both misses here closed with healthy probes; no
+  restart indicator.
 
