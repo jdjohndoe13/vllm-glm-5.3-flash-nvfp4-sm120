@@ -931,3 +931,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   NOT the expected ~3200 lines / 250-280 KB — noted and preserved
   as-is. Copy-mode only lane (no restarts, no state writes, no kills).
 
+## 09-24 EPOCH records (fresh boot 09-24 17:48, engine 18:00:02)
+- RE-ARM + FIRST MISS (22:06-22:19; commit 3fcfc91 has the re-arm
+  STATE fragment): canary v3.3 re-armed 22:06 (station pid 45568,
+  launcher-minted; ALIVE verified; script md5 parity `6ba78a…`).
+  09-24 rows: [22:06:09] hb=200 + NEWBOOTLOG (informational rebase,
+  epoch counters reset fb=0 kv=27 ev e2=11,196), [22:11:10] hb=200
+  (fb=1 kv=36), [22:16:30] **hb=000 fb=1 kv=38 e2=16,140 ALERT:
+  SERVE-WEDGE — FIRST NO-SOAK MISS of the 09-24 epoch**. Triage
+  PROBE-HISTORY: manual-HB at 22:15:48 = HBC=200 HB_LAT=6.997303
+  (PRE-miss measurement, excluded as closure evidence);
+  manual-HB at 22:19:48 = **HBC=200 HB_LAT=0.293957** (post-miss
+  functional proof, 3.3 min after the row) + health=200 + p=9
+  envelope clean + EngineCore 10125 running. CLOSED: [22:16:30]
+  (09-24 ledger add: 1). NO-SOAK HAZARD noted: the 09-22 soak is
+  over (evt 162,557) — recurring hb=000 rows without soak load are
+  a deeper-wedge candidate: escalate immediately (engine-metrics
+  capture, user-owned restart decision), never self-remediate.
+  Old ntfs3 pair 23446/23448 CONFIRMED gone (09-24 journal replay).
+
