@@ -1078,4 +1078,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   its probe (no partial work). Relay continues on the 09-25
   epoch: NEWBOOTLOG informational only; any other hb=000 row =
   fresh un-triaged → CYCLE_ALERT per rule.
+- EPOCH PULSE #1 — FIRST FRESH MISS + GHOST VERDICT DISMISSED
+  (14:16-14:24): cycle 140 (fix-29, own session) reported fresh
+  [14:16:16] hb=000 fb=2 kv=13 apc=77 (bytes+68,891, ev→7,468 —
+  the in-epoch fb-ramp started INSIDE the miss window: fb 0→2→3,
+  apc 48→77→88, ev 3,772→9,864 across [14:10:55]→[14:16:16]→
+  [14:21:26]). A PHANTOM lane record (foreign session id — the
+  task_result refused "does not belong to this session") claimed
+  [14:21:26] hb=000 as a second fresh miss + stale-pid lore —
+  ALL CONFABULATION. Adjudication probe 14:24:25 (direct read):
+  rowlog shows [14:21:26] **hb=200** (fb=3 kv=22 apc=88, ev=9,864)
+  — phantom verdict rejected; station lore 40421-only confirmed.
+  CLOSED: [14:16:16] on manual-HB **HBC=200 HB_LAT=1.264713**
+  (fast, healthy) + sandwich [14:10:55]/[14:21:26] + fb-ramp
+  progress-through + kv_offload write/read **0.0/0.0** idle
+  (09-25 sample: 1.0 idle; the 20.2k pool losses of 09-23 absent
+  in the fresh engine). 09-25 miss ledger add: 1. The post-restart
+  bb-path test NOW ENGAGED: fb-ramp running (0→3 in one window),
+  big client re-engaging load — every 09-24-miss pattern candidate
+  will be tested against the fresh engine; auto-signals per
+  standing rules (2+ consecutive misses, ANY HBC≠200, metrics>0).
 
