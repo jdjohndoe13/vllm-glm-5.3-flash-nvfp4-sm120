@@ -357,12 +357,40 @@ fi
 # no cost to decode rate (decode batch width is MAX_NUM_SEQS; prefill
 # ingestion pays per-step overhead instead — measure with test-prefill-sweep.sh).
 : "${MAX_NUM_BATCHED_TOKENS:=1024}"
-# GPU KV cache budget in BYTES per engine (fp8 KV). Default 3.3e9 ->
-# 414,634 tokens of pool (validated). 4000000000 -> ~502k tokens;
-# 5000000000 -> ~628k tokens (proven to boot WITH the tier in a
-# 196k-token, 2-concurrent-request test). If a boot with a larger pool
-# + tier fails, drop back to the default.
-: "${KV_CACHE_MEMORY:=2400000000}"
+# GPU KV cache pool budget in BYTES PER GPU (fp8 KV): each of the 8
+# tensor-parallel ranks reserves this on its own card — the boot log prints
+# "reserved 2.24 GiB memory for KV Cache as specified by kv_cache_memory_bytes
+# config" PER RANK (vllm/v1/worker/gpu_worker.py:492; 2.4e9 bytes = 2.24 GiB).
+# Pool token capacity is linear in this: 2400000000 -> 272,745 tokens
+# (1.04x max concurrency for a single 262144-token request);
+# 2000000000 -> ~227k tokens; 3300000000 -> ~375k; bigger pools also need
+# the MTP+draft-KV headroom check — see the VRAM note below.
+# 2026-09-25 OOM-HEADROOM TRIM (default 2400000000 -> 2000000000): the
+# 09-25 12:55 engine epoch DIED at 15:06:11 in a CUDA OOM cascade (211
+# "OOM on device" expandable-segment mapping failures 14:51:23 -> 15:06:11,
+# final spike torch.OutOfMemoryError: tried 200.00 MiB in the MoE sparse-attn
+# indexer fp8_fp4_mqa_logits path while per-rank torch had ~30.77 GiB
+# allocated of the 31.84 GiB card — 189 MiB free; postmortem: patches/README
+# 2026-09-25 15:03-15:31 record). At the 2.4e9 pool the steady per-rank free
+# was ~0.67 GiB (nvidia-smi 31918/32607 MiB under load) — too thin for the
+# spike family. 2.0e9 lifts steady free to ~1.0 GiB/rank and keeps the
+# observed 210k-token giant class pool-resident (~227k-token pool); KV
+# beyond the pool pages through the 800 GiB hugetlbfs CPU tier via
+# OffloadingConnector kv_both mirroring — the designed overflow path
+# (monitor the fb fallback-read counter: if its baseline doubles under
+# giant traffic, KV is tier-churning and worth a tradeoff review).
+: "${KV_CACHE_MEMORY:=2000000000}"
+
+# OOM-headroom guard (2026-09-25): post-crash clamp. Any KV pool bigger
+# than 2.0 GB re-creates the crashed epoch's VRAM steady state (~0.67 GiB
+# per-rank free vs the ~200 MiB spike family that killed it). Explicit
+# opt-out for deliberate sizing experiments (run non-interactive, watch
+# the fb counter):
+#   KV_HEADROOM_GUARD=0 bash <this>.sh [KV_CACHE_MEMORY=...]
+if [ "${KV_HEADROOM_GUARD:-1}" = "1" ] && [ "${KV_CACHE_MEMORY:-0}" -gt 2000000000 ]; then
+  echo "WARNING: OOM-headroom guard: clipping KV_CACHE_MEMORY ${KV_CACHE_MEMORY} -> 2000000000 (2026-09-25 CUDA-OOM cascade headroom; override with KV_HEADROOM_GUARD=0)." >&2
+  KV_CACHE_MEMORY=2000000000
+fi
 
 # ---------------------------------------------------------------------------
 # MTP speculative decoding (variant-specific knob, SUBJECT of this profile):
@@ -380,6 +408,9 @@ fi
 # KV_CACHE_MEMORY=4000000000 CUDA-OOMs at boot (per-request draft KV slots
 # + draft CUDA graphs eat the headroom); the no-docker 3.3e9 default
 # (~414k tokens) boots clean under MTP-3 — keep the pool at 3.3e9 or below.
+# 2026-09-25: this file's KV default is 2.0e9 (per-GPU; OOM-HEADROOM TRIM
+# after the 15:06 CUDA-OOM cascade — see the KV_CACHE_MEMORY comment block
+# and the OOM-headroom guard).
 # NOTE: MTP x OffloadingConnector (the KV CPU tier): validated 2026-09-16
 # in the docker MTP boot (MTP 3 + 32 GiB /dev/shm tier, zero errors, mean
 # acceptance length 2.56/4.0); a hugetlbfs-tier MTP boot remains untested.
