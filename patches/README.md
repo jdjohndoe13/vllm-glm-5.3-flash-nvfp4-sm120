@@ -1413,4 +1413,14 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   oom=0 epoch-B; no NEWBOOTLOG-new. Steady state continues:
   7 post-cluster clean rows, apc 96→104, kv 247, fb
   plateaued 82. Cycle-153 fresh lane dispatched.
+  CYCLE-153 RECONCILE (fix-41, delivered ~16:58): CYCLE_OK
+  matches raw VERBATIM — **eighth consecutive clean row
+  [16:56:14] h=200 hb=200 fb=82 kv=247 rmax=0 rep=0 apc=110
+  bytes=+19218 ev=12412.0,7852.0,2076.0**, no tags; probe-1
+  anchor matched exactly (N=139 f1a95e57), probe-2 N 139→140
+  md5 9978677509b957f36a96b5306b99b332 (append-only +1 ✓,
+  head scroll byte-identical); station alive, HEALTH=200
+  both reads; oom=0 epoch-B; no NEWBOOTLOG-new. Steady
+  state: 8 post-cluster clean rows, apc 104→110, kv 247.
+  Cycle-154 fresh lane dispatched.
 
