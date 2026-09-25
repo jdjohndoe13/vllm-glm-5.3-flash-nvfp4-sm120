@@ -1354,4 +1354,18 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   channel noise / stale-cache artifact; anomaly CLOSED).
   Cycle-149 fresh lane dispatched (wounded session never
   reused).
+  LATE LANE DELIVERY (cycle 148, `ses_f269f525cffepvvO3SDneX
+  D08C`, board finally flips completed 16:30): terminal
+  reconciles VERBATIM with the earlier direct judgment AND
+  adds ground — probe#2 (NOW=16:28:29) new clean row
+  **[16:26:11] h=200 hb=200 fb=82 kv=243 rmax=1 rep=0 apc=73
+  bytes=+56603 ev=12412.0,4366.0,1145.0** — recovery edge
+  HOLDS (two consecutive clean hb=200 rows post-cluster);
+  tier segments 3 resumed higher activity (734/197→4366/1145)
+  without re-wedging. Second anchor read: ROWLOG_MD5
+  ba3c48e1648be9376cf5bd836aead006 ROWLOG_N=134 (append-only
+  consistent +1 row — anchor methodology verified across
+  probes). Station 40421 alive both probes; HEALTH=200;
+  no NEWBOOTLOG (epoch B persists; KV-trim restart still
+  user-pending).
 
