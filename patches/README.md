@@ -1393,4 +1393,14 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   steady state: 4 clean rows, apc 83→91, fb plateau 82,
   seg-churn 5366/1369→6502/1763. Cycle-151 fresh lane
   dispatched.
+  CYCLE-151 RECONCILE (fix-39, delivered ~16:46): CYCLE_OK
+  matches raw VERBATIM — **fifth consecutive clean row
+  [16:41:13] h=200 hb=200 fb=82 kv=246 rmax=0 rep=0 apc=96
+  bytes=+22605 ev=12412.0,7126.0,1869.0**, no tags; anchor
+  N 136→137 md5 676dcf3f4df75c26170e7edc0c099367 (append-only
+  +1 ✓); station alive, HEALTH=200 both reads; epoch-B oom=0;
+  no NEWBOOTLOG-new (base row scrolled normally). Steady post-
+  cluster cadence: 5 clean rows, apc 55→96 climbing on real
+  traffic, fb plateaued 82, seg-churn growing. Cycle-152
+  fresh lane dispatched.
 
