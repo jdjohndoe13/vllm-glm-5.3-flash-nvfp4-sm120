@@ -1262,3 +1262,67 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   LIVE pending either a clean hb=200 row or the user's
   restart.
 
+---
+
+## _2026-09-25 16:11-16:19 — cycle 147 reconciled; cluster N=7+
+  (~32 min); probe v1.1 (rowlog-md5 anchor); PARITY
+  CHECKPOINT (repo ↔ remote kit)_
+
+  LANE RECONCILE (cycle 147, fix-35, `ses_f26aab090ffebYB3Aw
+  PcvfapgU` delivered 16:19 after a stalled start; fresh
+  cycle-148 lane dispatched 16:20, `ses_f269f525cffepvvO3SDne
+  XD08C`): verdict matches raw rows VERBATIM — **cluster grew
+  to 7 consecutive hb=000 rows [15:44:08]→[16:16:10], ~32
+  min**. Lane's two probes revealed [16:10:50] hb=000 (fb=68
+  kv=197 apc=50 ev=12338.0) and [16:16:10] hb=000 (fb=74
+  kv=215 apc=55 ev=12412.0,78.0,78.0). No recovery edge; no
+  NEWBOOTLOG; h=200/p=9/HEALTH=200 throughout; **oom=0 on all
+  epoch-B rows**; envelope clean (shm=0 gpu=0 500=0 rep=0
+  rmax=1); the giant churn keeps climbing (fb 58→68→74, kv
+  166→197→215). seg2/3 flapping 0.0→78.0 at [16:16:10] =
+  small-range tier activity, judged informational. **One
+  anomaly logged: the [15:54:49] row's metric values
+  (apc/bytes/ev) differed between the lane's two reads 6
+  min apart (append-only log cannot rewrite history) —
+  treated as channel noise (stale page-cache or in-flight
+  tail read); cheap defense added (probe v1.1 prints
+  ROWLOG_MD5/ROWLOG_N per probe; future cycles may show if
+  it repeats).** Probe script canary_probe.sh v1 deployed
+  16:07 per the user's new script-file directive (one short
+  ssh per probe), **v1.1 deployed 16:20** (adds ROWLOG_
+  MD5/ROWLOG_N line); both verified bash -n SYNTAX_OK;
+  local source C:\Users\user\AppData\Local\Temp\opencode\
+  canary_probe.sh, remote /home/user/canary_probe.sh;
+  PROBE_MANUAL_HB=1 variant for manual-HB triage + kv_offload
+  metrics + free -m.
+  PARITY CHECKPOINT (commit f1e6957, 16:2x): the user
+  ratified the repo contract THIS session — repo tracks
+  what is DEPLOYABLE (launchers, env/arg config, engine
+  patches + patched-files, kit docs, monitor kit); runtime/
+  diagnostic surface is excluded by design (swap_diag/,
+  engine logs, pid files, kvoff-server.log, tp2pp4/tp4pp2
+  logs, kv-block/kvoff reports, README.md.bak doc-snapshot);
+  frozen-wedge logs/canary stays unreadable remotely;
+  symlinks skipped; .git/.slim/.gitignore-vllm-bin local
+  infra unchanged. **swap_diag/** = diagnostic-only
+  decode-swap trace logs (decode_swap_diag.py output) —
+  excluded per the user's rule. Sync mechanics: remote
+  side tar-pack (parity_pack.sh, nice'd) → scp → selective
+  extract → **md5-verified vs remote manifest (615 files;
+  staged 47, mismatches 0)** → additive copy into the repo
+  (identity paths; no /MIR, never deletes). Delta landed:
+  vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh (the user's
+  reported drift = KV 2.0GB + guard edit now at identity
+  path), README.md (+2 lines: 09-18 stale-hit fix row +
+  docs/vllm-bin-recreation.md pointer), 7 new kit files
+  (260910 launcher + five .bak config snapshots +
+  patches/README-kit.md). Name collision resolved without
+  clobber: remote's 19,205B patches/README.md (kit-side
+  patch doc) mirrored as **patches/README-kit.md**; this
+  file remains the engagement record. Standing rule: future
+  kit-file changes on the remote get mirrored + committed
+  at session end; diag/runtime churn stays out of git
+  status via existing .gitignore lines (swap_diag, /logs/*,
+  pids, reports). Engine restart (KV 2.0GB trim) still
+  user-pending; cluster LIVE at commit time (7 rows).
+
