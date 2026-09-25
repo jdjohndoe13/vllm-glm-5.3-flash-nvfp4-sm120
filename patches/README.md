@@ -1174,4 +1174,47 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   returning → surfaced immediately. The user-owned protective
   knobs (NOT mine to change): --kv-cache-memory pool size,
   request concurrency/size caps on the 192.168.2.208 client.
+- 2026-09-25 15:44-15:59 — **epoch-B FIRST MISS + LAUNCHER
+  OOM-PREVENTION EDIT (user-approved launch-arg/env fix)**:
+  new-epoch miss **[15:44:08] hb=000 SERVE-WEDGE** (single;
+  prior rows 15:28/15:33/15:38 clean; cycle-145 lane
+  CYCLE_ALERT) → triage probe 15:48:41: **HBC=000
+  HB_LAT=20.001905** (day's third failed manual-HB: 14:44,
+  15:01 epoch-A; now 15:48 epoch-B) while health=200, counters
+  growing (fb 4→14, kv 10→49), **oom=0** on epoch B — the
+  heartbeat-starvation class reproduces under giant-client
+  load even on a fresh engine; [15:44:08] stays OPEN (single
+  miss, wedge candidate; NO cluster). Canon evidence pinned:
+  kv_cache_memory_bytes is PER-GPU (boot log: all 8 ranks
+  "reserved 2.24 GiB" own-card after 30.53 GiB initial free);
+  pool 272,745 tokens = 1.04x max giant concurrency;
+  steady per-rank free ~0.67 GiB (31918/32607 MiB, 99-100%
+  util) = the crashed epoch's VRAM state. **EDIT APPLIED
+  (launcher, not the binary): `vllm-glm-5.3-flash-nvfp4-mtp-
+  no-docker.sh` (THE real launch source via LLMGLMFND_LAUNCHER
+  in `llmglmfndmtp`/fg-wrapper env; canonical grep: env
+  launch-source overrides)** — (1) KV pool default
+  **2400000000 → 2000000000** (+rewritten comment block w/
+  per-GPU semantics, pool-token linearity, crash ledger,
+  fb-trace tradeoff note); (2) **OOM-headroom guard**: emits
+  loud WARNING and clips any KV_CACHE_MEMORY >2.0e9
+  (opt-out: KV_HEADROOM_GUARD=0); (3) MTP VRAM note pointer
+  added. NOT touched: MAX_NUM_BATCHED_TOKENS=1024 (already
+  the 09-17-OOM fix, in place), PYTORCH_CUDA_ALLOC_CONF=
+  expandable_segments:True (already the 09-19 fix, in place),
+  spec-3 MTP, cudagraph_capture_sizes [1,2,3,4], Offloading-
+  Connector (kv_buffer_size 1 GB/rank GPU staging documented
+  as future headroom lever, untouched). md5 e5a9a76c70b3e0c9
+  384a0cbb10b3cfd3 → **a6477e0f73075d37ad0ce4290859dc2a**;
+  bash -n SYNTAX_OK; pristine pre-trim copy preserved at
+  tools/backup-mtp-no-docker-20260925-pre-kv-trim-md5-e5a9a76c.sh;
+  mirror at tools/mirror-vllm-glm-5.3-flash-nvfp4-mtp-no-docker.sh.
+  EFFECT requires the user's restart (§7 user-owned; expected:
+  boot prints "reserved ~1.87 GiB per rank", GPU KV pool
+  ~227k tokens, steady per-rank free ~1.0 GiB, canary
+  NEWBOOTLOG rebaseline, oom counter re-zero). Remaining OOM
+  levers offered, not applied: cudagraph_capture_sizes [1,2,3,4]
+  → [1,2] or --enforce-eager (frees up to ~2.35 GiB/rank in
+  CUDA-graph private pools — tradeoff: eager decode slower for
+  3-4-concurrent traffic).
 
