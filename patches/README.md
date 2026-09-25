@@ -1057,4 +1057,25 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   metrics>0). User keep-vs-restart decision remains open; the
   bursty model makes keep-as-is fully defensible; restart stays
   optional for a clean hb-path slate.
+- 2026-09-25 13:45 — EPOCH PAGE-TURN (user took the §7 restart):
+  canary stopped cleanly 09-24 23:54:24 (rowlog [23:54:24] ALERT:
+  CANARY-EXIT rc=0 — stop-recipe exit path, user-side; monitoring
+  gap 23:54→13:45 ~14 h, acknowledged). Box rebooted 09-25 ~12:43
+  (up 1:02 at 13:45:24). NEW ENGINE EPOCH:
+  logs/engine-20260925-125527.log (via updated latest.log symlink;
+  APIServer pid 9336; health=200 verified 13:45:24; big client
+  192.168.2.208 already driving — POST /v1/chat/completions 200 in
+  the bootlog tail). CANARY RE-ARMED 13:46-13:47 (v3.3, ext4 home
+  unchanged): station pid **40421** (wrapper 40419; station.pid
+  rewritten; ALIVE verified), row-1 **[13:45:53] h=200 p=9 500=0
+  oom=0 shm=0 gpu=0 hb=200 fb=0 kv=2 rmax=1 rep=0 apc=26 bytes=+0
+  ev=2384.0,0.0,0.0 ALERT: NEWBOOTLOG** — informational epoch
+  rebase (counters reset for the fresh engine). The 09-24 epoch
+  closes: 7 no-soak misses/~100 min, zero clusters, zero HBC
+  failures, kv-offload idle x6, bursty hb-contention model, and
+  the user answered the open keep-vs-restart decision by taking
+  the restart. Cycle-134's lane had died on a Bad Gateway before
+  its probe (no partial work). Relay continues on the 09-25
+  epoch: NEWBOOTLOG informational only; any other hb=000 row =
+  fresh un-triaged → CYCLE_ALERT per rule.
 
