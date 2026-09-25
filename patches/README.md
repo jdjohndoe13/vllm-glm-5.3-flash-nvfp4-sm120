@@ -1123,4 +1123,55 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   ([14:47:3x] window) = consecutive pair → CLUSTER — ESCALATE
   IMMEDIATELY; next manual-HB success closes [14:37:17] per
   recipe; ANY further HBC=000 probe = the hard signal repeats.
+- 2026-09-25 15:03-15:31 — **ENGINE CRASH #1 (first of the
+  engagement) — canary-documented end-to-end; user relaunched**:
+  OLD epoch (engine-20260925-125527.log, boot 12:55) died between
+  the canary rows [15:03:38] and [15:08:38]; death block:
+  **[15:08:38] h=000 p=0 500=2 oom=244 shm=0 gpu=0 hb=000
+  apc=118 bytes=+546,623 ev=?,?,?** (no SERVE-WEDGE tag =
+  connection-REFUSED class, not the hb 20s-timeout class — the
+  server was GONE by the row's collect; p=0 = worker census gone;
+  ev=?,?,? = metrics endpoint gone). ROOT CAUSE (diag2, verbatim
+  chain): CUDA-side memory exhaustion — 211 `OOM on device`
+  warnings from **14:51:23** (expandable_segments mapping
+  failures, 20 MiB requests when GPUs free-memory ~1-9 MiB) to
+  **15:06:11** last spark, Worker_TP2 (pid 10423) **torch.
+  OutOfMemoryError: CUDA out of memory. Tried to allocate
+  200.00 MiB. GPU 2 total 31.45 GiB, free 189.19 MiB, process
+  29.67 GiB... 2.35 GiB private pools (CUDA Graphs)** raised
+  through `sparse_attn_indexer_kpool → fp8_fp4_mqa_logits`
+  (deep_gemm) at multiproc_executor.py:1033 → APIServer 9336
+  clean shutdown → EngineCore 9904 FORCE-KILLED; Tracebacks=34,
+  500=2, EngineDead=1 marker = the 09-22-decline MEMORY class,
+  NOT the 09-22 GPU-driver-lock class; HUGE-pag mmap offload
+  file `/dev/hugepages/vllm_offload_<uuid>.mmap` removed at
+  15:07:36. The 09-25 epoch's hb-degradation (misses at
+  [22? 14:37:17]/[14:47:57]/[14:58:18]/[15:03:38] + the 2 failed
+  manual-HBs) = the AUDIBLE symptom of the same GPU-memory
+  exhaustion build-up: heartbeat POSTs starved inside the same
+  alloc-failure windows that finally killed the engine. oom
+  counter semantics RESOLVED: `cnti` counts case-insensitive
+  `'OOM on device|out of memory'` lines in the RESOLVED ENGINE
+  log cumulatively since log start (my 15:01 grep tested only
+  the 'out of memory' half — count 0 was the HALF-TEST; the
+  'OOM on device' half carried the full 0→179→244 climb).
+  Kernel journal: NO OOM-kill lines (the css_killed_work_fn
+  advisories are cgroup workqueue noise, no kills align with
+  the crash). The canary SURVIVED the crash (station 40421
+  alive throughout) and fully documented death → restart
+  window: **[15:13:39] h=000 p=1 ... ALERT: NEWBOOTLOG** (the
+  user's relaunch begins — new epoch engine-20260925-151312.log,
+  launcher wrapper 52850, APIServer 52994/EngineCore 53554),
+  [15:18:39] p=9 shm=1 (workers up, API pre-live — SHM-STALL
+  correctly gated off since prev_h≠200, startup artifact),
+  **[15:23:40] h=200 hb=200** (live again), [15:28:47] hb=200
+  fb=4 kv=10 serving (client re-engaged; GPUs back to
+  99-100% util, 31.9/32.6 GiB each). The NEW epoch resumed the
+  SAME giant-client load (two 210k-token KV-LOOKUPs at 15:30)
+  — SAME PRESSURE CLASS LIVE. OOM-burst watch on the new
+  epoch: oom counter must stay 0 (it rebases per new log);
+  oom>0 on any NEW-epoch row = the same exhaust build-up
+  returning → surfaced immediately. The user-owned protective
+  knobs (NOT mine to change): --kv-cache-memory pool size,
+  request concurrency/size caps on the 192.168.2.208 client.
 
