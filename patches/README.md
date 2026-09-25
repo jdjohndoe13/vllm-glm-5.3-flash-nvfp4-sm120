@@ -1368,4 +1368,18 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   probes). Station 40421 alive both probes; HEALTH=200;
   no NEWBOOTLOG (epoch B persists; KV-trim restart still
   user-pending).
+  CYCLE-149 RECONCILE (fix-37, delivered 16:33): CYCLE_OK
+  matches raw VERBATIM — **third consecutive clean hb=200
+  row [16:31:12] h=200 hb=200 fb=82 kv=243 rmax=0 rep=0
+  apc=83 bytes=+28208 ev=12412.0,5366.0,1369.0** — sustained
+  closure (3 post-cluster rows), apc still climbing 55→73→83
+  on real traffic, tier churn healthy (seg3 197→1145→1369),
+  envelope clean (rmax=0 fine), no NEWBOOTLOG, oom=0 epoch-B.
+  Anchor chain verified append-only across three lanes:
+  N 133 (16:26) → 134 (16:27-16:28) → 135 (16:32), fresh md5
+  per read; the cycle-147-era stale-read shape has NOT
+  recurred since v1.1. Lane transcript NOW labels drifted
+  (probe reads labeled ahead of their row content) — row
+  CONTENT cross-checked identical to prior lanes; truth is
+  in rows, labels are noise. Cycle-150 fresh lane dispatched.
 
