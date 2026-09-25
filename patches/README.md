@@ -1319,10 +1319,39 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   patches/README-kit.md). Name collision resolved without
   clobber: remote's 19,205B patches/README.md (kit-side
   patch doc) mirrored as **patches/README-kit.md**; this
-  file remains the engagement record. Standing rule: future
+  file remains the engagement record.   Standing rule: future
   kit-file changes on the remote get mirrored + committed
   at session end; diag/runtime churn stays out of git
   status via existing .gitignore lines (swap_diag, /logs/*,
   pids, reports). Engine restart (KV 2.0GB trim) still
   user-pending; cluster LIVE at commit time (7 rows).
+
+- 2026-09-25 16:21-16:26 — **CLUSTER-7 NATURAL CLOSE — hb=200
+  recovery edge reached at [16:21:11], no restart fired**:
+  newest row `[16:21:11] h=200 p=9 500=0 oom=0 shm=0 gpu=0
+  hb=200 fb=82 kv=241 rmax=1 rep=0 apc=55 bytes=+56537
+  ev=12412.0,734.0,197.0` — clean (no SERVE-WEDGE tag), ev
+  segments resumed small tier activity (78→734/197). Epoch-B
+  cluster window closes: **[15:44:08]→[16:16:10], 7 rows /
+  ~32 min, all oom=0, envelope clean, engine serving the
+  whole time** (giant churn drained: fb 74→82 while hb
+  latency fell back under budget). Classification unchanged:
+  load-congestion wedge class (09-22 + 09-25 14:37-15:03 same
+  shape). KV-trim restart still user-pending and NOT involved
+  in this recovery; no NEWBOOTLOG (p=9, station 40421
+  continuous). Closure per pulse rules: cluster ends on
+  first clean hb=200 row — open rows [15:49:29]…[16:16:10]
+  close on [16:21:11].
+  CYCLE-148 bookkeeping: lane `ses_f269f525cffepvvO3SDneXD08C`
+  BOARD=stopped-without-terminal-result while task_result
+  still reports running — never waited on it; cycle judged on
+  DIRECT ground verbatim (probe 16:26:06, newest row
+  [16:21:11], 5-min freshness ✓). Probe v1.1 anchor first
+  read: ROWLOG_MD5=833dd92ab2f82c69dee7e703503e5462
+  ROWLOG_N=133; the [15:54:49] row reads apc=41/+47447/7866
+  in the freshest tail — matches cycle-147's second read
+  (the apc=49/8570 values from its first read are settled as
+  channel noise / stale-cache artifact; anomaly CLOSED).
+  Cycle-149 fresh lane dispatched (wounded session never
+  reused).
 
