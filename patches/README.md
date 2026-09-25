@@ -1217,4 +1217,48 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   → [1,2] or --enforce-eager (frees up to ~2.35 GiB/rank in
   CUDA-graph private pools — tradeoff: eager decode slower for
   3-4-concurrent traffic).
+- 2026-09-25 15:44-16:03 — **epoch-B CLUSTER (4 consecutive
+  hb=000 rows) — surfaced; recovery edge reached during
+  triage**: rows **[15:44:08]/[15:49:29]/[15:54:49]/[16:00:09]
+  all hb=000 SERVE-WEDGE** (single open [15:44:08] grew to a
+  4-row cluster in 16 min — the 2+-consecutive h=000 rule
+  triggered at [15:49:29]; lane cycle-146 stalled mid-cycle,
+  ground re-verified directly 16:01-16:03). Shape = epoch-A's
+  14:37→15:03 pre-crash cluster replayed on the fresh engine
+  under the same giant-client load: h=200/p=9/health=200 the
+  whole time, counters GROWING every row (fb 14→25→39→48,
+  kv 49→79→112→137, apc 41→49, bytes +47-57k, ev 7458→8570
+  with segments 2,3 staying 0.0), **oom=0 throughout** (GPU
+  OOM class NOT engaged on epoch B). Manual-HB ledger this
+  window: **000@20.0019 @15:48:41 (fail #3 of the day, opened
+  the wedge candidate) → 200@13.959972 @16:03:02 (first
+  success — SLOW, 70% of the 20s budget; recovery edge during
+  triage)**. [15:44:08] closes on this success; [15:49:29]/
+  [15:54:49]/[16:00:09] recorded as the cluster window per
+  pulse rule (validated alive, contemporaneous); classification:
+  weapnarm-free load-congestion wedge cluster, base-weapons
+  class same as 09-22 16:57/17:13/17:19 + 09-25 14:37-15:03
+  (NOT a new failure mode). kv_offload gauges read
+  usage/write = 0.0/0.0 at 16:03 (gauge-vs-counter semantics
+  drift continues; fb counter is the live tier-churn signal).
+  Host RAM heavy as ever: 935.3/1031.7 GB used, ~96 avail.
+  DECISION FRAME (user-owned, §7): restart NOW (gains the
+  on-disk KV-2.0GB OOM-headroom trim + clears the wedging
+  giant-context state; canary rebaselines NEWBOOTLOG) vs
+  hold (recovery edge reached; canary counts any new row;
+  oom=0 is the good sign but the epoch-A cluster of this
+  same shape ran dead 3 min after its last row). No rerun
+  needed on either path — the monitor rules already knew
+  this cluster. LANE RECONCILE (cycle 146, fix-34, landed
+  16:09): CYCLE_ALERT matching the direct ground VERBATIM —
+  and its probe revealed a **FIFTH consecutive hb=000 row
+  [16:05:30] hb=000 (fb=58 kv=166 apc=49 ev 10170.0)** that
+  arrived AFTER the 16:03 manual-HB success → the recovery
+  edge did NOT hold through the canary's next row; cluster
+  window on epoch B = [15:44:08]→[16:05:30], 5 rows/~21 min
+  (SC-146's fb lead: the giant churn keeps climbing). Per
+  pulse recipe [15:44:08] closes on the 16:03 manual success
+  (the marker's own successor-200 rule); the cluster stands
+  LIVE pending either a clean hb=200 row or the user's
+  restart.
 
