@@ -1458,4 +1458,35 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Traceback greps expect 0, health=200; canary re-arm =
   the §9 restart recipe (orchestrator-only, on user
   request).
+- 2026-09-25 18:30-18:41 — **USER CONFIG EDIT + RESTART →
+  EPOCH C CLEAN** (`engine-20260925-183028.log`, APIServer
+  pid 99870, census 9, launched ~18:30:28; canary kept
+  offline during the window by the ordine above). The user
+  edited the launcher themselves: md5 → **741f82c3
+  f9d5da91054695b04a92e4a7** (my deployed a6477e0f
+  superseded). Delta: KV_CACHE_MEMORY 2000000000 →
+  **2115000000** (line 392) AND the OOM-headroom guard
+  threshold re-based to match: clip >2115000000 →
+  2115000000 (lines 390-391); **max_model_len 262144 →
+  235000** (supersedes the §11 expectation block for
+  kv_cache values). All other args unchanged (fp8, MTP-3,
+  seqs 4, cudagraphs [1,2,3,4], kv_both Offloading 800 GB
+  CPU tier + 1 GB/rank GPU staging, batched-tokens 1024,
+  block 256, cumem, async sched, opt 3). **Boot
+  verification (§11): ALL GREEN** — kv_cache: 2115000000
+  bytes (fp8); ×8 ranks "Initial free memory 30.53 GiB,
+  reserved 1.97 GiB memory for KV Cache" (18:32:37); new
+  baseline **GPU KV cache size: 237,865 tokens, Maximum
+  concurrency for 235,000 tokens per request: 1.01x**;
+  ERROR=0; Traceback=0; OOM=0; stale-hit fallback=0;
+  Application startup complete; HEALTH=200 with live
+  traffic at 18:40 (metrics 200 + chat POST 200 +
+  APC-HIT nhash=167). Epoch-C oom counter rebased to 0.
+  PARITY DUTY DONE same session: user-edit fetched,
+  md5-verified 741f82c3…, mirrored to repo identity path
+  (5-line diff vs a6477e0f), committed with this block.
+  fix-8 board-error lane = the cancelled cycle-155
+  (stopped, read-only, objective obsolete — reconciled
+  as expected). Next §11 use: expect kv_cache=2115000000,
+  maxlen 235000. Canary re-arm user-optional (§9).
 
