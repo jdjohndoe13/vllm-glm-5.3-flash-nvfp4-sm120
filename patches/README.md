@@ -1380,6 +1380,17 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   per read; the cycle-147-era stale-read shape has NOT
   recurred since v1.1. Lane transcript NOW labels drifted
   (probe reads labeled ahead of their row content) — row
-  CONTENT cross-checked identical to prior lanes; truth is
+  CONTENT cross-checked identical to prior lanes;   truth is
   in rows, labels are noise. Cycle-150 fresh lane dispatched.
+  CYCLE-150 RECONCILE (fix-38, delivered ~16:39): CYCLE_OK
+  matches raw VERBATIM — **fourth consecutive clean row
+  [16:36:12] h=200 hb=200 fb=82 kv=244 rmax=0 rep=0 apc=91
+  bytes=+26121 ev=12412.0,6502.0,1763.0**, no tags; anchor
+  N 135→136 md5 2411eb81f5ac5d51973b94fc310cf829
+  (append-only +1 ✓); station 40421 alive both reads;
+  HEALTH=200; epoch-B oom=0; tail scroll-out of [15:13:39] on
+  probe-2 correctly identified (not a rebase). Post-cluster
+  steady state: 4 clean rows, apc 83→91, fb plateau 82,
+  seg-churn 5366/1369→6502/1763. Cycle-151 fresh lane
+  dispatched.
 
