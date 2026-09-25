@@ -379,7 +379,7 @@ fi
 # OffloadingConnector kv_both mirroring — the designed overflow path
 # (monitor the fb fallback-read counter: if its baseline doubles under
 # giant traffic, KV is tier-churning and worth a tradeoff review).
-: "${KV_CACHE_MEMORY:=2000000000}"
+: "${KV_CACHE_MEMORY:=2200000000}"
 
 # OOM-headroom guard (2026-09-25): post-crash clamp. Any KV pool bigger
 # than 2.0 GB re-creates the crashed epoch's VRAM steady state (~0.67 GiB
@@ -387,9 +387,9 @@ fi
 # opt-out for deliberate sizing experiments (run non-interactive, watch
 # the fb counter):
 #   KV_HEADROOM_GUARD=0 bash <this>.sh [KV_CACHE_MEMORY=...]
-if [ "${KV_HEADROOM_GUARD:-1}" = "1" ] && [ "${KV_CACHE_MEMORY:-0}" -gt 2000000000 ]; then
-  echo "WARNING: OOM-headroom guard: clipping KV_CACHE_MEMORY ${KV_CACHE_MEMORY} -> 2000000000 (2026-09-25 CUDA-OOM cascade headroom; override with KV_HEADROOM_GUARD=0)." >&2
-  KV_CACHE_MEMORY=2000000000
+if [ "${KV_HEADROOM_GUARD:-1}" = "1" ] && [ "${KV_CACHE_MEMORY:-0}" -gt 2200000000 ]; then
+  echo "WARNING: OOM-headroom guard: clipping KV_CACHE_MEMORY ${KV_CACHE_MEMORY} -> 2200000000 (2026-09-25 CUDA-OOM cascade headroom; override with KV_HEADROOM_GUARD=0)." >&2
+  KV_CACHE_MEMORY=2200000000
 fi
 
 # ---------------------------------------------------------------------------
