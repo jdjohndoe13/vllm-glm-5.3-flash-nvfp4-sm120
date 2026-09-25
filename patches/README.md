@@ -1403,4 +1403,14 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   cluster cadence: 5 clean rows, apc 55→96 climbing on real
   traffic, fb plateaued 82, seg-churn growing. Cycle-152
   fresh lane dispatched.
+  CYCLE-152 RECONCILE (fix-40, delivered ~16:52): CYCLE_OK
+  matches raw VERBATIM — **two new clean rows [16:46:13]
+  hb=200 fb=82 kv=247 rmax=1 apc=104** (probe1 N=137 anchor
+  matched exactly first) and **[16:51:14] hb=200 rmax=0
+  apc=104 bytes=+6861 ev=12412.0,7190.0,1890.0**; anchor
+  N 137→139 (md5 f1a95e57ddabfa0a9cfb11116f9b0f28,
+  append-only +2 ✓); station alive, HEALTH=200 both reads;
+  oom=0 epoch-B; no NEWBOOTLOG-new. Steady state continues:
+  7 post-cluster clean rows, apc 96→104, kv 247, fb
+  plateaued 82. Cycle-153 fresh lane dispatched.
 
