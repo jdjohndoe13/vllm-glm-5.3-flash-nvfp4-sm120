@@ -1433,4 +1433,29 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   both reads; oom=0 epoch-B; no NEWBOOTLOG-new. Steady
   state: 9 post-cluster clean rows, apc 110→118, kv 248.
   Cycle-155 fresh lane dispatched.
+- 2026-09-25 17:05 — **USER ORDER: STOP THE CANARY** (pre-
+  restart). Station 40421 SIGTERM'd via canary_stop.sh
+  (script-file flow: scp → CRLF-strip → run; wrapper removed
+  after); KILL_SENT rc=0 → **STATION_DOWN** (kill -0 fails);
+  v3.2 EXIT-trap fired on cue: rowlog appended
+  `[17:05:33] ALERT: CANARY-EXIT rc=0` — clean rc=0, the
+  documented death-forensics row (user-ordered kill, NOT a
+  silent death; pidfile left as-is for audit). Background
+  lane cycle-155 (fix-43, `ses_f267910c8ffepWRPP1JbRlkXf8`)
+  cancelled the same moment (objective obsolete; board
+  flagged error — read-only lane, nothing to reconcile).
+  Final canary ledger state: **rowlog N=141 (md5
+  f1b807b8100f41c451e1ddba63d084c4)**, all epoch-B rows
+  oom=0, closing run = **9 consecutive clean hb=200 rows
+  [16:21:11]→[17:01:15]** after the closed cluster-7 window;
+  apc 118, fb 82, kv 248; no pending alerts.
+  NO WATCHDOG during the user's restart window (user's
+  explicit choice): a hung boot will NOT alert; engine
+  restarts remain user-owned (§7). Post-restart verification
+  plan (when the user reports boot done): §11 checklist
+  inline — NEWBOOTLOG grep `kv_cache: ` expect **2000000000**
+  (the KV-2.0GB trim + headroom guard active), oom/ERROR/
+  Traceback greps expect 0, health=200; canary re-arm =
+  the §9 restart recipe (orchestrator-only, on user
+  request).
 
