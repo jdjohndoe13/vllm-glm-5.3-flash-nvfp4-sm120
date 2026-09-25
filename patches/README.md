@@ -1098,4 +1098,29 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   big client re-engaging load — every 09-24-miss pattern candidate
   will be tested against the fresh engine; auto-signals per
   standing rules (2+ consecutive misses, ANY HBC≠200, metrics>0).
+- EPOCH PULSE #2 — FIRST FAILED MANUAL-HB; FAIL-FAST LIT
+  (14:37-14:44): cycle 143 (fix-31) reported fresh [14:37:17]
+  hb=000 fb=12 kv=103 apc=113 (bytes+64,022, ev extended
+  1220.0,367.0 — eviction churn started; sandwich [14:31:57]
+  hb=200 → miss]). Triage 14:44:04: **HBC=000 HB_LAT=20.002253**
+  — the manual-HB POST died at full budget: FIRST manual-HB
+  failure since the recipe's creation (the 09-22 era had three
+  20s-timeouts in the 18:17-18:54 deep band). Recovery row
+  [14:42:36] hb=200 (fb 12→18, kv 103→125, apc 113, ev→3448,898 —
+  ramp steepening: kv nearly doubled per window), health=200.
+  kv_offload STILL 0.0/0.0. [14:37:17] stays **OPEN (wedge
+  candidate — not closed)**: the pulse-#1 recipe closes on a
+  contemporaneous successful probe, and the contemporaneous probe
+  FAILED. FAIL-FAST FLAG = FIRED 14:44:04, surfaced to the user
+  with the decision template: keep-verified-run (server healthy,
+  client served, misses isolated so far — but the hb path now
+  fails-to-probe, not just misses) vs user-owned §7 restart
+  (empirical note: BOTH user restarts of the engagement produced
+  this same fill-driven hb-compression curve within ~1.5-2 h of a
+  fresh boot under the client's ramp — a restart buys quiet
+  hours, not immunity). ESCALATION: the epoch's 2nd miss + 1st
+  failed probe; auto-signals now SUPER-armed: the next hb=000 row
+  ([14:47:3x] window) = consecutive pair → CLUSTER — ESCALATE
+  IMMEDIATELY; next manual-HB success closes [14:37:17] per
+  recipe; ANY further HBC=000 probe = the hard signal repeats.
 
