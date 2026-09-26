@@ -1487,6 +1487,54 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (5-line diff vs a6477e0f), committed with this block.
   fix-8 board-error lane = the cancelled cycle-155
   (stopped, read-only, objective obsolete — reconciled
-  as expected). Next §11 use: expect kv_cache=2115000000,
+  as expected).   Next §11 use: expect kv_cache=2115000000,
   maxlen 235000. Canary re-arm user-optional (§9).
+- 2026-09-26 14:37-15:09 — **REBOOT-CYCLE FORENSICS: LACT
+  inactive-on-boot + engine start-die ×2 → third start
+  OK**. Boot chain: boot-2 = 09-25 12:43 → down 09-26
+  03:26 (epoch C `engine-20260925-183028` died with it,
+  last writes 03:23). Boot-1 = 09-26 10:47 → 14:29: epoch
+  D = `engine-20260926-105944` (10:59:44→14:24:20, 5187
+  lines, giant-client heavy run, EngineCore exited
+  normally 14:24 pre-reboot). On boot-1 **lactd did NOT
+  auto-start**; user manually `systemctl enable --now
+  lactd` at 14:18:47 (journal), then rebooted ~14:29 to
+  get LACT working — the enablement persisted: boot-0
+  (14:32:36→now) lactd auto-ran 14:33:30 "initialized
+  9 GPUs". LACT WARN on boot-0: its saved config defines
+  GPU pci ids `…F318-0000:b4:00.0` + `…:59:00.0` absent
+  this boot — **GPU PCI enumeration order shifted across
+  reboots**; fan settings for those 2 GPUs unapplied
+  until the user refreshes LACT assignments (UI action).
+  **Engine start-fail ×2**: attempts 14:37:04
+  (`engine-20260926-143704`) and 14:47:33
+  (`engine-20260926-144733`) both died in
+  `_initialize_kv_caches` with workers raising
+  `RuntimeError: Worker failed with error 'module
+  'torch._C._cudart' has no attribute 'cudaGetLastError''`
+  → "Engine core initialization failed" (14:43:57 /
+  14:54:30). Pre-death stages were clean per attempt:
+  per-rank NCCL init OK, OffloadingConnector + 858.99 GB
+  hugetlbfs tier file created and opened by workers, model
+  load OK — the failures hit at KV-cache allocation.
+  Class = **early-boot GPU/driver-library settling
+  window** (box up ~5 min; LACT + NVRM concurrently
+  initializing 9 controllers; first sighting in kit
+  history, self-resolving — the byte-identical code path
+  succeeded 2 min later). NOT kv-config (2.115e9/235000
+  verified 09-25 evening), NOT hugepage pool (below),
+  NOT LACT-drift (WARN-only, non-fatal).
+  **Epoch E = `engine-20260926-145659` (CURRENT)**:
+  14:56:59, ALIVE — census 9, APIServer pid 20336,
+  HEALTH 200, ESC211 live (KV-LOOKUP stale-hit fallback
+  hit=141312 budget=8 fallbacks=1 wall=0.2 at 15:09:46),
+  giant client 192.168.2.208 back (POST 200), GPUs
+  99-100% util / 31468 MiB used / 48-59 °C / fans
+  30-80%. **Tier hygiene**: both dead attempts' hugetlbfs
+  tier files auto-unlinked on executor death (disk holds
+  only the live engine's `e33bd08a…mmap`, 858.99 GB;
+  HugePages_Total=409600, Free=4 = engine-held, normal).
+  **Mitigation for future boots: wait ≥5 min after
+  reboot before the first engine launch.** No kit knobs
+  changed.
 
