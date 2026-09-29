@@ -2314,4 +2314,29 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   in EVERY row (h=200 p=9 500=0 oom=0 shm=0
   gpu=0). Zero true-degradation triggers —
   record-only. Cycle 199 dispatched.
+- 2026-09-29 12:35 — **RELAY CYCLE 199 (fix-52)
+  reconciled: CYCLE_ALERT (newest row tagged,
+  record-only) — 8-row streak TIED then SNAPPED
+  by the third micro-flicker; heavier shape**.
+  Raw verbatim: NOW=12:35:53,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=236, latest row 15s after NOW. Two
+  new rows: [12:30:00] `hb=200 UNTAGGED fb=470
+  kv=2085 rmax=1 apc=492 bytes=+15,192` (= 8
+  consecutive clean rows [11:54:56]→[12:30:00],
+  ~35 min — ties the regime streak record of 8
+  rows, [11:09:31]→[11:44:35]) and [12:35:20]
+  `hb=000 SERVE-WEDGE fb=474 kv=2099 rmax=1
+  apc=501 bytes=+34,794` (third micro-flicker
+  of the regime, after [11:04:30]/[11:49:55];
+  heavier shape: fb fallback wave 470→474,
+  biggest single-step kv climb of the regime
+  +14 (2085→2099), traffic double the usual
+  light rows; h=200 p=9 500=0 oom=0 fully
+  intact). Current streak snapped at 8; tagged
+  ≈ 61; clean rows total 29. ev middle
+  135,062. Serving untouched in EVERY row;
+  zero true-degradation triggers — record-only
+  (escalate only if h≠200/500s/oom/census drop
+  appear). Cycle 200 dispatched.
 
