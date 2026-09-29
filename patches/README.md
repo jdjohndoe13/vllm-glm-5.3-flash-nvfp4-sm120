@@ -3107,4 +3107,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   zero true-degradation triggers —
   record-only (family rule stands). Cycle
   238 dispatched.
+- 2026-09-29 17:57 — **RELAY CYCLE 238 (fix-91)
+  reconciled: CYCLE_ALERT (newest row
+  tagged, record-only) — grind extended to
+  3 rows; ladder accelerating (+16/2 rows,
+  kv +50)**. Raw verbatim: NOW=17:57:40,
+  CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=297, freshness
+  4m16s. Two new rows, both tagged:
+  [17:48:04] `hb=000 SERVE-WEDGE fb=736
+  kv=3214 rmax=1 apc=975 bytes=+50,239` and
+  [17:53:24] `hb=000 SERVE-WEDGE fb=745
+  kv=3240 apc=975 flat bytes=+46,630` —
+  grind = 3 consecutive rows ([17:42:44]→
+  [17:53:24], ~11 min); fastest fb climb
+  since the 16:40 brick (736→745, +16 in 2
+  rows); kv +50 (3,190→3,240); ev middle
+  276,324. Tagged ≈ 92; clean rows total
+  59. Serving untouched in EVERY row
+  (h=200 p=9 500=0 oom=0); zero true-
+  degradation triggers — record-only
+  (family rule stands). Cycle 239
+  dispatched.
 
