@@ -2984,4 +2984,25 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   oom=0); zero true-degradation triggers —
   record-only (family rule stands). Cycle
   232 dispatched.
+- 2026-09-29 17:10 — **RELAY CYCLE 232 (fix-85)
+  reconciled: CYCLE_OK — streak to 2 at
+  heaviest sustained loads; ev crossed
+  250k**. Raw verbatim: NOW=17:10:31,
+  CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=288, freshness
+  ~3m48s. New row: [17:06:40] `hb=200
+  UNTAGGED fb=711 kv=3118 rmax=1 apc=917
+  bytes=+56,908` — current streak
+  [17:01:32]→[17:06:40] = 2 rows being
+  served CLEAN at the sustained heavy-wave
+  scale; ev crossed 250k (250,864, new day
+  high); fb ladder 704→711; kv +25 (3,093→
+  3,118); apc 911→917. Note: lane's echo of
+  the [16:35:13] line dropped "shm=" (echo
+  slip; file row intact). Tagged ≈ 87;
+  clean rows total 55. Serving untouched in
+  EVERY row (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 233
+  dispatched.
 
