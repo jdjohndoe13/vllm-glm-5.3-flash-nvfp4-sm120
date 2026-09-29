@@ -3273,4 +3273,31 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   zero true-degradation triggers —
   record-only (family rule stands). Cycle
   245 dispatched.
+- 2026-09-29 18:54 — **RELAY CYCLE 245 (fix-98)
+  reconciled: CYCLE_OK — streak extended
+  to 3; third consecutive fb-flat
+  (783×3 — deepest flat run since grind-3
+  broke)**. Raw verbatim: NOW=18:54:46,
+  CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=308, freshness
+  ~4m37s. New row: [18:50:09] `hb=200
+  UNTAGGED fb=783 FLAT kv=3398 rmax=1
+  apc=1062 bytes=+43,996` — streak now 3
+  rows ([18:40:07]→[18:50:09], ~10 min);
+  fb FLAT ×3 (783 — third consecutive,
+  deepest flat run since the grind
+  stretched to 2); kv +9 (3,389→3,398);
+  apc +18 (1044→1062, record refill
+  continues); ev middle 304,660; peak
+  poly 75,808 (day high); grind-ready
+  cluster now 6 rows in the [18:29+
+  window] (grind-1, grind-2, recovery,
+  2 flat, 3 flat — grind-9-scale build
+  continues, mirrors the 13:35-14:16
+  grind-9 build profile). Tagged ≈ 96;
+  clean rows total 67. Serving untouched
+  in EVERY row (h=200 p=9 500=0 oom=0);
+  zero true-degradation triggers —
+  record-only (family rule stands). Cycle
+  246 dispatched.
 
