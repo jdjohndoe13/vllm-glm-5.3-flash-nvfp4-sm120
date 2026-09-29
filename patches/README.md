@@ -3722,6 +3722,18 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 11 clean rows of 12 since
   boot. ROWLOG_N=347. Cycle 265
   dispatching (fresh lane).
+- 2026-09-29 22:21 — cycle 265 (fix-118)
+  reconciled: CYCLE_OK. [22:15:17] clean:
+  h=200 p=9 wall=200 fb=22 (+1) kv=182
+  (+15) apc=79 ev=12412.0,10912.0,2815.0
+  — load drift continues under walls
+  intact; ev slots 2/3 at 10.9k/2.8k vs
+  wedge-era historical peaks 317k/78k
+  (~30x smaller accumulation — consistent
+  with the bounded ladder, NOT proof).
+  Epoch I: 12 of 13 rows clean (lone
+  wedge [22:05:16]). ROWLOG_N=348. Cycle
+  266 dispatching (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
