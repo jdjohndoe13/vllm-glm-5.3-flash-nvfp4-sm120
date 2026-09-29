@@ -2658,4 +2658,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   true-degradation triggers — record-only
   (family rule stands). Cycle 215
   dispatched.
+- 2026-09-29 15:07 — **RELAY CYCLE 215 (fix-68)
+  reconciled: CYCLE_ALERT (newest row tagged,
+  record-only) — single-row flicker at
+  lightest row in >1.5h**. Raw verbatim:
+  NOW=15:07:42, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=264, freshness 4m42s.
+  New row: [15:03:00] `hb=000 SERVE-WEDGE
+  fb=647 kv=2856 rmax=1 apc=651 bytes=+46,045`
+  — single flicker broke the 1-row streak
+  immediately; current grind = 1 row (light
+  traffic; h=200 intact in-row). Deep churn
+  continues: fb 641→647, kv +23 (2,833→2,856),
+  apc 644→651; ev middle 203,471. Tagged ≈
+  79; clean rows total 39. Serving untouched
+  in EVERY row (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 216
+  dispatched.
 
