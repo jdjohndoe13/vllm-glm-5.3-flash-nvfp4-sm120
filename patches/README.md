@@ -3642,6 +3642,17 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (+5) apc=10 bytes=+20731 ev=6524. Epoch
   I: 4 clean rows since boot. ROWLOG_N=
   338. Cycle 258 dispatching (fresh lane).
+- 2026-09-29 21:36 — cycle 258 (fix-111)
+  reconciled: CYCLE_OK. [21:29:40] clean
+  (fb=7 kv=44 apc=24 ev=8192), [21:34:41]
+  clean (fb=9 kv=81 +37, largest epoch-I
+  kv jump so far; apc=35 ev=11448) — wall
+  intact both rows (hb=200 wall=200),
+  fence-hit volume growing under serving
+  load; escalation signature would be the
+  same climb on hb=000 rows. Epoch I: 6
+  clean rows since boot. ROWLOG_N=340.
+  Cycle 259 dispatching (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
