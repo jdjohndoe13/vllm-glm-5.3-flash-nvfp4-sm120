@@ -1814,4 +1814,21 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   EVERY row (h=200 p=9 500=0 oom=0 shm=0 gpu=0;
   bytes ~50-63k/row; ev rising cumulatively); zero
   true-degradation triggers. Cycle 168 dispatched.
+- 2026-09-29 07:08 — **RELAY CYCLE 168 (fix-21)
+  reconciled: CYCLE_ALERT — longest continuous grind
+  of the boot**. Raw verbatim: NOW=07:08:38,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=173 (170+3 ✓), freshness 2m24s. New rows:
+  [06:55:34] `hb=000 fb=286 kv=1306 bytes=+58,121`,
+  [07:00:54] `fb=300 kv=1343 +49,933`, [07:06:14]
+  `fb=311 kv=1379 +52,224` — all SERVE-WEDGE. Current
+  grind = **7 consecutive tagged rows
+  (06:34:12→07:06:14, ~31 min)** — now equal to
+  epoch-B cluster-7's continuous length; largest
+  grind this boot. Family: **26 tagged rows
+  [04:27:02]→[07:06:14] ≈ 159 min, 5 reprieves**.
+  fb→311 (+11-13/window), kv→1379 (+36-52/window).
+  Serving unchanged (h=200 p=9 500=0 oom=0 shm=0
+  gpu=0; bytes ~50-58k/row). Zero triggers —
+  record-only. Cycle 169 dispatched.
 
