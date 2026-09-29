@@ -1831,4 +1831,20 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Serving unchanged (h=200 p=9 500=0 oom=0 shm=0
   gpu=0; bytes ~50-58k/row). Zero triggers —
   record-only. Cycle 169 dispatched.
+- 2026-09-29 07:23 — **RELAY CYCLE 169 (fix-22)
+  reconciled: CYCLE_ALERT — grind sets a new
+  continuous-length record (10 rows, ≈48 min)**.
+  Raw verbatim: NOW=07:23:34, CANARY_ALIVE_39394,
+  HEALTH=200, PROBE_EXIT=0, ROWLOG_N=176 (173+3 ✓),
+  freshness 78 s. New rows: [07:11:35] `hb=000
+  fb=321 kv=1419 +51,574`, [07:16:55] `fb=327
+  kv=1453 +54,533`, [07:22:16] `fb=336 kv=1489
+  +56,440` — all SERVE-WEDGE. Current grind =
+  **10 consecutive tagged rows (06:34:12→07:22:16,
+  ≈48 min)** — first continuous block to EXCEED
+  epoch-B cluster-7 (7 rows ≈32 min). Family: **29
+  tagged rows [04:27:02]→[07:22:16] ≈ 175 min, 5
+  reprieves**. fb→336, kv→1489. Serving unchanged in
+  EVERY row (h=200 p=9 500=0 oom=0 shm=0 gpu=0).
+  Zero triggers — record-only. Cycle 170 dispatched.
 
