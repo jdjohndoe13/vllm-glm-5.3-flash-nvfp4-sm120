@@ -2406,4 +2406,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   500=0 oom=0); zero true-degradation
   triggers — record-only (family rule
   stands). Cycle 203 dispatched.
+- 2026-09-29 13:11 — **RELAY CYCLE 203 (fix-56)
+  reconciled: CYCLE_OK — clean streak
+  extended to 2 rows at heavy load**. Raw
+  verbatim: NOW=13:11:04, CANARY_ALIVE_39394,
+  HEALTH=200, PROBE_EXIT=0, ROWLOG_N=242,
+  freshness 4m06s. New row: [13:06:58]
+  `hb=200 UNTAGGED fb=502 kv=2279 rmax=1
+  apc=545 bytes=+68,989` — current streak
+  [13:01:42]→[13:06:58] = 2 rows; traffic
+  still heavy (second-plus-heaviest row of
+  the day); fb grind flattened (501→502, +1
+  across 2 clean rows) while kv keeps
+  climbing (+33 to 2,279); ev middle 153,744.
+  Tagged ≈ 64; clean rows total 32. Serving
+  untouched in EVERY row (h=200 p=9 500=0
+  oom=0); zero true-degradation triggers —
+  record-only (family rule stands). Cycle
+  204 dispatched.
 
