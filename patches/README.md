@@ -3129,4 +3129,30 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   degradation triggers — record-only
   (family rule stands). Cycle 239
   dispatched.
+- 2026-09-29 18:09 — **RELAY CYCLE 239 (fix-92)
+  reconciled: CYCLE_OK — grind-3 broke;
+  flicker + instant recovery; ladder still
+  at fastest climb**. Raw verbatim: NOW=
+  18:09:32, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=300 (triplets:
+  +3 rows), freshness ~30s. Three new
+  rows: [17:58:39] `hb=200 UNTAGGED
+  fb=753 kv=3267 apc=975 bytes=+47,756`
+  (grind-3 BROKE, exactly like the 12:35/
+  13:12 grind-3s that preceded grind-9);
+  [18:04:00] `hb=000 SERVE-WEDGE fb=762
+  kv=3295 apc=975 bytes=+42,126` (1-row
+  flicker); [18:09:00] `hb=200 UNTAGGED
+  fb=766 kv=3308 rmax=1 apc=977 bytes=
+  +32,918` — recovery; current streak = 1
+  row; fb climb sustained (+21 in 3 rows,
+  engagement-fastest pace); kv +68 (3,240→
+  3,308); ev middle 281,296. Lane verdict
+  line had a stray "17*" typo before the
+  row id (echo slip; raw row is [18:09:00]).
+  Tagged ≈ 93; clean rows total 61.
+  Serving untouched in EVERY row (h=200
+  p=9 500=0 oom=0); zero true-degradation
+  triggers — record-only (family rule
+  stands). Cycle 240 dispatched.
 
