@@ -3708,6 +3708,20 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   for "KV-LOOKUP ESCWALL release" /
   "SERVERKILL" to confirm the bounded
   path engaged).
+- 2026-09-29 22:14 — cycle 264 (fix-117)
+  reconciled: CYCLE_OK — recovery
+  confirmed: [22:10:16] clean (h=200 p=9
+  wall=200), so the [22:05:16] wedge
+  self-released within one row cycle and
+  did NOT stick (no wall=000-patrol). The
+  recovery happened under epoch I's
+  heaviest load yet: fb=21, kv=167 (+30,
+  epoch-I max), apc=76, ev slots 7788/
+  2007 — load-drift signature with
+  serving healthy, not the wedge shape.
+  Epoch I: 11 clean rows of 12 since
+  boot. ROWLOG_N=347. Cycle 265
+  dispatching (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
