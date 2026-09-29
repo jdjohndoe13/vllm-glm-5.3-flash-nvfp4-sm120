@@ -3921,3 +3921,19 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 26 of 28 rows clean.
   ROWLOG_N=364. Cycle 277 dispatching
   (fresh lane).
+- 2026-09-29 23:44 — cycle 277 (fix-130)
+  reconciled: CYCLE_OK — PROVISIONAL.
+  Lane delivered verdict-only prose (raw
+  rowlog rows MISSING from the result —
+  echo-slip variant): claims newest row
+  [23:41:31] untagged + rows 22:25:38 →
+  23:41:31 window, CANARY_ALIVE_39394 +
+  HEALTH=200, single wait + single probe
+  exit 0. Family rule = judge from file
+  rows, so provisional-ok pending file-
+  row verification by cycle 278 (same
+  window: rows 23:41/23:46 will show).
+  Epoch I stay 26 of 28 rows clean
+  (c276 counts; no verified delta yet).
+  ROWLOG_N=unverified (provisional ~365).
+  Cycle 278 dispatching (fresh lane).
