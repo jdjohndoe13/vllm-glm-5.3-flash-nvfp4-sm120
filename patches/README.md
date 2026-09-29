@@ -2110,4 +2110,18 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (h=200 p=9 500=0 oom=0 shm=0 gpu=0). Zero
   true-degradation triggers — record-only. Cycle
   186 dispatched.
+- 2026-09-29 11:20 — **RELAY CYCLE 186 (fix-39)
+  reconciled: CYCLE_OK — third consecutive clean
+  row after the flicker**. Raw verbatim:
+  NOW=11:20:33, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=221, freshness 61 s.
+  New row: [11:19:32] `hb=200 UNTAGGED fb=470
+  kv=2067 rmax=0 apc=421 bytes=+14,889` — clean
+  trio [11:09:31]→[11:19:32] after the
+  [11:04:30] flicker. Tagged ≈ 59; clean rows
+  total 17. ev plateau ~127,574; kv/fb flat;
+  traffic light +15k. Serving untouched in
+  EVERY row (h=200 p=9 500=0 oom=0 shm=0
+  gpu=0). Zero true-degradation triggers —
+  record-only. Cycle 187 dispatched.
 
