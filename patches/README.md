@@ -2095,4 +2095,19 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   500=0 oom=0 shm=0 gpu=0). Zero
   true-degradation triggers — record-only. Cycle
   185 dispatched.
+- 2026-09-29 11:15 — **RELAY CYCLE 185 (fix-38)
+  reconciled: CYCLE_OK — second consecutive clean
+  row after the flicker**. Raw verbatim:
+  NOW=11:15:08, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=220, freshness 37 s.
+  New row: [11:14:31] `hb=200 UNTAGGED fb=470
+  kv=2066 rmax=0 apc=415 bytes=+12,992` — clean
+  pair [11:09:31]+[11:14:31] after the
+  [11:04:30] flicker. Tagged ≈ 59; clean rows
+  total 16. Micro-flicker regime continues
+  (kv/fb flat; ev middle 127,542; traffic
+  idle-ish +13k). Serving untouched in EVERY row
+  (h=200 p=9 500=0 oom=0 shm=0 gpu=0). Zero
+  true-degradation triggers — record-only. Cycle
+  186 dispatched.
 
