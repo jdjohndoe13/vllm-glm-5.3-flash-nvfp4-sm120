@@ -3026,4 +3026,23 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   oom=0); zero true-degradation triggers —
   record-only (family rule stands). Cycle
   234 dispatched.
+- 2026-09-29 17:25 — **RELAY CYCLE 234 (fix-87)
+  reconciled: CYCLE_OK — streak extended to
+  2 rows at light load; first fb flat (716)
+  of the new regime**. Raw verbatim: NOW=
+  17:25:04, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=291, freshness ~3m.
+  New row: [17:22:02] `hb=200 UNTAGGED
+  fb=716 flat kv=3146 rmax=0 apc=947
+  bytes=+27,735` — current streak
+  [17:17:01]→[17:22:02] = 2 rows; fb flat ✓
+  (716×2, first flat of the heavy regime);
+  kv +1 (3,145→3,146); apc +5 (942→947);
+  ev crossed 260k (260,432, day high);
+  load light. Tagged ≈ 88; clean rows
+  total 57. Serving untouched in EVERY
+  row (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 235
+  dispatched.
 
