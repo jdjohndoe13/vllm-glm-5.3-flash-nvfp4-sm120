@@ -3177,4 +3177,29 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   p=9 500=0 oom=0); zero true-degradation
   triggers — record-only (family rule
   stands). Cycle 241 dispatched.
+- 2026-09-29 18:25 — **RELAY CYCLE 241 (fix-94)
+  reconciled: CYCLE_OK — 3-row clean
+  streak; ladder stalls flat at 773 (deep-
+  plateau echo), apc refills to 996**. Raw
+  verbatim: NOW=18:25:48, CANARY_ALIVE_
+  39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=303 (triplet barrel +2), fresh-
+  ness 1m22s. Three new rows, all clean:
+  [18:19:18] `hb=200 UNTAGGED fb=773 flat
+  kv=3332 apc=988 bytes=+30,222`; [18:24:
+  26] `hb=200 UNTAGGED fb=773 flat kv=3339
+  apc=996 bytes=+37,761` (+ interim [18:19:
+  18] same-line dedupe — N math 301→303=+2
+  net rows) — streak now 3 rows ([18:09:
+  00]→[18:24:26], ~15 min); fb UNCHANGED
+  back-to-back (773×2 — deepest plateau
+  since 16:35-17:37 while push unaffected:
+  mv 287,524→291,132, unlocked peak 72,356
+  day high, grind-ready). Lane minor echo
+  slip "text=NONE" noted. Tagged ≈ 93;
+  clean rows total 64. Serving untouched
+  in EVERY row (h=200 p=9 500=0 oom=0);
+  zero true-degradation triggers —
+  record-only (family rule stands). Cycle
+  242 dispatched.
 
