@@ -3837,3 +3837,18 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   below wedge-era peaks). Epoch I: 15 of
   19 rows clean. ROWLOG_N=355. Cycle 270
   dispatching (fresh lane).
+- 2026-09-29 22:59 — cycle 270 (fix-123)
+  reconciled: CYCLE_OK. [22:56:05]
+  clean: h=200 p=9 wall=200 fb=33 (+1)
+  kv=295 (+12) apc=126 ev slots 32012/
+  8068 — climb continues under intact
+  walls; 0 wedge rows since 22:20:37
+  (the 2 known wedge rows remain lone
+  and non-consecutive). ERRATA: c269's
+  tail line typoed a stale clean-row
+  total ("15 of 19") after correctly
+  stating 17 of 19 earlier in the same
+  block — actual c269 = 17/19; dup line
+  logged here, not rewritten. Epoch I:
+  18 of 20 rows clean. ROWLOG_N=356.
+  Cycle 271 dispatching (fresh lane).
