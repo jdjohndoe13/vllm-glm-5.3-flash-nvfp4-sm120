@@ -2600,4 +2600,25 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   true-degradation triggers — record-only
   (family rule stands). Cycle 212
   dispatched.
+- 2026-09-29 14:42 — **RELAY CYCLE 212 (fix-65)
+  reconciled: CYCLE_OK — clean streak
+  extended to 3 rows (~10 min); heaviest
+  row of the day + biggest apc refill since
+  13:01**. Raw verbatim: NOW=14:42:49,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=260, freshness 38s. Two new rows,
+  both clean: [14:37:07] `hb=200 UNTAGGED
+  fb=627 kv=2755 rmax=1 apc=596
+  bytes=+54,657` and [14:42:11] `hb=200
+  UNTAGGED fb=631 kv=2783 rmax=1 apc=622
+  bytes=+73,466` (heaviest row of the day;
+  apc +26 single-step) — current streak
+  [14:31:49]→[14:42:11] = 3 rows ~10 min.
+  Deep churn continues: fb 621→631, kv +53
+  (2,730→2,783), apc 586→622; ev middle
+  192,963. Tagged ≈ 77; clean rows total 37.
+  Serving untouched in EVERY row (h=200 p=9
+  500=0 oom=0); zero true-degradation
+  triggers — record-only (family rule
+  stands). Cycle 213 dispatched.
 
