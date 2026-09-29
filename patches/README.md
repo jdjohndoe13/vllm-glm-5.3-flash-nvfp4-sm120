@@ -2962,4 +2962,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   true-degradation triggers — record-only
   (family rule stands). Cycle 231
   dispatched.
+- 2026-09-29 17:02 — **RELAY CYCLE 231 (fix-84)
+  reconciled: CYCLE_OK — 2-row grind broke;
+  sustained heavy-load wave continues**.
+  Raw verbatim: NOW=17:02:19,
+  CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=287, freshness
+  47s. Two new rows: [16:56:16] `hb=000
+  SERVE-WEDGE fb=703 kv=3080 rmax=1
+  apc=899 bytes=+61,614` (grind = 2 rows
+  [16:50:56]+[16:56:16]) and [17:01:32]
+  `hb=200 UNTAGGED fb=704 kv=3093 rmax=1
+  apc=911 bytes=+61,441` — recovery;
+  current streak = 1 row; fb ladder
+  699→704; kv +31 (3,062→3,093); apc new
+  highs (899→911); ev crossed 245k
+  (247,536); bytes ~61k in both rows =
+  sustained heavy wave since 16:40. Tagged ≈
+  87; clean rows total 54. Serving
+  untouched in EVERY row (h=200 p=9 500=0
+  oom=0); zero true-degradation triggers —
+  record-only (family rule stands). Cycle
+  232 dispatched.
 
