@@ -3734,6 +3734,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 12 of 13 rows clean (lone
   wedge [22:05:16]). ROWLOG_N=348. Cycle
   266 dispatching (fresh lane).
+- 2026-09-29 22:27 — cycle 266 (fix-119)
+  reconciled: CYCLE_OK — [22:25:38]
+  clean (fb=23 kv=205 apc=91 ev slots
+  15412/3911). [22:20:37] wedge-tagged
+  AGAIN (hb=000 kv=192 apc=87 ev slots
+  12220/3095) — epoch I's 2nd wedge
+  event, again a SINGLE row with full
+  recovery by the next row (bounded
+  oscillation, no stick). Wedge rate
+  ~half of epoch F and both events
+  released within one row; escalation
+  only if a wedge sticks ≥2 consecutive
+  rows. Epoch I: 13 of 15 rows clean
+  (2 lone wedge rows: 22:05:16, 22:20:37).
+  ROWLOG_N=350. Cycle 267 dispatching
+  (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
