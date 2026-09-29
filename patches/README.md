@@ -3885,3 +3885,13 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   signal unmet. Epoch I: 22 of 24 rows
   clean. ROWLOG_N=360. Cycle 274
   dispatching (fresh lane).
+- 2026-09-29 23:27 — cycle 274 (fix-127)
+  reconciled: CYCLE_OK. [23:21:09]
+  clean: h=200 p=9 wall=200 fb=37
+  (flat) kv=340 (+1, nearly flat this
+  row) apc=158 ev slots 41502/10508 —
+  11 consecutive clean rows since the
+  22:20:37 wedge; escalation signal
+  unmet. Epoch I: 23 of 25 rows clean.
+  ROWLOG_N=361. Cycle 275 dispatching
+  (fresh lane).
