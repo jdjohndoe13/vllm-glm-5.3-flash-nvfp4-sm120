@@ -2077,4 +2077,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   untouched in EVERY row (h=200 p=9 500=0 oom=0
   shm=0 gpu=0). Zero true-degradation triggers —
   record-only. Cycle 184 dispatched.
+- 2026-09-29 11:09 — **RELAY CYCLE 184 (fix-37)
+  reconciled: CYCLE_OK — 6-row clean stretch broke
+  via one light tagged row, then clean again
+  (micro-flicker regime)**. Raw verbatim:
+  NOW=11:09:46, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=219, freshness 15 s.
+  New rows: [11:04:30] `hb=000 fb=470 kv=2065
+  rmax=1 apc=405 bytes=+10,363 SERVE-WEDGE` (the
+  6-row clean stretch broke here), [11:09:31]
+  `hb=200 UNTAGGED fb=470 kv=2066 apc=408
+  +13,139` (immediate recovery). Tagged ≈ 59;
+  clean rows total 15. The regime is now
+  micro-flickering on tiny loads (+10-13k bytes;
+  kv/fb flat; ev middle creeping 126,946→127,506).
+  Serving untouched in EVERY row (h=200 p=9
+  500=0 oom=0 shm=0 gpu=0). Zero
+  true-degradation triggers — record-only. Cycle
+  185 dispatched.
 
