@@ -3911,3 +3911,13 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   content authoritative. Epoch I: 25 of
   27 rows clean. ROWLOG_N=363. Cycle
   276 dispatching (fresh lane).
+- 2026-09-29 23:38 — cycle 276 (fix-129)
+  reconciled: CYCLE_OK. [23:36:30]
+  clean: h=200 p=9 wall=200 fb=37 (flat)
+  kv=344 (+2) apc=167 bytes=+15319 ev
+  43054/10872 — 14 consecutive clean
+  rows since the 22:20:37 wedge; load
+  settled (byte deltas 10-15k range).
+  Epoch I: 26 of 28 rows clean.
+  ROWLOG_N=364. Cycle 277 dispatching
+  (fresh lane).
