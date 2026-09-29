@@ -698,6 +698,24 @@ class OffloadingConnectorScheduler:
             _rep_window = 300.0
         self._stale_hit_repeat_window = 2.0 if _rep_window <= 0.0 else _rep_window
 
+        # ESCWALL 2026-09-29: absolute release wall for escape mode. Every
+        # other ESC211 knob still tunes WHEN escape engages; this bounds
+        # how LONG an escape can hold with a frozen boundary. 0 disables.
+        _wall_env = os.environ.get("VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS")
+        try:
+            self._escape_wall_secs = (
+                max(0.0, float(_wall_env.strip()))
+                if _wall_env is not None and _wall_env.strip()
+                else 240.0
+            )
+        except ValueError:
+            logger.warning(
+                "Invalid VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=%r; "
+                "using default 240.0",
+                _wall_env,
+            )
+            self._escape_wall_secs = 240.0
+
         # ESC211 2026-09-21: escape the pin-cadence stall. After
         # VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT zero-progress stale-hit
         # fallbacks (default 3) on the same boundary, or once the request has
@@ -1297,12 +1315,41 @@ class OffloadingConnectorScheduler:
                 req_status.stale_hit_fallback_count = 0
                 req_status.stale_hit_wall_start = 0.0
             else:
-                logger.debug(
-                    "KV-LOOKUP escape req=%s local=%d",
-                    request.request_id,
-                    num_computed_tokens,
+                # ESCWALL 2026-09-29: absolute release wall. When escape
+                # mode has held with NO boundary change past
+                # VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS, hard-release all
+                # stale-hit bookkeeping so the request falls through to a
+                # fresh lookup and the guard ladder re-arms from scratch
+                # (converts a permanent (0, False) hold into a bounded
+                # wedge cycle that gets a fresh scheduling chance).
+                _esc_hold = (
+                    time.monotonic() - req_status.stale_hit_wall_start
+                    if req_status.stale_hit_wall_start > 0.0
+                    else 0.0
                 )
-                return 0, False
+                if (
+                    self._escape_wall_secs > 0
+                    and _esc_hold >= self._escape_wall_secs
+                ):
+                    logger.info(
+                        "KV-LOOKUP ESCWALL release req=%s local=%d "
+                        "wall=%.1f (no boundary change; cold re-arm)",
+                        request.request_id,
+                        num_computed_tokens,
+                        _esc_hold,
+                    )
+                    req_status.stale_hit_escape = False
+                    req_status.stale_hit_streak = 0
+                    req_status.stale_hit_repeat_count = 0
+                    req_status.stale_hit_fallback_count = 0
+                    req_status.stale_hit_wall_start = 0.0
+                else:
+                    logger.debug(
+                        "KV-LOOKUP escape req=%s local=%d",
+                        request.request_id,
+                        num_computed_tokens,
+                    )
+                    return 0, False
 
         # KVC-PIN 2026-09-19: bounded cooldown fast path (see the field
         # comment and the pin trigger in the stale-hit fallback branch).

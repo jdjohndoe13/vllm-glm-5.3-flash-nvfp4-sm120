@@ -349,7 +349,7 @@ fi
 : "${JIT_CACHE:=/mnt/data/shared/models/vllm-moet-cache}"
 
 # Server sizing / behavior:
-: "${MAX_MODEL_LEN:=262144}"
+: "${MAX_MODEL_LEN:=235000}"
 : "${MAX_NUM_SEQS:=4}"
 # Chunked-prefill scheduler budget per engine step (tokens). Halving this to
 # 1024 shrinks the fp8/fp4 mqa-logits transient workspace (~312 MiB/card at
@@ -379,7 +379,7 @@ fi
 # OffloadingConnector kv_both mirroring — the designed overflow path
 # (monitor the fb fallback-read counter: if its baseline doubles under
 # giant traffic, KV is tier-churning and worth a tradeoff review).
-: "${KV_CACHE_MEMORY:=2000000000}"
+: "${KV_CACHE_MEMORY:=2115000000}"
 
 # OOM-headroom guard (2026-09-25): post-crash clamp. Any KV pool bigger
 # than 2.0 GB re-creates the crashed epoch's VRAM steady state (~0.67 GiB
@@ -387,9 +387,9 @@ fi
 # opt-out for deliberate sizing experiments (run non-interactive, watch
 # the fb counter):
 #   KV_HEADROOM_GUARD=0 bash <this>.sh [KV_CACHE_MEMORY=...]
-if [ "${KV_HEADROOM_GUARD:-1}" = "1" ] && [ "${KV_CACHE_MEMORY:-0}" -gt 2000000000 ]; then
-  echo "WARNING: OOM-headroom guard: clipping KV_CACHE_MEMORY ${KV_CACHE_MEMORY} -> 2000000000 (2026-09-25 CUDA-OOM cascade headroom; override with KV_HEADROOM_GUARD=0)." >&2
-  KV_CACHE_MEMORY=2000000000
+if [ "${KV_HEADROOM_GUARD:-1}" = "1" ] && [ "${KV_CACHE_MEMORY:-0}" -gt 2115000000 ]; then
+  echo "WARNING: OOM-headroom guard: clipping KV_CACHE_MEMORY ${KV_CACHE_MEMORY} -> 2115000000 (2026-09-25 CUDA-OOM cascade headroom; override with KV_HEADROOM_GUARD=0)." >&2
+  KV_CACHE_MEMORY=2115000000
 fi
 
 # ---------------------------------------------------------------------------
@@ -473,6 +473,15 @@ export VLLM_KV_OFFLOAD_HUGETLB_DIR="${VLLM_KV_OFFLOAD_HUGETLB_DIR:-/dev/hugepage
 # it is a patch-only variable read via os.environ.
 : "${EVICTION_TOMBSTONES:=8000000}"
 export VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES="${EVICTION_TOMBSTONES}"
+# ESCWALL 2026-09-29 (user-approved Tier-1+2 staging): under giant-prompt
+# churn the ESC211 escape (KV-LOOKUP stale-hit fallback -> SERVERKILL) is
+# the wedge engine. Trips escape sooner (TTL 150s->60s, fallback budget
+# 3->2) and gives escape mode an absolute hard wall (240s, ESCWALL release
+# in the connector) so a stuck escape cold-re-arms instead of holding
+# (0, False) forever. Previous values stay reachable by exporting overrides.
+export VLLM_KV_OFFLOAD_STALE_HIT_TTL_SECS="${VLLM_KV_OFFLOAD_STALE_HIT_TTL_SECS:-60}"
+export VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT="${VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT:-2}"
+export VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS="${VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS:-240}"
 
 # ============================================================================
 # Everything below is derived logic — usually no need to touch.
