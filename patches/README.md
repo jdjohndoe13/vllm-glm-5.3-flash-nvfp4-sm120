@@ -3630,6 +3630,12 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 2 clean rows since boot.
   ROWLOG_N=336. Cycle 256 dispatching
   (fresh lane).
+- 2026-09-29 21:25 — cycle 256 (fix-109)
+  reconciled: CYCLE_OK. [21:19:19] clean:
+  h=200 p=9 wall=200 fb=6 (flat) kv=30
+  (+3) apc=7 bytes=+50058 ev=5620. Epoch
+  I: 3 clean rows since boot. ROWLOG_N=
+  337. Cycle 257 dispatching (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
