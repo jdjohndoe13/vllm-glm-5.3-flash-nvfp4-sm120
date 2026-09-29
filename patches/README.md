@@ -2045,4 +2045,21 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   untouched in EVERY row (h=200 p=9 500=0 oom=0
   shm=0 gpu=0). Zero true-degradation triggers —
   record-only. Cycle 182 dispatched.
+- 2026-09-29 10:58 — **RELAY CYCLE 182 (fix-35)
+  reconciled: CYCLE_OK — clean stretch extended to
+  5 rows (~21 min)**. Raw verbatim: NOW=10:58:32,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=216, freshness 4m23 s. New row:
+  [10:54:09] `hb=200 UNTAGGED fb=470 kv=2064
+  rmax=0 apc=396 bytes=+57,073` — clean stretch
+  [10:33:32]→[10:54:09] = **5 rows (~21 min)**,
+  longest run of the boot by both length and
+  duration. Clean rows total 13; tagged ≈ 58.
+  apc 378→396; ev middle 126,886; kv 2,064; fb
+  held 470 (third consecutive fb-flat clean row —
+  no fallback waves; ESC211 fully absorbed).
+  Serving untouched in EVERY row (h=200 p=9
+  500=0 oom=0 shm=0 gpu=0). Zero
+  true-degradation triggers — record-only. Cycle
+  183 dispatched.
 
