@@ -1800,4 +1800,18 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   recovery). Serving intact EVERY row (h=200 p=9
   500=0 oom=0 shm=0 gpu=0); zero true-degradation
   triggers. Cycle 167 dispatched.
+- 2026-09-29 06:53 — **RELAY CYCLE 167 (fix-20)
+  reconciled: CYCLE_ALERT — grind continues after the
+  clean stretch**. Raw verbatim: NOW=06:53:37,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=170 (168+2 ✓), freshness 3m24s. New rows:
+  [06:44:53] `hb=000 fb=261 kv=1218 bytes=+58,925
+  SERVE-WEDGE` (22nd tagged), [06:50:13] `hb=000
+  fb=273 kv=1261 bytes=+55,602 SERVE-WEDGE` (23rd).
+  Family: **23 tagged rows [04:27:02]→[06:50:13] ≈
+  143 min, 5 reprieves**; current grind = 4
+  consecutive rows (06:34→06:50). Serving intact
+  EVERY row (h=200 p=9 500=0 oom=0 shm=0 gpu=0;
+  bytes ~50-63k/row; ev rising cumulatively); zero
+  true-degradation triggers. Cycle 168 dispatched.
 
