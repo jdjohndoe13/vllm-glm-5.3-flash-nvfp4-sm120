@@ -1683,6 +1683,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   continues: cycle 160 dispatched (fresh lane).
   Definitions for the coming rounds: true-degradation
   triggers = 500-rise, oom>0, census≠9, SHM-STALL/
-  GPU-LOCK, CANARY-EXIT, station dead — any of those =
+  GPU-LOCK,   CANARY-EXIT, station dead — any of those =
   immediate user ping; quieter signals = record-only.
+- 2026-09-29 05:34 — **RELAY CYCLE 160 (fix-13)
+  reconciled: CYCLE_ALERT — wedge phase persists
+  (record-only; no degradation triggers)**. Raw
+  verbatim: NOW=05:34:03, CANARY_ALIVE_39394,
+  HEALTH=200, PROBE_EXIT=0, ROWLOG_N=155 (153+2 ✓),
+  freshness 3m04s. New rows: [05:25:39] `hb=000 fb=148
+  kv=662 bytes=+52,932 SERVE-WEDGE`, [05:30:59]
+  `hb=000 fb=158 kv=696 bytes=+55,987 SERVE-WEDGE`.
+  Family: **12 tagged rows [04:27:02]→[05:30:59] ≈ 64
+  min**; the only reprieve remains [04:53:37]; last 7
+  rows (04:58→05:30) continuously tagged — the longest
+  wedge phase of the boot history (cluster-7 was ≈32
+  min total). Serving intact EVERY row: h=200 p=9
+  500=0 oom=0 shm=0 gpu=0; fb +4-10/window, kv
+  +18-34/window, bytes ~53-56k/row steady, ev ticking.
+  Zero trigger conditions (500-rise/oom/census/SHM/
+  GPU/EXIT). Cycle 161 dispatched; user already pinged
+  (05:08) — silent continuation unless triggers fire.
 
