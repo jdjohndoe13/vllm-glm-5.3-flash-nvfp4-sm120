@@ -2511,4 +2511,27 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   EVERY row; zero true-degradation triggers
   — record-only (family rule stands). Cycle
   208 dispatched.
+- 2026-09-29 14:02 — **RELAY CYCLE 208 (fix-61)
+  reconciled: CYCLE_ALERT (newest row tagged,
+  record-only) — grind extended to 6
+  consecutive tagged rows (~27 min)**. Raw
+  verbatim: NOW=14:02:54, CANARY_ALIVE_39394,
+  HEALTH=200, PROBE_EXIT=0, ROWLOG_N=252,
+  freshness 2m37s. Two new rows, both tagged:
+  [13:54:57] `hb=000 SERVE-WEDGE fb=580
+  kv=2553 rmax=1 apc=557 bytes=+52,097` and
+  [14:00:17] `hb=000 SERVE-WEDGE fb=582
+  kv=2576 rmax=1 apc=566 bytes=+61,292`;
+  current grind = 6 rows [13:33:35]→[14:00:17]
+  ~27 min (h=200 p=9 500=0 oom=0 intact in
+  every row) — deepening toward the
+  big-grind-era blocks (epoch-F record: 10
+  rows ~48 min @ 06:34-07:22). Escalating
+  shape: fb 574→582, kv +43 (2,533→2,576),
+  load rows 52k-61k; ev middle 173,892.
+  Tagged ≈ 73; clean rows total 33. Serving
+  untouched in EVERY row; zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 209
+  dispatched.
 
