@@ -1901,4 +1901,20 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (h=200 p=9 500=0 oom=0 shm=0 gpu=0). Zero
   true-degradation triggers — record-only. Cycle
   173 dispatched.
+- 2026-09-29 09:44 — **RELAY CYCLE 173 (fix-26)
+  reconciled: CYCLE_OK — burst grind continues (3
+  consecutive tagged rows)**. Raw verbatim:
+  NOW=09:44:43, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=202, freshness 3m38 s. New
+  rows: [09:35:45] `hb=000 fb=394 kv=1719 rmax=1
+  apc=189 bytes=+51,582 SERVE-WEDGE`, [09:41:05]
+  `fb=405 kv=1752 rmax=1 apc=190 bytes=+48,198
+  SERVE-WEDGE` — steady absorption (+11 fb / +33-34
+  kv per row; ev middles 85,755). Family tail:
+  burst grind 3 rows [09:30:24]→[09:41:05]; idle
+  block 15 rows [08:04:58]→[09:25:04]; total tagged
+  since epoch-F start ≈ 50. Serving untouched in
+  EVERY row (h=200 p=9 500=0 oom=0 shm=0 gpu=0).
+  Zero true-degradation triggers — record-only.
+  Cycle 174 dispatched.
 
