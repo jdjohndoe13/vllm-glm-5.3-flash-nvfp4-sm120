@@ -3353,6 +3353,92 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   zero true-degradation triggers —
   record-only (family rule stands). Cycle
   248 dispatched.
+- 2026-09-29 19:51 — **CHAIN BREAK NOTE —
+  cycle 249 (fix-102) lane died mid-wait
+  (background session stopped before
+  terminal result; no probe ran); wedge
+  death + user restart #1 → epoch G**.
+  Cycle 249 record NOT available (probe
+  never executed between the cycle-248
+  commit and the user report; board
+  stopped-unreconciled). Direct diagnostics
+  (read-only): epoch F (engine-20260929-
+  010246.log, booted 01:02, 8.7 MB) last
+  write 19:37 — tail shows a CLEAN SIGTERM
+  shutdown at 19:37:27 (root-kit none;
+  resource-tracker warnings: "8 leaked
+  semaphore objects", "10 leaked shared_
+  memory objects"). User restarted at
+  19:40:36 → epoch G = engine-20260929-
+  194036.log (APIServer pid 169166).
+  Rowlog [19:42:27] NEWBOOTLOG (epoch F
+  replaced); [19:47:27] h=000 shm=2
+  (first non-zero shm of the engagement;
+  epoch G still booting). Canary station
+  pid 39394 SURVIVED the wedge death +
+  both restarts. Cycle 250 dispatched.
+- 2026-09-29 20:14 — **RELAY CYCLE 250 (fix-103
+  lane omitted; direct orchestrator probe
+  due to broken-cycle hand-off) reconciled:
+  CYCLE_OK — epoch H SERVING; chain
+  RESUMED**. Raw verbatim: NOW=20:14:26,
+  CANARY_ALIVE_39394, HEALTH=200,
+  ROWLOG_N=324, freshness ~1m. New rows:
+  [19:52:48] `hb=000 SERVE-WEDGE h=200
+  p=9 fb=3 kv=7 apc=1 bytes=+128,804
+  ev=2672.0` (epoch G boot-ramp; fresh
+  engine identity; canary hb not yet
+  wrapped); [19:58:08] `hb=000 fb=12 kv=29
+  apc=3 bytes=+34,188` (G ramp); [20:03:
+  08] `h=000 p=4 fb=12 kv=29 apc=3` (user
+  stop #2 in progress, census mid-drop);
+  [20:08:09] `h=000 p=9 ALERT: NEWBOOTLOG`
+  (epoch H boot detected); [20:13:26]
+  `h=200 p=9 hb=200 shm=3 fb=0 kv=0
+  apc=0 bytes=+71,728` (epoch H's FIRST
+  live row: h=200 + hb=200 immediately —
+  earliest canary hb wrap-in of the
+  engagement; shm=3 boot artifact,
+  expect 0 under serving).
+  - latest.log tail confirms epoch H live:
+  APIServer pid 176751; 8×TP rows at
+  20:13:26 warn `jit_monitor.py:132 Triton
+  kernel JIT compilation during inference
+  ... latency spike` (_rejection_kernel/
+  _resample_kernel, is_warmup=False —
+  boot-order JIT, not a stall); then
+  normal serving: POST 200 OK 20:13:32 +
+  20:14:22, Engine 000 gen 110-125 tok/s,
+  spec-decode mean acc 2.0-2.5, GPU KV
+  66-69% climbing.
+  - ROOT CAUSE (user smoked out; confirmed):
+  the wedge is the fork's KV-LOOKUP
+  stale-hit escape (scheduler.py:1393/1403)
+  — `stale-hit fallback ... fallbacks=3
+  wall=20.2` → `SERVERKILL ... escape
+  (0, False) until boundary change`; the
+  escape usually self-recovers (epoch G
+  log had 4 SERVERKILL events; first two
+  19:52:53/19:53:50 recovered, gen bounced
+  96-130 tok/s; the 19:55:35 escape STUCK
+  — only /metrics answered — until user
+  stop #2 at 20:02, which per the rowlog
+  p=4 window completed before H's bootlog
+  at 20:03-20:08). Epoch F: 44 SERVERKILL
+  events over 18.5 h — the all-day
+  SERVE-WEDGE hb=000 ladder was this same
+  escape cycle (fb climb to 841 / kv
+  3,756 = KV-cache pressure build, not
+  a separate failure mode). Both user
+  stops were clean SIGTERM shutdowns;
+  zero crash/OOM/oom signatures.
+  - Watch continued on epoch H: shm=3
+  should resettle to 0 within a cycle;
+  escape events may re-fire (stochastic;
+  44 in F) — next wedge-stick will show
+  as a NEWBOOTLOG+user-restart or a
+  multi-row hb=000 grind that doesn't
+  recover. Cycle 251 dispatching.
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
