@@ -3937,3 +3937,18 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (c276 counts; no verified delta yet).
   ROWLOG_N=unverified (provisional ~365).
   Cycle 278 dispatching (fresh lane).
+- 2026-09-29 23:50 — cycle 278 (fix-131)
+  reconciled: CYCLE_OK — file rows
+  verified. [23:41:31] CLEAN (fb=37
+  kv=345 apc=173) — confirms c277's
+  provisional verdict (echo-slip gap
+  closed: no wedge row was missed).
+  [23:46:32] clean newest: fb=37 (flat)
+  kv=346 (+1) apc=180 bytes=+19737 ev
+  43330/10877 — 15 consecutive clean
+  rows since the 22:20:37 wedge; ESCWALL
+  release still unobserved (all escapes
+  self-release under 240 s by design).
+  Epoch I: 28 of 30 rows clean.
+  ROWLOG_N=366. Cycle 279 dispatching
+  (fresh lane).
