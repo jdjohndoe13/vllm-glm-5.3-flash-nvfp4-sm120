@@ -2751,4 +2751,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   true-degradation triggers — record-only
   (family rule stands). Cycle 220
   dispatched.
+- 2026-09-29 15:43 — **RELAY CYCLE 220 (fix-73)
+  reconciled: CYCLE_ALERT (newest row tagged,
+  record-only) — 6-row streak snapped by a
+  fresh flicker**. Raw verbatim: NOW=15:43:48,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=272, freshness ~2s. Two new rows:
+  [15:38:26] `hb=200 UNTAGGED fb=661 kv=2923
+  rmax=0 apc=706 bytes=+51,242` (streak
+  extended to 6 rows [15:13:21]→[15:38:26],
+  ~25 min = longest post-14:21 stint) and
+  [15:43:46] `hb=000 SERVE-WEDGE fb=661 flat
+  kv=2926 rmax=1 apc=721 bytes=+50,827` —
+  snapped it; current grind = 1 row. apc
+  refill rising (+27 in 2 rows, 694→721); ev
+  220,385. Note: lane's echo of [14:42:11]
+  shows "oor=0" — 1-char transcription slip
+  (file shows oom=0; md5 unaffected meaning).
+  Tagged ≈ 81; clean rows total 45. Serving
+  untouched in EVERY row (h=200 p=9 500=0
+  oom=0); zero true-degradation triggers —
+  record-only (family rule stands). Cycle
+  221 dispatched.
 
