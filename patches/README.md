@@ -3086,4 +3086,25 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   oom=0); zero true-degradation triggers —
   record-only (family rule stands). Cycle
   237 dispatched.
+- 2026-09-29 17:46 — **RELAY CYCLE 237 (fix-90)
+  reconciled: CYCLE_ALERT (newest row
+  tagged, record-only) — flash flicker;
+  ev crossed 270k**. Raw verbatim: NOW=
+  17:46:19, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=295, freshness
+  3m31s. New row: [17:42:44] `hb=000
+  SERVE-WEDGE fb=729 kv=3190 rmax=1 apc=972
+  bytes=+43,005` — single flicker after the
+  [17:37:23] recovery; current grind = 1
+  row; fb +1 (728→729); kv +6 (3,184→
+  3,190); apc 972 (new highs); ev middle
+  271,716 (first >270k row). Lane echoed
+  "om=0" on the [16:45:35] line's "oom",
+  then self-corrected it verbatim (echo
+  slip; file row intact). Tagged ≈ 90;
+  clean rows total 59. Serving untouched
+  in EVERY row (h=200 p=9 500=0 oom=0);
+  zero true-degradation triggers —
+  record-only (family rule stands). Cycle
+  238 dispatched.
 
