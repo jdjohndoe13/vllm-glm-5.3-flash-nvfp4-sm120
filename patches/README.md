@@ -3473,6 +3473,29 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   tombstones=8M, hugetlb tier on) — no user env
   pre-sets ever tuned. Tagged ≈ 99; epoch-H
   clean rows 3. Cycle 252 dispatched.
+- 2026-09-29 20:32 — **RELAY CYCLE 252 (fix-104)
+  reconciled: CYCLE_OK — epoch H clean streak
+  reaches 4 rows; tier recovery pattern **. Raw
+  verbatim: NOW=20:31:16, CANARY_ALIVE_39394,
+  HEALTH=200, PROBE_EXIT=0, ROWLOG_N=327.
+  New row: [20:28:31] `h=200 p=9 shm=0 gpu=0
+  hb=200 fb=4 kv=16 rmax=1 rep=0 apc=16
+  bytes=+37,900 ev=5568.0` — untagged; epoch-H
+  streak [20:13:26]→[20:28:31] = 4 rows. Ramp:
+  fb FLAT at 4 (3rd row — no fallback lines
+  firing on the fresh engine), kv +1 (16), apc
+  DOUBLED 8→16 (cache refill active), ev
+  3048→5568; bytes +37,900 (light-load row).
+  The lane's closing prose garbled mid-sentence
+  (mixed-charter chatter) — RAW rows + verdict
+  matched verbatim; echo noise only, file rows
+  authoritative. Tagged ≈ 99; epoch-H clean
+  rows 4. note: fix-105 (ESCWALL Tier-1+2
+  staging lane by user decision) running in
+  parallel — write scope = launcher + 2
+  scheduler.py copies + backups + local mirrors
+  only; disjoint from relay probes. Cycle 253
+  dispatched.
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
