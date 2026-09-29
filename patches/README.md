@@ -1703,4 +1703,21 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Zero trigger conditions (500-rise/oom/census/SHM/
   GPU/EXIT). Cycle 161 dispatched; user already pinged
   (05:08) — silent continuation unless triggers fire.
+- 2026-09-29 05:45 — **RELAY CYCLE 161 (fix-14)
+  reconciled: CYCLE_ALERT — wedge oscillates: second
+  reprieve row then re-tag**. Raw verbatim: NOW=05:45:16,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=157 (155+2 ✓), freshness 3m42s. New rows:
+  [05:36:14] **hb=200, untagged** (`fb=162 kv=728
+  bytes=+68,359` — SECOND reprieve, after [04:53:37]),
+  [05:41:34] `hb=000 fb=170 kv=767 bytes=+63,842
+  SERVE-WEDGE`. Family: **13 tagged rows
+  [04:27:02]→[05:41:34] ≈ 74 min with 2 reprieve rows**
+  — oscillation shape now: ~4-6 tagged rows → 1 clean
+  row → repeat (client bursts passing through tier
+  exhaustion/recovery cycles). Serving untouched EVERY
+  row (h=200 p=9 500=0 oom=0 shm=0 gpu=0; bytes
+  +52-69k/row; ev rising steadily). Zero true-
+  degradation triggers → record-only. Cycle 162
+  dispatched.
 
