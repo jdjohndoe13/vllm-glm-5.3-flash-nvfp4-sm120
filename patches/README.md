@@ -1663,4 +1663,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   degradation (500-rise, oom>0, census drop, SHM/GPU
   class, CANARY-EXIT) or user-owned engine restart
   (§7).
+- 2026-09-29 05:20 — **RELAY CYCLE 159 (fix-12)
+  reconciled: CYCLE_ALERT — wedge persistence continues
+  (no degradation classes → no new ping, per the
+  post-ping rule)**. Raw verbatim: NOW=05:20:49,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=153 (150+3 ✓), freshness 31 s. New rows:
+  [05:09:38] `hb=000 fb=127 kv=570 bytes=+53,371
+  SERVE-WEDGE`, [05:14:58] `fb=134 kv=609 +55,560`,
+  [05:20:18] `fb=144 kv=644 +50,260`. Family total:
+  **10 tagged rows over [04:27:02]→[05:20:18] ≈ 53 min**,
+  the only reprieve the single [04:53:37] row; last
+  ~26 min continuously tagged. ESC211 churn visible:
+  fb +8-13/window sustained (band edge; cluster-7 quiet
+  band was +≤3), kv +30-40/window — heavy tier refill
+  under the giant client's iteration bursts. Every row
+  h=200 p=9 500=0 oom=0 shm=0 gpu=0 → serving intact;
+  cycle-159's own probes found no new classes. Relay
+  continues: cycle 160 dispatched (fresh lane).
+  Definitions for the coming rounds: true-degradation
+  triggers = 500-rise, oom>0, census≠9, SHM-STALL/
+  GPU-LOCK, CANARY-EXIT, station dead — any of those =
+  immediate user ping; quieter signals = record-only.
 
