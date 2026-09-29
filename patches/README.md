@@ -2363,4 +2363,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   record-only (epoch-F family rule stands:
   escalate if h≠200/500s/oom/census-drop
   appear). Cycle 201 dispatched.
+- 2026-09-29 12:53 — **RELAY CYCLE 201 (fix-54)
+  reconciled: CYCLE_OK — grind extended to 3
+  rows then recovered on row 4**. Raw
+  verbatim: NOW=12:53:37, CANARY_ALIVE_39394,
+  HEALTH=200, PROBE_EXIT=0, ROWLOG_N=239,
+  freshness 2m34s. Two new rows: [12:46:01]
+  `hb=000 SERVE-WEDGE fb=496 kv=2173 rmax=1
+  apc=511 bytes=+54,019` (h=200 intact; grind
+  = 3 rows [12:35:20]→[12:46:01], ~11 min —
+  longest since the big-grind era) and
+  [12:51:03] `hb=200 UNTAGGED fb=500 kv=2200
+  rmax=1 apc=517 bytes=+62,046` — recovery;
+  current streak = 1 row. Escalating shape
+  continues: fb 474→484→496→500 fallback
+  waves, kv 2085→2200 (+115 over 4 rows,
+  ~29/row), traffic 34k→57k→54k→62k heaviest
+  yet; ev middle 143,426; fb=500 = biggest
+  clean-row fallback total. Tagged ≈ 63;
+  clean rows total 30. Serving untouched in
+  EVERY row (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 202 dispatched.
 
