@@ -3155,4 +3155,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   p=9 500=0 oom=0); zero true-degradation
   triggers — record-only (family rule
   stands). Cycle 240 dispatched.
+- 2026-09-29 18:18 — **RELAY CYCLE 240 (fix-93)
+  reconciled: CYCLE_OK — streak extended to
+  2; ladder matching the grind-9 build
+  profile (+7 fb, +5 apc per row)**. Raw
+  verbatim: NOW=18:18:12, CANARY_ALIVE_
+  39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=301, freshness ~4m. New row:
+  [18:14:13] `hb=200 UNTAGGED fb=773
+  kv=3331 rmax=1 apc=982 bytes=+46,167` —
+  current streak [18:09:00]→[18:14:13] = 2
+  rows served CLEAN; fb climb sustained
+  (766→773), kv +23 (3,308→3,331), apc
+  977→982; ev 283,936 (day high); the
+  uninterrupted ladder profile now matches
+  the 13:35-14:16 build that produced
+  grind-9. Lane corrected its own mistyped
+  [17:37:23] echo line (file row intact).
+  Tagged ≈ 93; clean rows total 62.
+  Serving untouched in EVERY row (h=200
+  p=9 500=0 oom=0); zero true-degradation
+  triggers — record-only (family rule
+  stands). Cycle 241 dispatched.
 
