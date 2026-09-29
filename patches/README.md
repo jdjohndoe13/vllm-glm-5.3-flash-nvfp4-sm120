@@ -2424,4 +2424,25 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   oom=0); zero true-degradation triggers —
   record-only (family rule stands). Cycle
   204 dispatched.
+- 2026-09-29 13:20 — **RELAY CYCLE 204 (fix-57)
+  reconciled: CYCLE_ALERT (newest row tagged,
+  record-only) — 2-row clean streak snapped;
+  grind back to 2 consecutive tagged rows**.
+  Raw verbatim: NOW=13:20:33,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=244, freshness 2m54s. Two new rows:
+  [13:12:19] `hb=000 SERVE-WEDGE fb=506
+  kv=2311 rmax=1 apc=551 bytes=+67,137` and
+  [13:17:39] `hb=000 SERVE-WEDGE fb=521
+  kv=2355 rmax=1 apc=551 bytes=+58,693`;
+  current grind = 2 rows [13:12:19]+[13:17:39]
+  (h=200 p=9 500=0 oom=0 intact in every
+  row). Escalating shape resumes: fb
+  502→506→521, kv +76 in 2 rows (2,279→2,355,
+  churn accelerating again), load band
+  58k-74k; ev middle 157,896. Tagged ≈ 66;
+  clean rows total 32. Serving untouched in
+  EVERY row; zero true-degradation triggers —
+  record-only (family rule stands). Cycle
+  205 dispatched.
 
