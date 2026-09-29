@@ -2467,4 +2467,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   500=0 oom=0); zero true-degradation
   triggers — record-only (family rule
   stands). Cycle 206 dispatched.
+- 2026-09-29 13:42 — **RELAY CYCLE 206 (fix-59)
+  reconciled: CYCLE_ALERT (newest row tagged,
+  record-only) — reprieve snapped after 1
+  row, grind back to 2 consecutive tagged
+  rows**. Raw verbatim: NOW=13:42:36,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=248, freshness 3m40s. Two new rows,
+  both tagged: [13:33:35] `hb=000 SERVE-WEDGE
+  fb=545 kv=2452 rmax=1 apc=555 bytes=+54,704`
+  and [13:38:56] `hb=000 SERVE-WEDGE fb=558
+  kv=2486 rmax=1 apc=555 bytes=+54,862`;
+  current grind = 2 rows [13:33:35]+[13:38:56]
+  (h=200 p=9 500=0 oom=0 intact in every
+  row). Heavy-load phase pattern solidifying:
+  grind-2/3 → reprieve-1 → grind-2/3; fb
+  ascent steady (+13/row, 540→558), kv +69
+  over 2 rows (2,417→2,486), ev middle
+  164,336; load band ~54k-74k. Tagged ≈ 69;
+  clean rows total 33. Serving untouched in
+  EVERY row; zero true-degradation triggers
+  — record-only (family rule stands). Cycle
+  207 dispatched.
 
