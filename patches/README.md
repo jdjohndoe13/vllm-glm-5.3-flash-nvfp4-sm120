@@ -1847,4 +1847,21 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   reprieves**. fb→336, kv→1489. Serving unchanged in
   EVERY row (h=200 p=9 500=0 oom=0 shm=0 gpu=0).
   Zero triggers — record-only. Cycle 170 dispatched.
+- 2026-09-29 07:33 — **RELAY CYCLE 170 (fix-23)
+  reconciled: CYCLE_ALERT — record grind broke,
+  reprieve held one row, grind resumed**. Raw
+  verbatim: NOW=07:33:33, CANARY_ALIVE_39394,
+  HEALTH=200, PROBE_EXIT=0, ROWLOG_N=178 (176+2 ✓),
+  freshness 37 s. New rows: [07:27:35] `hb=200
+  untagged` (`fb=349 kv=1536 bytes=+59,917` — SIXTH
+  reprieve; apc refill 166→183), [07:32:56] `hb=000
+  fb=356 kv=1589 bytes=+70,512 SERVE-WEDGE` (30th
+  tagged; grind resumed right after). The record
+  10-row grind (06:34→07:22) ended via the
+  single-row reprieve at [07:27:35]. Family: **30
+  tagged rows [04:27:02]→[07:32:56] ≈ 186 min, 6
+  reprieves**. kv +53/window (heaviest single-step
+  climb). Serving untouched in EVERY row (h=200 p=9
+  500=0 oom=0 shm=0 gpu=0). Zero triggers —
+  record-only. Cycle 171 dispatched.
 
