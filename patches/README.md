@@ -3679,6 +3679,15 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wall loss). Epoch I: 9 clean rows since
   boot. ROWLOG_N=343. Cycle 262
   dispatching (fresh lane).
+- 2026-09-29 22:01 — cycle 262 (fix-115)
+  reconciled: CYCLE_OK. [21:54:55] clean
+  (fb=11 kv=119 +3 apc=65 ev slot2 3688/
+  slot3 1018), [21:59:55] clean (fb=11
+  flat, kv=122 +3, apc=69, ev
+  12412.0,4880.0,1256.0) — kv drift
+  decelerating, both walls intact. Epoch
+  I: 11 clean rows since boot. ROWLOG_N=
+  345. Cycle 263 dispatching (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
