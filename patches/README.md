@@ -1885,4 +1885,20 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   counters PERFECT in every row (h=200 p=9 500=0
   oom=0 shm=0 gpu=0). Zero critical triggers —
   record-only. Cycle 172 dispatched.
+- 2026-09-29 09:34 — **RELAY CYCLE 172 (fix-25)
+  reconciled: CYCLE_ALERT — idle tail ended, new
+  burst started**. Raw verbatim: NOW=09:34:19,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=200 (milestone), freshness 3m55 s. New
+  row: [09:30:24] `hb=000 fb=383 kv=1685 rmax=1
+  apc=186 bytes=+51,706 SERVE-WEDGE` — burst
+  activity RESUMED after the 15-row all-tagged idle
+  block ([08:04:58]→[09:25:04]): fb +11, kv +37,
+  bytes +51,706 (real convoy again), ev middles
+  unfroze (82,771→84,475, third 20,763→21,183).
+  Family: idle block 15 rows; [09:30:24] opens the
+  next grind. Serving untouched in EVERY row
+  (h=200 p=9 500=0 oom=0 shm=0 gpu=0). Zero
+  true-degradation triggers — record-only. Cycle
+  173 dispatched.
 
