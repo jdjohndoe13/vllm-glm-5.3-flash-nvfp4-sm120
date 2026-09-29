@@ -3688,6 +3688,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   decelerating, both walls intact. Epoch
   I: 11 clean rows since boot. ROWLOG_N=
   345. Cycle 263 dispatching (fresh lane).
+- 2026-09-29 22:07 — cycle 263 (fix-116)
+  reconciled: **CYCLE_ALERT: SERVE-WEDGE**
+  — [22:05:16] wedge-tagged, LONE (first
+  in epoch I): h=200 p=9, 500=0, shm=0,
+  hb=000 (both fence-hit mid-row), fb
+  11→15, kv 122→137, apc=73, ev slots 2/3
+  rising (6532/1672), bytes +38982.
+  Verdict-bearers healthy (h/500/oom) —
+  one-cycle grace applies (serving
+  responsive; post-fix bounded ladder,
+  worst-case capped by the 240 s ESCWALL
+  wall; epoch I's 21:08 Serverkill
+  self-drained in seconds). Cycle 264
+  dispatched immediately — its newest row
+  decides recovery vs continuance (≥2
+  consecutive wedge rows = escalation
+  signal; if it recurs, verify latest.log
+  for "KV-LOOKUP ESCWALL release" /
+  "SERVERKILL" to confirm the bounded
+  path engaged).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
