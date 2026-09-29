@@ -1917,4 +1917,19 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   EVERY row (h=200 p=9 500=0 oom=0 shm=0 gpu=0).
   Zero true-degradation triggers — record-only.
   Cycle 174 dispatched.
+- 2026-09-29 09:56 — **RELAY CYCLE 174 (fix-27)
+  reconciled: CYCLE_OK — burst grind reaches 5
+  consecutive rows**. Raw verbatim: NOW=09:56:02,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=204, freshness 4m16 s. New rows:
+  [09:46:26] `hb=000 fb=413 kv=1782 rmax=1 apc=195
+  bytes=+58,685 SERVE-WEDGE`, [09:51:46] `fb=425
+  kv=1820 rmax=1 apc=202 bytes=+58,640
+  SERVE-WEDGE`. Burst grind = **5 consecutive rows
+  ([09:30:24]→[09:51:46])**; total tagged since
+  epoch-F start ≈ 52. apc re-climbing (190→195→202
+  — cache churn heavy). Serving untouched in EVERY
+  row (h=200 p=9 500=0 oom=0 shm=0 gpu=0). Zero
+  true-degradation triggers — record-only. Cycle
+  175 dispatched.
 
