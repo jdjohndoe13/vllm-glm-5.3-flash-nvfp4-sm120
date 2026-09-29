@@ -2921,4 +2921,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   true-degradation triggers — record-only
   (family rule stands). Cycle 229
   dispatched.
+- 2026-09-29 16:47 — **RELAY CYCLE 229 (fix-82)
+  reconciled: CYCLE_OK — calm plateau ended
+  with the heaviest row of the day; recovery
+  on a new fb step**. Raw verbatim: NOW=
+  16:47:20, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=284, freshness ~2m.
+  Two new rows: [16:40:34] `hb=000
+  SERVE-WEDGE fb=693 kv=3035 rmax=1 apc=861
+  bytes=+76,412` (HEAVIEST row of the day,
+  snapped the 6-row streak; apc spiked +93
+  to 861 — largest refill ever) and
+  [16:45:35] `hb=200 UNTAGGED fb=699
+  kv=3059 rmax=1 apc=885 bytes=+64,219` —
+  recovery; current streak = 1 row; fb
+  692→699 new ladder step; kv +30 (3,029→
+  3,059); apc 768→885 (+117 total); ev
+  middle 239,843. Tagged ≈ 85; clean rows
+  total 53. Serving untouched in EVERY row
+  (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 230
+  dispatched.
 
