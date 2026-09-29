@@ -3579,6 +3579,49 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   10972. Newest row untagged → CYCLE_OK.
   - ROWLOG_N=330; epoch-H clean rows 6 of 7.
   Cycle 254 dispatching (fresh lane).
+- 2026-09-29 21:10 — cycle 254 RECOVERY +
+  **ESCWALL ENGAGED (epoch I)**.
+  - fix-107 lane died on infra (Bad Gateway)
+  with no probe → direct orchestrator probe
+  (cycle-250 pattern; complex command shipped
+  as /tmp/restart_verify.sh per user rule).
+  - User restart #3 at ~20:54: old APIServer
+  pid 176751 GONE (clean stop); NEWBOOTLOG
+  [20:59:14]; epoch I APIServer pid 190081
+  (EngineCore 190642, Worker 191003; cmdline
+  identical to epoch H).
+  - MODE: NEWBOOTLOG LANE:
+    1. Tier-1 ENGAGED: /proc/190081/environ
+    shows STALE_HIT_TTL_SECS=60,
+    STALE_HIT_FALLBACK_LIMIT=2,
+    ESCAPE_WALL_SECS=240 (plus preexisting
+    tombstones 8M / tier_hugetlb 1 / dir).
+    2. Tier-2 ENGAGED (behavioral, live log):
+    21:08:46-57 — req chatcmpl-81e803… hit
+    reproduction: identical-hit lookups →
+    "stale-hit fallback fallbacks=1 wall=0.3"
+    → "fallbacks=2 wall=10.4" (the 10 s
+    KVC-PIN visibly persisted between the
+    two fallbacks) → "KV-LOOKUP SERVERKILL
+    … fallbacks=2 … -> escape (0, False)"
+    — the ladder CLOSED at fallbacks=2 in
+    10.4 s (limit knob verified behaviorally;
+    default form was fallbacks=3), and the
+    server kept POSTing 200s through the
+    window (200s at 21:08:41/46/47/09:01).
+  - Cycle 254 verdict: CYCLE_OK — newest
+  rowlog row [21:09:15] clean: h=200 p=9
+  wall=200 fb=4 kv=12 shm=1 bytes=+122834
+  ev=1960 (fresh-epoch counters). ROWLOG_N=
+  335; canary 39394 + HEALTH=200 live.
+  - Watch note: "KV-LOOKUP ESCWALL release"
+  line not yet observed — appears only if an
+  escape sticks ≥240 s with a frozen
+  boundary; today's escape drained itself,
+  so the release path remains unobserved-by-
+  design. fab/kv cadence may rise (earlier
+  trips were the intent). Cycle 255
+  dispatching (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
