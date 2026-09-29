@@ -1980,4 +1980,20 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   untouched in EVERY row (h=200 p=9 500=0 oom=0
   shm=0 gpu=0). Zero true-degradation triggers —
   record-only. Cycle 178 dispatched.
+- 2026-09-29 10:30 — **RELAY CYCLE 178 (fix-31)
+  reconciled: CYCLE_ALERT — grind resumed; kv
+  crossed 2,000**. Raw verbatim: NOW=10:30:10,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=211, freshness 1m41 s. New rows:
+  [10:23:08] `hb=000 fb=456 kv=1984 rmax=1 apc=286
+  bytes=+50,805 SERVE-WEDGE`, [10:28:29] `fb=463
+  kv=2006 rmax=1 apc=296 bytes=+54,202
+  SERVE-WEDGE` — **kv crossed 2,000**; ev middle
+  107,043. The eighth reprieve held one row
+  ([10:17:48]); current grind = 2 rows
+  ([10:23:08]→[10:28:29]). Family: ≈57 tagged
+  rows since epoch-F start; reprieves: 8. Serving
+  untouched in EVERY row (h=200 p=9 500=0 oom=0
+  shm=0 gpu=0). Zero true-degradation triggers —
+  record-only. Cycle 179 dispatched.
 
