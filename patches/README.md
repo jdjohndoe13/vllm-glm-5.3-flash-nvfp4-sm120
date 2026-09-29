@@ -1616,4 +1616,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (fresh lane), probe lands ~04:53-54 at the decision
   boundary; alert-free rows resume = automatic end of
   cluster watch.
+- 2026-09-29 04:55-04:57 — **RELAY CYCLE 157 (fix-10)
+  reconciled: CYCLE_OK — WEDGE CLUSTER CLOSED at
+  [04:53:37]**. Raw verbatim: NOW=04:55:10,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=148 (146+2 ✓), freshness 1m33s. Recovery row
+  `[04:53:37] h=200 p=9 500=0 oom=0 shm=0 gpu=0 hb=200
+  fb=95 kv=457 rmax=1 rep=0 apc=86 bytes=+69093 …` — no
+  tags, largest traffic of the window. Final cluster
+  span: 5 tagged rows [04:27:02]→[04:48:23] = **~21.4
+  min**, every row h=200/p=9/oom=0/shm=0 with bytes
+  flowing (+61,682/+64,475/+63,417/+60,280), kv
+  220→393→457, fb 44→95, ev ticking; NO SHM-STALL/
+  GPU-LOCK/oom/EXIT/new classes → **third verified
+  instance of the load-congestion SERVE-WEDGE family**
+  (09-22 short wedges; 09-25 cluster-7 ≈32 min; 09-29
+  epoch-F ≈21 min) — all self-resolved, zero deaths,
+  zero kit changes, escalation bar never crossed.
+  Relay continues: cycle 158 dispatched (fresh lane);
+  watch = recovery-hold on rows ≥ [04:58] (any re-tagged
+  row reopens the cluster and re-judges).
 
