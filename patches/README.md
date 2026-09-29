@@ -2943,4 +2943,23 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   true-degradation triggers — record-only
   (family rule stands). Cycle 230
   dispatched.
+- 2026-09-29 16:53 — **RELAY CYCLE 230 (fix-83)
+  reconciled: CYCLE_ALERT (newest row tagged,
+  record-only) — flash flicker at new-day
+  high scale; ev crossed 240k**. Raw
+  verbatim: NOW=16:53:26, CANARY_ALIVE_39394,
+  HEALTH=200, PROBE_EXIT=0, ROWLOG_N=285,
+  freshness ~2.5m. New row: [16:50:56]
+  `hb=000 SERVE-WEDGE fb=699 flat kv=3062
+  rmax=1 apc=893 bytes=+43,925` — single
+  flicker after the [16:45:35] recovery;
+  current grind = 1 row; kv +3 (3,059→
+  3,062); fb flat at 699; apc 893 (new
+  high territory); ev middle 242,991 (first
+  >240k row). Tagged ≈ 86; clean rows
+  total 53. Serving untouched in EVERY
+  row (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 231
+  dispatched.
 
