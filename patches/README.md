@@ -1718,6 +1718,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   exhaustion/recovery cycles). Serving untouched EVERY
   row (h=200 p=9 500=0 oom=0 shm=0 gpu=0; bytes
   +52-69k/row; ev rising steadily). Zero true-
-  degradation triggers → record-only. Cycle 162
+  -degradation triggers → record-only. Cycle 162
+  dispatched.
+- 2026-09-29 05:58 — **RELAY CYCLE 162 (fix-15)
+  reconciled: CYCLE_ALERT — near-continuous wedge grind
+  (record-only)**. Raw verbatim: NOW=05:58:17,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=160 (157+3 ✓), freshness 42 s. New rows:
+  [05:46:55] `hb=000 fb=178 kv=808 bytes=+61,741
+  SERVE-WEDGE`, [05:52:15] `fb=187 kv=833 +49,684`,
+  [05:57:35] `fb=192 kv=884 +66,173`. Family: **16
+  tagged rows [04:27:02]→[05:57:35] ≈ 90.5 min, 2
+  reprieves, last 4 rows continuous (05:41→05:57)** —
+  oscillation has tightened to a near-continuous grind
+  under the giant client's iteration load. Serving
+  intact EVERY row (h=200 p=9 500=0 oom=0 shm=0 gpu=0;
+  bytes ~50-66k/row steady; ev rising cumulatively);
+  zero true-degradation triggers. Cycle 163
   dispatched.
 
