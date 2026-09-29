@@ -1996,4 +1996,23 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   untouched in EVERY row (h=200 p=9 500=0 oom=0
   shm=0 gpu=0). Zero true-degradation triggers —
   record-only. Cycle 179 dispatched.
+- 2026-09-29 10:38 — **RELAY CYCLE 179 (fix-32)
+  reconciled: CYCLE_OK — two consecutive clean
+  rows; oscillation gentler**. Raw verbatim:
+  NOW=10:38:43, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=213, freshness 1 s. New
+  rows: [10:33:32] `hb=200 UNTAGGED fb=470
+  kv=2031 rmax=1 apc=303 bytes=+47,756`,
+  [10:38:42] `hb=200 UNTAGGED fb=470 kv=2036
+  apc=311 bytes=+39,954` — grind broke at 3
+  rows ([10:23:08]→[10:28:29]); second 2-row
+  clean stretch of the boot. Clean rows this
+  boot: 10 (two 2-row stretches); tagged ≈ 58.
+  ev middle 116,423 (climbing steeply); apc
+  303→311. Post-10:00 regime: grind blocks
+  shortened to 2-3 rows with clean pairs
+  between. Serving untouched in EVERY row
+  (h=200 p=9 500=0 oom=0 shm=0 gpu=0). Zero
+  true-degradation triggers — record-only. Cycle
+  180 dispatched.
 
