@@ -2773,4 +2773,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   oom=0); zero true-degradation triggers —
   record-only (family rule stands). Cycle
   221 dispatched.
+- 2026-09-29 15:52 — **RELAY CYCLE 221 (fix-74)
+  reconciled: CYCLE_ALERT (newest row tagged,
+  record-only) — 2-row grind; fb ladder
+  resumed (+10)**. Raw verbatim: NOW=15:52:04,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=273, freshness ~3m. New row:
+  [15:49:06] `hb=000 SERVE-WEDGE fb=671
+  kv=2957 rmax=1 apc=724 bytes=+53,793` —
+  grind = 2 consecutive rows ([15:43:46]+
+  [15:49:06]); fb +10 (661→671) = first
+  double-digit fallback push in the 15:00s,
+  ladder resumed; kv +31 (2,926→2,957); apc
+  721→724; ev middle 222,019. Tagged ≈ 82;
+  clean rows total 45. Serving untouched in
+  EVERY row (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 222
+  dispatched.
 
