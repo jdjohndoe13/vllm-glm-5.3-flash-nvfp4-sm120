@@ -3353,4 +3353,38 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   zero true-degradation triggers —
   record-only (family rule stands). Cycle
   248 dispatched.
+- 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
+  reconciled: CYCLE_ALERT (newest row
+  tagged, record-only) — grind-6 broke;
+  grind-3 formed at grind-ready scale;
+  fb ladder step +25 (engagement-larg-
+  est)**. Raw verbatim: NOW=19:21:41,
+  CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=314 (311+3,
+  triplet barrel), freshness ~3s. Three
+  new rows, all tagged: [19:10:58] `hb=
+  000 SERVE-WEDGE fb=790 kv=3572 rmax=
+  1 apc=1111 bytes=+73,584` (grind-6
+  BROKE, streak reset to 0); [19:16:18]
+  `hb=000 fb=798 kv=3617 apc=1112 bytes=
+  +63,914`; [19:21:38] `hb=000 fb=811
+  kv=3664 apc=1112 flat bytes=+65,812` —
+  current grind = 3 consecutive rows
+  ([19:10:58]→[19:21:38]); fb ladder
+  786→811 (+25, LARGEST single ladder
+  step of engagement); kv +141 in 3
+  rows (3,523→3,664); apc 1112 (mil-
+  lennium+ refills flat); ev middle
+  316,688. Grind-9-scale build climbs:
+  grind-6 streak → grind-3 forming (the
+  13:33-14:16 grind-9 build had the
+  same 6-row clean streak preceding the
+  grind). Echo slip noted: [18:09:00]
+  hb mis-echoed as 000 (file row is
+  hb=200). Tagged ≈ 99; clean rows
+  total 70. Serving untouched in EVERY
+  row (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-
+  only (family rule stands). Cycle 249
+  dispatched.
 
