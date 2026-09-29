@@ -3622,6 +3622,14 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   design. fab/kv cadence may rise (earlier
   trips were the intent). Cycle 255
   dispatching (fresh lane).
+- 2026-09-29 21:20 — cycle 255 (fix-108)
+  reconciled: CYCLE_OK. [21:14:18] clean:
+  h=200 p=9 wall=200 fb=6 kv=27 (small-
+  scale early-epoch drift, no fence-climb
+  pattern) apc=1 bytes=+54021 ev=3996.
+  Epoch I: 2 clean rows since boot.
+  ROWLOG_N=336. Cycle 256 dispatching
+  (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
