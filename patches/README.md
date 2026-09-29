@@ -2218,4 +2218,19 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   EVERY row (h=200 p=9 500=0 oom=0 shm=0
   gpu=0). Zero true-degradation triggers —
   record-only. Cycle 193 dispatched.
+- 2026-09-29 12:01 — **RELAY CYCLE 193 (fix-46)
+  reconciled: CYCLE_OK — clean streak rebuilt
+  to 2 rows post-flicker**. Raw verbatim:
+  NOW=12:01:26, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=229, freshness ~90s.
+  New row: [11:59:56] `hb=200 UNTAGGED fb=470
+  kv=2078 rmax=0 apc=460 bytes=+18,431` —
+  current streak [11:54:56]→[11:59:56] = 2
+  rows since the [11:49:55] micro-flicker.
+  Tagged ≈ 60; clean rows total 24. ev middle
+  131,290 (creep resumes); kv/fb flat; traffic
+  light +18k. Serving untouched in EVERY row
+  (h=200 p=9 500=0 oom=0 shm=0 gpu=0). Zero
+  true-degradation triggers — record-only.
+  Cycle 194 dispatched.
 
