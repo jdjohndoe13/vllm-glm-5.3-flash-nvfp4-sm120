@@ -1948,4 +1948,19 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (h=200 p=9 500=0 oom=0 shm=0 gpu=0). Zero
   true-degradation triggers — record-only. Cycle
   176 dispatched.
+- 2026-09-29 10:12 — **RELAY CYCLE 176 (fix-29)
+  reconciled: CYCLE_ALERT — grind resumed after
+  the single-row reprieve**. Raw verbatim:
+  NOW=10:12:07, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=207, freshness 4m40 s.
+  New row: [10:07:27] `hb=000 fb=443 kv=1915
+  rmax=1 apc=254 bytes=+70,228 SERVE-WEDGE` —
+  grind resumed; the seventh reprieve held just
+  one row ([10:02:07]). apc climb 190→232→254
+  across the burst (+64 — biggest cache churn
+  yet). Family: ≈54 tagged rows since epoch-F
+  start; reprieves still 7. Serving untouched in
+  EVERY row (h=200 p=9 500=0 oom=0 shm=0 gpu=0).
+  Zero true-degradation triggers — record-only.
+  Cycle 177 dispatched.
 
