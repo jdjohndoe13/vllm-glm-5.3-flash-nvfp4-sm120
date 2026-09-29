@@ -2847,4 +2847,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   oom=0); zero true-degradation triggers —
   record-only (family rule stands). Cycle
   225 dispatched.
+- 2026-09-29 16:22 — **RELAY CYCLE 225 (fix-78)
+  reconciled: CYCLE_OK — streak extended to
+  3 rows; churn settling at lightest loads**.
+  Raw verbatim: NOW=16:22:13, CANARY_ALIVE_
+  39394, HEALTH=200, PROBE_EXIT=0, ROWLOG_N=
+  279, freshness ~2m. New row: [16:20:11]
+  `hb=200 UNTAGGED fb=692 flat kv=3025
+  rmax=0 apc=754 bytes=+18,547` — current
+  streak [16:09:59]→[16:20:11] = 3 rows
+  (~10 min); fb flat ✓ (692×3 rows); kv +1
+  (3,024→3,025); apc +5 (749→754); ev middle
+  234,347; two lightest rows back-to-back
+  (+16,603 / +18,547). Tagged ≈ 84; clean
+  rows total 49. Serving untouched in
+  EVERY row (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 226
+  dispatched.
 
