@@ -3045,4 +3045,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   true-degradation triggers — record-only
   (family rule stands). Cycle 235
   dispatched.
+- 2026-09-29 17:31 — **RELAY CYCLE 235 (fix-88)
+  reconciled: CYCLE_OK — streak extended to
+  3 rows; churn braking at the new scale**.
+  Raw verbatim: NOW=17:31:06,
+  CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=292, freshness
+  ~4m. New row: [17:27:02] `hb=200 UNTAGGED
+  fb=716 flat kv=3148 rmax=0 apc=951
+  bytes=+19,555` (lightest since 16:35) —
+  current streak [17:17:01]→[17:27:02] = 3
+  rows (~10 min); fb flat ✓ (716×3); kv +2
+  (3,146→3,148); apc +4 (947→951); ev
+  middle 261,572. Stabilizing signature at
+  the new scale mirrors the pre-reprieve
+  break of 15:38→15:43. Tagged ≈ 88; clean
+  rows total 58. Serving untouched in
+  EVERY row (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 236
+  dispatched.
 
