@@ -3653,6 +3653,15 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   same climb on hb=000 rows. Epoch I: 6
   clean rows since boot. ROWLOG_N=340.
   Cycle 259 dispatching (fresh lane).
+- 2026-09-29 21:43 — cycle 259 (fix-112)
+  reconciled: CYCLE_OK. [21:39:41] clean:
+  h=200 p=9 wall=200 fb=9 (flat) kv=91
+  (+10) apc=46 ev=12412.0,888.0,297.0 —
+  first epoch-I activation of ev slots
+  2/3 (small values; activity signature,
+  no fence-flag). Epoch I: 7 clean rows
+  since boot. ROWLOG_N=341. Cycle 260
+  dispatching (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
