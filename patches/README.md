@@ -1963,4 +1963,21 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   EVERY row (h=200 p=9 500=0 oom=0 shm=0 gpu=0).
   Zero true-degradation triggers — record-only.
   Cycle 177 dispatched.
+- 2026-09-29 10:20 — **RELAY CYCLE 177 (fix-30)
+  reconciled: CYCLE_OK — eighth reprieve; ev top
+  gauge crossed 100k**. Raw verbatim:
+  NOW=10:20:44, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=209, freshness 2m56 s.
+  New rows: [10:12:47] `hb=000 fb=445 kv=1940
+  rmax=1 apc=271 bytes=+69,812 SERVE-WEDGE`,
+  [10:17:48] `hb=200 UNTAGGED fb=451 kv=1964
+  rmax=0 apc=279 bytes=+60,823` — EIGHTH
+  reprieve (grind = 2 rows [10:07:27]→[10:12:47]);
+  **ev middle crossed 100,000 first time
+  (100,215)**. apc 254→271→279 — cache churn
+  climbing steadily. Family: ≈55 tagged rows
+  since epoch-F start; reprieves: 8. Serving
+  untouched in EVERY row (h=200 p=9 500=0 oom=0
+  shm=0 gpu=0). Zero true-degradation triggers —
+  record-only. Cycle 178 dispatched.
 
