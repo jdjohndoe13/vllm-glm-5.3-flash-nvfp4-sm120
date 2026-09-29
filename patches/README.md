@@ -1864,4 +1864,25 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   climb). Serving untouched in EVERY row (h=200 p=9
   500=0 oom=0 shm=0 gpu=0). Zero triggers —
   record-only. Cycle 171 dispatched.
+- 2026-09-29 09:25 — **RELAY CYCLE 171 (fix-24)
+  reconciled: CYCLE_ALERT — idle-tail regime**. Null
+  gap: no relay cycles ran 07:33→09:25 (session
+  idle); rowlog collected it all. Raw verbatim:
+  NOW=09:25:34, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=199, freshness 30 s. NEW
+  SIGNATURE: giant client's bursts completed; wedge
+  family entered idle-tail block — 16 shown rows
+  [08:04:58]→[09:25:04] ALL `hb=000` tagged
+  SERVE-WEDGE, rmax=0, bytes collapsed to +5,343
+  (+8,582/+42,130 early exceptions), kv=1,648 /
+  fb=372 / apc=185 / ev-middles FROZEN (20,763
+  since [08:10:18]) — tag churn idle since
+  [08:37:00]. Unseen rows 07:38→08:04 bridged+
+  (last seen [07:32:56] `hb=000 fb=356 kv=1589
+  +70,512`; first seen here [08:04:58] `fb=363
+  kv=1615 +5,343` — bursts landed between). Same
+  shape as epoch-C cluster-8 idle tail. Serving
+  counters PERFECT in every row (h=200 p=9 500=0
+  oom=0 shm=0 gpu=0). Zero critical triggers —
+  record-only. Cycle 172 dispatched.
 
