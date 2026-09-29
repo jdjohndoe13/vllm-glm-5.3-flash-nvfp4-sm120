@@ -3202,4 +3202,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   zero true-degradation triggers —
   record-only (family rule stands). Cycle
   242 dispatched.
+- 2026-09-29 18:33 — **RELAY CYCLE 242 (fix-95)
+  reconciled: CYCLE_ALERT (newest row
+  tagged, record-only) — 3-row grind
+  broke; flicker at grind-ready scale**.
+  Raw verbatim: NOW=18:33:58, CANARY_
+  ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=304, freshness 4m12s. New row:
+  [18:29:46] `hb=000 SERVE-WEDGE fb=780
+  kv=3363 rmax=0 apc=1000 bytes=+42,331` —
+  streak reset to 0 (current grind = 1);
+  ladder resumed after the 773-flat echo
+  (773→780, +7); kv +24 (3,339→3,363);
+  apc crossed the millennium mark (1000 —
+  first-ever); ev middle 293,952 (first
+  >290k row); load mid-heavy. Tagged ≈ 94;
+  clean rows total 64. Serving untouched
+  in EVERY row (h=200 p=9 500=0 oom=0);
+  zero true-degradation triggers —
+  record-only (family rule stands). Cycle
+  243 dispatched.
 
