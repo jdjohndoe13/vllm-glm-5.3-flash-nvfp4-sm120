@@ -1591,4 +1591,29 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   && nohup bash canary5m.sh >/dev/null 2>&1 </dev/null & )`
   (script-file; nothing after `&`; sub-fork execs the
   station, holds no channel fds).
+- 2026-09-29 04:43-04:45 — **RELAY CYCLE 156 (fix-9)
+  reconciled: mechanics perfect, CYCLE_ALERT = wedge
+  cluster continuing**. Raw probe verbatim-judged:
+  NOW=04:43:05, CANARY_ALIVE_39394 ✓ (pidfile realign
+  confirmed live), HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=146 (142+4 math ✓), freshness 2 s. Epoch-F
+  wedge cluster: [04:27:02] NEWBOOTLOG+SERVE-WEDGE →
+  [04:32:22], [04:37:43], [04:43:03] = **4 rows ≈ 16
+  min**, every row h=200 p=9 500=0 oom=0 shm=0 gpu=0;
+  bytes flowing (+61,682/+64,475/+63,417 per row),
+  kv 220→261→309→352, fb 44→57→67→78, ev ticking
+  (12,412/16,148→17,412/4,419); NO SHM-STALL/GPU-LOCK/
+  CANARY-EXIT/oom → the documented load-congestion
+  SERVE-WEDGE family (giant-client burst saturation;
+  historical precedent: 09-22 wedges + 09-25 cluster-7
+  7 rows ≈32 min self-resolved). **Triage 04:45:19**:
+  engine tail POST 200 OK + KV-LOOKUP hits (hit=142,336)
+  at that instant, health 200×2, census 9, APIServer
+  8992 ALIVE, station 39394 ALIVE → alive+serving,
+  cluster non-fatal. **Escalation bar unchanged**:
+  cluster >~30 min (≈ row [04:57]) or any new class
+  (SHM-STALL/GPU-LOCK/oom/EXIT); cycle 157 dispatched
+  (fresh lane), probe lands ~04:53-54 at the decision
+  boundary; alert-free rows resume = automatic end of
+  cluster watch.
 
