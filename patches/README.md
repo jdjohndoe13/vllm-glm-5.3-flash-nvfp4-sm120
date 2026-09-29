@@ -2385,4 +2385,25 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   EVERY row (h=200 p=9 500=0 oom=0); zero
   true-degradation triggers — record-only
   (family rule stands). Cycle 202 dispatched.
+- 2026-09-29 13:02 — **RELAY CYCLE 202 (fix-55)
+  reconciled: CYCLE_OK — reprieve held one
+  row, then grind resumed at heaviest load
+  yet; recovery again**. Raw verbatim:
+  NOW=13:02:13, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=241, freshness 31s.
+  Two new rows: [12:56:23] `hb=000 SERVE-WEDGE
+  fb=501 kv=2220 rmax=1 apc=529 bytes=+74,718`
+  (heaviest row of the day; h=200 intact; the
+  12:46 reprieve broke after one clean row)
+  and [13:01:42] `hb=200 UNTAGGED fb=502
+  kv=2246 rmax=1 apc=543 bytes=+72,262` —
+  recovery; current streak = 1 row. Family
+  oscillation continues at escalating load:
+  bytes 62k→74k→72k, fb 500→501→502 grind,
+  kv 2200→2246 (+46 in 2 rows), ev top crossed
+  150,616. Tagged ≈ 64; clean rows total 31.
+  Serving untouched in EVERY row (h=200 p=9
+  500=0 oom=0); zero true-degradation
+  triggers — record-only (family rule
+  stands). Cycle 203 dispatched.
 
