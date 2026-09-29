@@ -3895,3 +3895,19 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   unmet. Epoch I: 23 of 25 rows clean.
   ROWLOG_N=361. Cycle 275 dispatching
   (fresh lane).
+- 2026-09-29 23:32 — cycle 275 (fix-128)
+  reconciled: CYCLE_OK. [23:26:29]
+  clean (fb=37 flat, kv=340 +0, apc=
+  162, bytes +10862, ev 41786/10511),
+  [23:31:30] clean (fb=37 flat, kv=342
+  +2, apc=162 flat, bytes +13836, ev
+  43002/10867) — load settling (smallest
+  byte deltas since 22:25), 0 wedge
+  rows since 22:20:37 (13 consecutive
+  clean rows). Echo-drift note: lane's
+  echoed historical rows differ slightly
+  from earlier echoes ([22:25:38]/
+  [22:30:44] values); footer + new-row
+  content authoritative. Epoch I: 25 of
+  27 rows clean. ROWLOG_N=363. Cycle
+  276 dispatching (fresh lane).
