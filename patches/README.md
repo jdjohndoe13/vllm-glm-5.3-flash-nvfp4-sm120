@@ -3750,6 +3750,15 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (2 lone wedge rows: 22:05:16, 22:20:37).
   ROWLOG_N=350. Cycle 267 dispatching
   (fresh lane).
+- 2026-09-29 22:33 — cycle 267 (fix-120)
+  reconciled: CYCLE_OK. [22:30:44] clean:
+  h=200 p=9 wall=200 fb=24 (+1) kv=219
+  (+14) apc=101 (crossed 100) ev slots
+  17300/4361 — load drift continues, no
+  consecutive wedge rows (both previous
+  wedges stay lone). Epoch I: 14 of 16
+  rows clean. ROWLOG_N=351. Cycle 268
+  dispatching (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
