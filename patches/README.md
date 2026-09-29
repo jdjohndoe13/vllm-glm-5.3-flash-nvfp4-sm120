@@ -1782,4 +1782,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   intact EVERY row (h=200 p=9 500=0 oom=0 shm=0
   gpu=0); zero true-degradation triggers. Cycle 166
   dispatched.
+- 2026-09-29 06:40 — **RELAY CYCLE 166 (fix-19)
+  reconciled: CYCLE_ALERT — first 2-row clean stretch,
+  then grind resumes**. Raw verbatim: NOW=06:40:46,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=168 (165+3 ✓), freshness 73 s. New rows:
+  [06:28:52] `hb=200 untagged` (`fb=227 kv=1099
+  bytes=+63,030` — FIRST 2-row clean stretch together
+  with [06:23:38]), [06:34:12] `hb=000 fb=238 kv=1136
+  +53,733 SERVE-WEDGE` (20th tagged), [06:39:33]
+  `hb=000 fb=251 kv=1177 +58,453 SERVE-WEDGE` (21st
+  tagged). Family: **21 tagged rows
+  [04:27:02]→[06:39:33] ≈ 132 min, 5 reprieves**.
+  ESC211 churn heaviest this boot: fb +11-16/window,
+  kv +38-78/window in the window; apc refill
+  138→162→164 during the clean stretch (cache
+  recovery). Serving intact EVERY row (h=200 p=9
+  500=0 oom=0 shm=0 gpu=0); zero true-degradation
+  triggers. Cycle 167 dispatched.
 
