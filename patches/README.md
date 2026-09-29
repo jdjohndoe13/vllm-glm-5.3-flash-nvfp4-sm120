@@ -1636,4 +1636,31 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Relay continues: cycle 158 dispatched (fresh lane);
   watch = recovery-hold on rows ≥ [04:58] (any re-tagged
   row reopens the cluster and re-judges).
+- 2026-09-29 05:06-05:08 — **RELAY CYCLE 158 (fix-11)
+  reconciled: CYCLE_ALERT — WEDGE CLUSTER REOPENED,
+  escalation bar crossed**. Raw verbatim: NOW=05:06:31,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=150 (148+2 ✓), freshness 2m14s. The one-row
+  reprieve at [04:53:37] did NOT hold: [04:58:57]
+  `hb=000 fb=106 kv=506 bytes=+65,332 SERVE-WEDGE`,
+  [05:04:17] `hb=000 fb=116 kv=542 bytes=+58,198
+  SERVE-WEDGE`. Epoch-F wedge family total: **7 tagged
+  rows over [04:27:02]→[05:04:17] ≈ 37 min** (one 5-min
+  reprieve inside) — crossed the ~30-min bar → user
+  pinged. NO new classes (no SHM-STALL/GPU-LOCK/oom/
+  EXIT; h=200/p=9 every row; bytes +58-69k/row).
+  **Triage 05:08:31 (mid-wedge)**: engine tail
+  KV-LOOKUP stale-hit fallback hit=194,560 fallbacks=2
+  wall=10.3 + POST /v1/chat/completions 200 OK at that
+  instant; health 200×2; census 9; APIServer 8992 +
+  station 39394 ALIVE → **alive+serving**, ESC211
+  active (fallback wall 8.7→10.3 s, in designed band).
+  Interpretation: persistent load-congestion phase on
+  the giant client's make-context burst pattern
+  (235k-len iterations vs 1.01× concurrency envelope);
+  NOT engine-fatal. **Relay continues: cycle 159
+  dispatched**; further escalation only on REAL
+  degradation (500-rise, oom>0, census drop, SHM/GPU
+  class, CANARY-EXIT) or user-owned engine restart
+  (§7).
 
