@@ -2580,4 +2580,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   true-degradation triggers — record-only
   (family rule stands). Cycle 211
   dispatched.
+- 2026-09-29 14:34 — **RELAY CYCLE 211 (fix-64)
+  reconciled: CYCLE_OK — reprieve snapped
+  after 1 row (single flicker), instant
+  recovery**. Raw verbatim: NOW=14:34:25,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=258, freshness 2m36s. Two new rows:
+  [14:26:48] `hb=000 SERVE-WEDGE fb=617
+  kv=2714 rmax=1 apc=578 bytes=+56,324` (the
+  14:21 reprieve snapped after 1 row) and
+  [14:31:49] `hb=200 UNTAGGED fb=621 kv=2730
+  rmax=1 apc=586 bytes=+58,074` — recovery;
+  current streak = 1 row. Deep-churn level
+  persists: fb 611→621 (ascent slowing,
+  +4/row), kv +39 (2,691→2,730), apc 576→586;
+  ev middle 187,635. Tagged ≈ 77; clean rows
+  total 35. Serving untouched in EVERY row
+  (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 212
+  dispatched.
 
