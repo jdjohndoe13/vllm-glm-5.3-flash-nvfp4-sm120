@@ -2810,4 +2810,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   true-degradation triggers — record-only
   (family rule stands). Cycle 223
   dispatched.
+- 2026-09-29 16:10 — **RELAY CYCLE 223 (fix-76)
+  reconciled: CYCLE_OK — single flicker +
+  quick recovery; kv crossed 3,000**. Raw
+  verbatim: NOW=16:10:48, CANARY_ALIVE_39394,
+  HEALTH=200, PROBE_EXIT=0, ROWLOG_N=277,
+  freshness 49s. Two new rows: [16:04:58]
+  `hb=000 SERVE-WEDGE fb=690 kv=3013 rmax=1
+  apc=738 bytes=+57,888` (heavy flicker row;
+  snapped the 1-row streak) and [16:09:59]
+  `hb=200 UNTAGGED fb=692 kv=3023 rmax=0
+  apc=744 bytes=+42,760` — recovery; current
+  streak = 1 row; kv crossed 3,000 (2,992→
+  3,023); fb ladder accelerating (683→690→
+  692, +9 in 2 rows); apc +15 (729→744); ev
+  middle 232,591. Tagged ≈ 84; clean rows
+  total 47. Serving untouched in EVERY row
+  (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 224
+  dispatched.
 
