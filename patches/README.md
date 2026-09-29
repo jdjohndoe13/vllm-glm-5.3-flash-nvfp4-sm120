@@ -3852,3 +3852,17 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   logged here, not rewritten. Epoch I:
   18 of 20 rows clean. ROWLOG_N=356.
   Cycle 271 dispatching (fresh lane).
+- 2026-09-29 23:07 — cycle 271 (fix-124)
+  reconciled: CYCLE_OK. [23:01:06] clean
+  (fb=35 kv=310 apc=131 ev 35064/8867),
+  [23:06:07] clean (fb=35 flat, kv=320
+  +10, apc=137, ev 36356/9145) — 8
+  consecutive clean rows since the
+  22:20:37 wedge (~40 min); 0 wedge
+  rows this window; bounded oscillation
+  persists, ESCWALL release still
+  unobserved (every escape self-releases
+  well under the 240 s wall — consistent
+  by design). Epoch I: 20 of 22 rows
+  clean. ROWLOG_N=358. Cycle 272
+  dispatching (fresh lane).
