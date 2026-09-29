@@ -3439,6 +3439,40 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   as a NEWBOOTLOG+user-restart or a
   multi-row hb=000 grind that doesn't
   recover. Cycle 251 dispatching.
+- 2026-09-29 20:24 — **RELAY CYCLE 251 (fix-103)
+  reconciled: CYCLE_OK — epoch H fully clean first
+  watch; shm resettle confirmed; per-epoch counter
+  reset confirmed**. Raw verbatim: NOW=20:23:48,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=326, freshness ~17s. Two new rows, both
+  untagged: [20:18:28] `h=200 p=9 shm=0 hb=200 fb=4
+  kv=14 rmax=1 rep=0 apc=3 bytes=+90,050 ev=1456.0`
+  and [20:23:31] `h=200 p=9 shm=0 gpu=0 hb=200 fb=4
+  kv=15 apc=8 bytes=+45,769 ev=3048.0` — 3 clean
+  cycles without an escape event on epoch H so far
+  (20:13:26→20:23:31).
+  - Epoch-H ramp: fb 0→4, kv 0→15, apc 0→8;
+  bytes +135,819 in the first 10 serving min;
+  **shm=3→0 settled exactly as forecast** (one
+  cycle).
+  - ev counter RESET at epoch boundary confirmed
+  (H baseline 196 vs F's 12.4k plateau / G's
+  2672 ramp) — serving stats do not survive
+  restarts; epoch H starts a blank quantitative
+  baseline, not a regression.
+  - Canary pid 39394 survived ALL THREE epoch
+  transitions (wedge deaths 19:37/19:55 +
+  reboots 19:40:36/20:02).
+  - Investigation closing facts: engine imports
+  the venv's own site-packages vllm
+  (0.1.dev20051+g487ecf187, patched ESC211 code
+  present — 14 matches); ALL ESC211 knobs at
+  launch defaults (max_lookups=8, pin_seconds=
+  10, fallback_limit=3, ttl=150s, repeat_window=
+  300s, escape_relax_full_fit=on, mirror=1,
+  tombstones=8M, hugetlb tier on) — no user env
+  pre-sets ever tuned. Tagged ≈ 99; epoch-H
+  clean rows 3. Cycle 252 dispatched.
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
