@@ -3794,3 +3794,28 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedges stay lone). Epoch I: 14 of 16
   rows clean. ROWLOG_N=351. Cycle 268
   dispatching (fresh lane).
+- 2026-09-29 22:45 — cycle 268 (fix-121)
+  reconciled: CYCLE_OK. [22:35:44]
+  clean: h=200 p=9 wall=200 fb=25 (+1)
+  kv=235 (+16, mild acceleration) apc=
+  108 ev slots 21448/5408 — load drift
+  under intact walls; escalation signal
+  still unmet (no consecutive wedge
+  rows). Epoch I: 15 of 17 rows clean.
+  ROWLOG_N=352.
+  - LEDGER WORKFLOW NOTE: during this
+  reconcile it surfaced that the c248
+  record block had been stranded at the
+  file end since its 19:21 write (every
+  later terminus-append landed ABOVE it;
+  caught via a wrong-anchor guess on the
+  c268 record — this edit missed because
+  the file tail was not where assumed).
+  Fixed by byte-safe relocation (commit
+  4affbff: 35/35 move, content intact,
+  single copy, line count unchanged).
+  Rule adopted from here on: READ the
+  actual ledger tail before every record
+  append; anchor on fresh-read text only,
+  never on memory. Cycle 269 dispatching
+  (fresh lane).
