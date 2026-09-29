@@ -3819,3 +3819,21 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   append; anchor on fresh-read text only,
   never on memory. Cycle 269 dispatching
   (fresh lane).
+- 2026-09-29 22:52 — cycle 269 (fix-122)
+  reconciled: CYCLE_OK. New rows:
+  [22:45:46] clean (fb=32 kv=273 apc=114
+  ev 26132/6617), [22:51:04] clean (fb=
+  32 flat, kv=283 +10, apc=119, ev
+  28680/7277) — walls intact, 0 wedge
+  rows this window; the 2 known wedge
+  rows remain lone (non-consecutive) —
+  bounded oscillation continues, no
+  family escalation. Probe output echoed
+  the [22:10:16..22:45:46] section twice
+  (self-consistent echo slip; footer
+  ROWLOG_N=355 authoritative). Epoch I:
+  17 of 19 rows clean. kv climb continues
+  (slot2 28.7k > slot1 12.4k; still ~11x
+  below wedge-era peaks). Epoch I: 15 of
+  19 rows clean. ROWLOG_N=355. Cycle 270
+  dispatching (fresh lane).
