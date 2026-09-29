@@ -3496,6 +3496,75 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   scheduler.py copies + backups + local mirrors
   only; disjoint from relay probes. Cycle 253
   dispatched.
+- 2026-09-29 20:52 — **ESCWALL Tier-1+2 STAGED
+  (user-approved "Both A + B staged"; fix-105
+  lane died EMPTY before doing anything —
+  executed directly, synchronously)**.
+  - Remote ground truth: vllm-bin/dist-packages/
+  vllm is a symlink-tree of venv site-packages
+  vllm (`ls -i`: venv & dist scheduler.py share
+  inode 504322 — ONE runtime file, not two).
+  This resolves the fix-105-era "mystery":
+  stage(V)'s own backup was visible through the
+  symlink as stage(D)'s "pre-existing bak"; the
+  D-skip also correctly prevented double-
+  patching the same file.
+  - Tier-1 LAUNCHER: md5 741f82c3f9d5da91054695
+  b04a92e4a7 → **2cab139c3686b3f3411d6411b
+  3204d3e** — three `${VAR:-default}` exports
+  appended after the EVICTION_TOMBSTONES line
+  (block marked by ESCWALL lines 476/479):
+  STALE_HIT_TTL_SECS=60, STALE_HIT_FALLBACK_
+  LIMIT=2, ESCAPE_WALL_SECS=240 (all user-
+  override reachable); `bash -n` OK; backup
+  `.bak-20260929-tier1` = 741f82c3 pre-state ✓.
+  - Tier-2 RUNTIME scheduler.py (venv path =
+  engine's actual import; dist = same inode):
+  md5 4f7c9265a2b27e01013cbaa09b2f6653 →
+  **86577993f20a74d0d2106e118047cc95** —
+  (a) ESCWALL env parse inserted after the
+  repeat-window line (:701 marker; _escape_
+  wall_secs at :706/:717, default 240, 0=off);
+  (b) escape-wall release branch in the escape
+  fast-path (:1318/:1335): past the wall with
+  frozen `num_computed_tokens`, logs
+  `KV-LOOKUP ESCWALL release … wall= (no
+  boundary change; cold re-arm)` and hard-
+  releases escape/streak/repeat/fallback/
+  wall-start bookkeeping so the request falls
+  through to a fresh lookup — converting the
+  permanent (0, False) hold into a bounded
+  wedge cycle; py_compile OK on the engine's
+  venv python; backup `.bak-20260929-escwall`
+  = 4f7c9265 pre-state ✓.
+  - Local mirrors updated identity-path and
+  verified (Get-FileHash): tools/mirror-…-mtp-
+  no-docker.sh = 2cab139c ✓; patched-files/
+  distributed/kv_transfer/kv_connector/v1/
+  offloading/scheduler.py = 86577993 ✓.
+  - Gate story: run-1 dry-run crashed on a
+  python compile() lint applied to the BASH
+  launcher (lint made compile-flagged only);
+  run-2 staged L+V cleanly (D abort-by-
+  symlink); run-3 (--apply) aborted everywhere
+  because stage() re-ran against run-2's own
+  baks and staged an empty list; run-4
+  install-only runner (md5-verified staged/
+  bak/prestate per target) installed L+V GREEN:
+  bash -n OK, PYCOMPILE_OK_V, launcher ESCWALL
+  markers 2, scheduler markers 3.
+  - NOT engaged: engine untouched — all fixes
+  load at the user's next restart (§7 user-
+  owned). Post-restart watch plan: NEWBOOTLOG
+  rebase + §11 kv greps unchanged (kv_cache
+  2115000000 / pool 237,865); NEW: APIServer
+  environ grep should show the three exports;
+  fb/kv cadence may RISE (TTL 60 + budget 2 =
+  earlier escape trips — shorter staircases);
+  `KV-LOOKUP ESCWALL release` logs appear only
+  when a stuck escape actually hits the 240s
+  wall. Verdict bars unchanged. Cycle 253 in
+  flight (fix-106).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
