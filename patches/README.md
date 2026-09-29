@@ -3562,9 +3562,23 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   fb/kv cadence may RISE (TTL 60 + budget 2 =
   earlier escape trips — shorter staircases);
   `KV-LOOKUP ESCWALL release` logs appear only
-  when a stuck escape actually hits the 240s
+  when a   stuck escape actually hits the 240s
   wall. Verdict bars unchanged. Cycle 253 in
   flight (fix-106).
+- 2026-09-29 20:57 — cycle 253 (fix-106)
+  reconciled: CYCLE_OK.
+  - [20:33:32] clean (fb=4 kv=19 apc=22).
+  - [20:38:52] wedge-tagged: hb=000 single
+  5-min dip, no wall loss; kv 19→27, fb
+  4→7, apc flat 22 — the ESC211 fallback
+  staircase in its self-releasing form
+  (pre-restart ladder behavior as mapped;
+  staged Tier-1+2 will bound it).
+  - [20:43:53] clean: h=200 p=9 wall=200
+  fb=9 kv=36 apc=28 bytes=+50332 ev 7184→
+  10972. Newest row untagged → CYCLE_OK.
+  - ROWLOG_N=330; epoch-H clean rows 6 of 7.
+  Cycle 254 dispatching (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
