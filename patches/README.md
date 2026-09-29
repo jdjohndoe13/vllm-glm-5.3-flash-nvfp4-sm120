@@ -1765,4 +1765,21 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   shm=0 gpu=0; bytes ~63k/row; fb→213, kv→1,005 —
   ESC211 tier still absorbing without failures); zero
   true-degradation triggers. Cycle 165 dispatched.
+- 2026-09-29 06:27 — **RELAY CYCLE 165 (fix-18)
+  reconciled: CYCLE_OK — fourth reprieve; cadence
+  compressing**. Raw verbatim: NOW=06:27:15,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=165 (163+2 ✓), freshness 3m37s. New rows:
+  [06:18:37] `hb=000 fb=217 kv=1036 bytes=+68,271
+  SERVE-WEDGE` (19th tagged), [06:23:38] `hb=200
+  untagged fb=222 kv=1075 bytes=+59,476` (FOURTH
+  reprieve, apc jumped to 138/125 → cache refill
+  active). Family: 19 tagged rows
+  [04:27:02]→[06:18:37] ≈ 112 min; **reprieve
+  intervals 43 min → 32 min → 16 min — recoveries
+  arriving faster** (engine bursts absorbed quicker or
+  giant-client iteration cadence shifting). Serving
+  intact EVERY row (h=200 p=9 500=0 oom=0 shm=0
+  gpu=0); zero true-degradation triggers. Cycle 166
+  dispatched.
 
