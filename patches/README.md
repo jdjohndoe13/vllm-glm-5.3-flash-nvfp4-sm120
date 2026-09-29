@@ -1537,4 +1537,58 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   **Mitigation for future boots: wait ≥5 min after
   reboot before the first engine launch.** No kit knobs
   changed.
+- 2026-09-29 00:54-04:36 — **USER RESTART → EPOCH F +
+  CANARY RE-ARM + rows 1-2 SERVE-WEDGE (load-congestion
+  class), relay resumed**. Machine rebooted ~00:54 Sep 29
+  (up 3:30 at 04:24); pre-reboot short logs
+  `engine-20260928-234423.log` + `engine-20260929-000815.log`
+  (~52 KB each = short/failed runs of the pre-reboot
+  window; no letters assigned). **EPOCH F =
+  `engine-20260929-010246.log`** (01:02:46, APIServer pid
+  8992, census 9). §11 ALL GREEN at 04:24:21: kv_cache
+  2115000000 (fp8); "reserved 1.97 GiB memory" ×8; pool
+  **237,865 tokens / 1.01x for 235,000-token reqs**;
+  ERROR=0 Traceback=0 OOM=0; Application startup
+  complete; HEALTH=200; giant client 192.168.2.208 POST
+  200s; KV-LOOKUP stale-hit fallback count 39 (~3.4 h
+  into boot, ESC211 alive); launcher md5 **741f82c3…**
+  unchanged (user's 09-25 edit). **CANARY RE-ARM 04:27**
+  (user order): script md5 `6ba78a62…` re-verified;
+  rowlog intact 142 lines through the [17:05:33]
+  CANARY-EXIT stop ledger; hb.json `ab306c55…` unchanged;
+  probe v1.1 md5 match local↔remote `ca30a16d…`.
+  **Launch-form trap**: the inline §9-style launch ssh
+  HUNG ~120 s (the `cd && nohup … &` compound's waiting
+  subshell redirects only the nohup child, not its own
+  std fds → holds the ssh channel open); local client
+  killed — the fully-redirected, HUP-immune station
+  SURVIVED. Single-instance census via script-file /proc
+  scan (no self-match): 39393 = orphan launch-subshell
+  (ppid=1; harmless dead-fd holder) + **39394 = the real
+  station loop**; 40175/40186 were transient fork false
+  matches (gone on re-scan). station.pid realigned
+  **39394** (04:36). **ROWS**: row-1 `[04:27:02] h=200
+  p=9 500=0 oom=0 shm=0 gpu=0 hb=000 fb=44 kv=220 rmax=1
+  rep=0 apc=82 bytes=+0 ev=12412.0,15092.0,3793.0 ALERT:
+  NEWBOOTLOG ALERT: SERVE-WEDGE` (rebase onto
+  engine-20260929-010246; counters re-derived from the
+  fresh bootlog); row-2 `[04:32:22] … hb=000 fb=57
+  kv=261 rmax=1 rep=0 apc=82 bytes=+61682 … ALERT:
+  SERVE-WEDGE` (traffic resumed). **Triage 04:35:52**:
+  engine ALIVE+SERVING — log tail 04:35:50-51 KV-LOOKUP
+  hits + POST /v1/chat/completions 200 OK, APIServer
+  8992 ALIVE, census 9, health 200×2, oom=0 →
+  **load-congestion SERVE-WEDGE class** (same family as
+  09-22 wedges + 09-25 cluster-7; h=200/p=9/oom=0
+  anchors); cluster watch continues via relay;
+  escalation if cluster length crosses ~30 min or a new
+  class appears. **Relay resumed**: cycle 156
+  dispatched background (fix-9, fresh lane per §9;
+  judge-raw discipline from here). **FUTURE ARMING
+  FIX**: launcher must double-fork so ssh returns
+  instantly — form: `ssh … "bash /home/user/arm_canary.sh"`
+  where arm_canary.sh = `( cd /home/user/vllm-glm…-logs
+  && nohup bash canary5m.sh >/dev/null 2>&1 </dev/null & )`
+  (script-file; nothing after `&`; sub-fork execs the
+  station, holds no channel fds).
 
