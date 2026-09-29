@@ -3669,6 +3669,16 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (ev slots 2/3 still small). Epoch I: 8
   clean rows since boot. ROWLOG_N=342.
   Cycle 261 dispatching (fresh lane).
+- 2026-09-29 21:55 — cycle 261 (fix-114)
+  reconciled: CYCLE_OK. [21:49:46] clean:
+  h=200 p=9 wall=200 fb=11 (+2) kv=116
+  (+20, accelerating fence-hit volume)
+  apc=62 ev=12404.0,3220.0,830.0 (slots
+  2/3 rising). No hb dips; wedge shape
+  still absent (wedge = hb=000 + climb +
+  wall loss). Epoch I: 9 clean rows since
+  boot. ROWLOG_N=343. Cycle 262
+  dispatching (fresh lane).
 - 2026-09-29 19:21 — **RELAY CYCLE 248 (fix-101)
   reconciled: CYCLE_ALERT (newest row
   tagged, record-only) — grind-6 broke;
