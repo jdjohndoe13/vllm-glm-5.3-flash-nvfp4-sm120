@@ -2198,4 +2198,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (h=200 p=9 500=0 oom=0 shm=0 gpu=0). Zero
   true-degradation triggers — record-only.
   Cycle 192 dispatched.
+- 2026-09-29 11:55 — **RELAY CYCLE 192 (fix-45)
+  reconciled: CYCLE_OK — 8-row clean streak
+  snapped by a light single-row flicker;
+  instant recovery**. Raw verbatim:
+  NOW=11:55:36, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=228, freshness 40s.
+  Two new rows: [11:49:55] `hb=000
+  SERVE-WEDGE fb=470 kv=2074 rmax=1 apc=457
+  bytes=+13,391` (h=200 serving continued;
+  second micro-flicker of the regime, after
+  [11:04:30]) and [11:54:56] `hb=200 UNTAGGED
+  fb=470 kv=2075 rmax=0 apc=457 bytes=+18,332`
+  — immediate recovery; current streak = 1
+  row. Regime streak record: 8 rows (~35
+  min). Tagged ≈ 60; clean rows total 23. ev
+  middle 130,718; kv/fb flat; traffic light
+  both rows (+13k/+18k). Serving untouched in
+  EVERY row (h=200 p=9 500=0 oom=0 shm=0
+  gpu=0). Zero true-degradation triggers —
+  record-only. Cycle 193 dispatched.
 
