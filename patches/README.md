@@ -3300,4 +3300,33 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   zero true-degradation triggers —
   record-only (family rule stands). Cycle
   246 dispatched.
+- 2026-09-29 19:03 — **RELAY CYCLE 246 (fix-99)
+  reconciled: CYCLE_OK — streak extended
+  to 5 rows (~20 min, ties post-14:21
+  family best); flat run ended at 783×4
+  with fb climb resumed; heaviest burst
+  since the 16:40 brick (+74,729)**. Raw
+  verbatim: NOW=19:03:09, CANARY_ALIVE_
+  39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=310 (308+2), freshness ~2m38s.
+  Two new rows: [18:55:21] `hb=200
+  UNTAGGED fb=783 flat kv=3409 apc=1082
+  bytes=+62,396` and [19:00:31] `hb=200
+  UNTAGGED fb=785 kv=3457 apc=1086 bytes=
+  +74,729` — streak [18:40:07]→[19:00:31]
+  = 5 rows (ties the 15:13-15:38 and
+  16:09-16:35 family bests); fb climb
+  resumed after the 783×4 flat run (785);
+  kv +48 (3,409→3,457, big jump); apc
+  1082→1086 (record refill continues);
+  ev 309,472 (crossed 305k, day high);
+  peak poly 76,929 (day high); grind-
+  ready cluster now 7 rows ([18:29:46]→
+  [19:00:31]) with the grind-9-scale
+  build continuing. Tagged ≈ 96; clean
+  rows total 69. Serving untouched in
+  EVERY row (h=200 p=9 500=0 oom=0);
+  zero true-degradation triggers —
+  record-only (family rule stands). Cycle
+  247 dispatched.
 
