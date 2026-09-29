@@ -2557,4 +2557,27 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   EVERY row; zero true-degradation triggers
   — record-only (family rule stands). Cycle
   210 dispatched.
+- 2026-09-29 14:22 — **RELAY CYCLE 210 (fix-63)
+  reconciled: CYCLE_OK — grind broke at 9
+  rows (~43 min; second-longest of epoch F,
+  1 short of the 10-row record); heavy
+  recovery row**. Raw verbatim: NOW=14:22:55,
+  CANARY_ALIVE_39394, HEALTH=200, PROBE_EXIT=0,
+  ROWLOG_N=256, freshness ~87s. Two new rows:
+  [14:16:18] `hb=000 SERVE-WEDGE fb=608
+  kv=2662 rmax=1 apc=567 bytes=+51,232` (= 9
+  consecutive tagged rows
+  [13:33:35]→[14:16:18] ~43 min; h=200
+  intact) and [14:21:28] `hb=200 UNTAGGED
+  fb=611 kv=2691 rmax=1 apc=576
+  bytes=+71,037` — recovery; current streak
+  = 1 row; fb=611 = biggest clean-row
+  fallback faceplate yet (ESC211 tier
+  absorbing steadily); heaviest row since
+  13:06; ev top 181,460. Tagged ≈ 76; clean
+  rows total 34. Serving untouched in EVERY
+  row (h=200 p=9 500=0 oom=0); zero
+  true-degradation triggers — record-only
+  (family rule stands). Cycle 211
+  dispatched.
 
