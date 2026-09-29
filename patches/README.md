@@ -2030,4 +2030,19 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (h=200 p=9 500=0 oom=0 shm=0 gpu=0). Zero
   true-degradation triggers — record-only. Cycle
   181 dispatched.
+- 2026-09-29 10:52 — **RELAY CYCLE 181 (fix-34)
+  reconciled: CYCLE_OK — clean stretch extended to
+  4 rows (longest of boot)**. Raw verbatim:
+  NOW=10:52:02, CANARY_ALIVE_39394, HEALTH=200,
+  PROBE_EXIT=0, ROWLOG_N=215, freshness 2m54 s.
+  New row: [10:49:08] `hb=200 UNTAGGED fb=470
+  kv=2060 rmax=1 apc=378 bytes=+73,628` — clean
+  stretch [10:33:32]→[10:49:08] = **4 rows (~16
+  min)**, longest clean run of the boot. Clean
+  rows total 12; tagged ≈ 58. apc 328→378 (+50
+  — biggest single-step refill so far); ev
+  middle 123,566; kv 2,060; fb held 470. Serving
+  untouched in EVERY row (h=200 p=9 500=0 oom=0
+  shm=0 gpu=0). Zero true-degradation triggers —
+  record-only. Cycle 182 dispatched.
 
