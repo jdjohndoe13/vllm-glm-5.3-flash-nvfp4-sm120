@@ -5793,3 +5793,31 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   198 clean (54 wedge rows).
   ROWLOG_N=529. Cycle 390
   dispatching (fresh lane).
+- 2026-09-30 13:58 — cycle 390
+  (fix-243) reconciled: CYCLE_OK —
+  streak extended to 3 ([13:45:04] +
+  [13:50:05] + [13:55:06]): NEW
+  clean rows [13:50:05] (fb=474 F
+  kv=2221 apc=1172, ev 306478/
+  75542, bytes +41781) + [13:55:06]
+  (fb=474 F kv=2224 apc=1174, ev
+  308253/75984, bytes +21653 =
+  lowest per-row bytes in the
+  visible window — HARD cool-down
+  below the 48–52K band, on clean
+  rows). The epoch-high-heat
+  release row [13:45:04] (bytes
+  +76493) did NOT trigger a wedge:
+  correlate did not repeat (heat →
+  2 clean slots). fb FLAT at 474
+  ×2 — second consecutive hold,
+  deceleration firming; apc creep
+  decelerating (+13→+2); rmax=0
+  transient on [13:55:06] =
+  second isolated occurrence
+  (benign). No WALL LOST /
+  wall=000 anywhere; no probe
+  failures. Epoch I: 146 of 200
+  clean (54 wedge rows). ROWLOG_N=
+  531. Cycle 391 dispatching (fresh
+  lane).
