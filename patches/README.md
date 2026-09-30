@@ -6623,3 +6623,45 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=574.
   Cycle 415 dispatching (fresh
   lane).
+- 2026-09-30 17:58 — cycle 415
+  (fix-268) reconciled: CYCLE_OK —
+  correlate fire lag-1 again:
+  fresh 1-row stick fired
+  [17:44:26] (h=000 p=9 fb=700
+  FLAT on the wedge row, kv=3139
+  +2, apc=1343 +8 second
+  movement, ev 380534/93852,
+  bytes +52398 cooled BELOW band
+  on the fire row itself, rmax=1
+  only on-tag) ALERT: SERVE-WEDGE,
+  1 slot after the ≥54K re-heat
+  row [17:39:06] — 6TH NAMED
+  flare→fire AT LAG 1; released
+  in-window at [17:49:31] (h=200
+  untagged: fb=708 +8 step-up,
+  kv=3167 +28, apc=1344 +1, ev
+  383074/94498, bytes +50198
+  below band ×2). Run only 1 (no
+  touch; lineage stays 6);
+  post-release streak 1. kv:
+  FOURTH consecutive sub-+30
+  (+17/+20/+2/+28) — PERISH WATCH
+  confirmed-and-EXTENDED to ×4;
+  no family re-extend since the
+  stick-era +49/+39. apc: MOTION
+  regime ×2 (+8/+1 minimal —
+  watch a 3rd movement or
+  re-freeze). fb: wedge row held
+  FLAT (+0) then +8 step-up
+  (largest post-stick delta
+  after the +4/+3 brake). bytes:
+  cool-back-BELOW-band ×2 — the
+  post-release re-heat faded
+  WITHOUT re-arming a fire
+  (correlate fine-grained). On-tag
+  PERFECT (rmax=0-under-tag
+  NEVER); no WALL LOST / wall=000;
+  no probe failures. Epoch I: 170
+  of 247 clean (77 wedge rows).
+  ROWLOG_N=576. Cycle 416
+  dispatching (fresh lane).
