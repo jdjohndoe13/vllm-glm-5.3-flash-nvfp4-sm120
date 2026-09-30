@@ -6753,3 +6753,47 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=581.
   Cycle 418 dispatching (fresh
   lane).
+- 2026-09-30 18:29 — cycle 418
+  catch-up (fix-272) reconciled:
+  CYCLE_ALERT: SERVE-WEDGE —
+  catch-up probe covered the
+  overdue slot (the prior lane
+  died on its status line; the
+  ping wait was skipped by
+  catch-up override): the ~18:16
+  slot EMITTED NO_ROW (first
+  file-emit gap witnessed in
+  epoch I — rows otherwise appear
+  every slot; flagged; watch
+  whether gaps persist) and the
+  first witnessed post-release
+  row WEDGE-FIRED at lag-0 form:
+  [18:21:13] (h=000 p=9 fb=737
+  +6, kv=3286 +23 = FOURTH
+  consecutive sub-+30 → MELT ×4
+  NAMED, apc=1366 +4 = THIRD
+  consecutive movement → DRIP-CHAIN
+  NAMED ×3 (1353→1362→1366), ev
+  394225/97134, bytes +51289
+  sub-band, rmax=1 only on-tag)
+  ALERT: SERVE-WEDGE. NO ≥54K heat
+  row preceded (the
+  [18:05:23]-armed lag-1 fire-lag
+  watch was DISARMED by the
+  [18:15:53] low-tide release;
+  this fire is a sub-54K lag-0
+  form — the fire-lag watch stays
+  DISARMED until a new ≥54K row).
+  Live run 1 (below ≥3
+  worst-lineage / ≥4 ALARM TOUCH
+  — no touch; lineage stays 6).
+  fb: +3/+6 — no regime named
+  (brake-family lean). On-tag
+  PERFECT (rmax=0-under-tag
+  NEVER; the lone rmax=0 rows
+  remain untagged-clean-only). No
+  WALL LOST / wall=000; no probe
+  failures. Epoch I: 173 of 253
+  clean (80 wedge rows).
+  ROWLOG_N=582. Cycle 419
+  dispatching (fresh lane).
