@@ -5016,3 +5016,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   LOST. Epoch I: 123 of 137 rows clean.
   ROWLOG_N=468. Cycle 358 dispatching
   (fresh lane).
+- 2026-09-30 08:39 — cycle 358 (fix-211)
+  reconciled: CYCLE_OK. [08:34:09]
+  newest clean (h=200 p=9 wall=200 fb=
+  148 kv=863 apc=703 ev 153021/38105);
+  NEW WEDGE row [08:29:08] (hb=000,
+  fb=142, ALERT SERVE-WEDGE) — epoch I
+  wedge #15, first since [02:17:09]
+  (6h12m quiet, epoch's longest gap);
+  1-row stick released next row:
+  bounded ladder verdict upheld. 73-row
+  clean streak ([02:22:10]…[08:23:48])
+  ended by the wedge; new tail streak
+  1 row ([08:34:09]); no ≥4 stick, no
+  user-visible alarm; no WALL LOST; fb
+  141→148 across the window (wedge row
+  +1, release row +6 under heavy load
+  bytes +42081): aggregate drift, NOT
+  an escalation; no WALL LOST.
+  Epoch I: 124 of 139 rows clean
+  (15 wedges). ROWLOG_N=470. Cycle 359
+  dispatching (fresh lane).
