@@ -4106,3 +4106,16 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   posture). Epoch I: 38 of 46 rows
   clean (8 wedge rows). ROWLOG_N=380.
   Cycle 288 dispatching (fresh lane).
+- 2026-09-30 01:12 — cycle 288 (fix-141)
+  reconciled: CYCLE_OK. Wedge #9 of
+  epoch I at [01:04:21] (hb=000 fb=89
+  kv=550 apc=263 ev 69356/17373) —
+  ISOLATED single-row wedge, released by
+  [01:09:22] clean (hb=200 fb=92 kv=561
+  apc=266 ev 72327/18073); no consecutive
+  stick, no WALL LOST anywhere; fb drift
+  normal. Cadence tightening: wedge gaps
+  15.7 min → 10:21 (00:38→00:54→01:04).
+  Epoch I: 39 of 48 rows clean (9 wedge
+  rows). ROWLOG_N=382. Cycle 289
+  dispatching (fresh lane).
