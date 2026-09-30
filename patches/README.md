@@ -3988,3 +3988,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   signal unmet). Epoch I: 31 of 34 rows
   clean. ROWLOG_N=370. Cycle 282
   dispatching (fresh lane).
+- 2026-09-30 00:19 — cycle 282 (fix-135)
+  reconciled: CYCLE_ALERT: SERVE-WEDGE
+  — family escalation signal ARMED (first
+  ≥2-row stick in epoch I). [00:12:14]
+  tagged (hb=000 kv=390 fb=49 apc=202
+  bytes +31062) AND [00:17:35] tagged
+  newest (hb=000 kv=404 fb=53 apc=206
+  bytes +50584) — CONSECUTIVE wedge rows;
+  pv wedge [23:56:53] had fully recovered
+  by [00:01:53]; this stick began ~15 min
+  later and had not released by newest
+  row. Still bounded: no WALL LOST
+  markers, all counters advancing, ~5-min
+  cadence intact, CANARY_ALIVE_39394 +
+  HEALTH=200. Next marker: a 3rd
+  consecutive wedge row (or recovery) in
+  cycle 283; ESCWALL release line not yet
+  observed (wall 240 s would crown the
+  00:12:14 stick by ~00:16:54 — release
+  line not verified in this snapshot).
+  Epoch I: 31 of 36 rows clean.
+  ROWLOG_N=372. Cycle 283 dispatching
+  (fresh lane).
