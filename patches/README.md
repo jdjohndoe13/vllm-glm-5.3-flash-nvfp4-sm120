@@ -7163,3 +7163,44 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   of 269 clean (89 wedge
   rows). ROWLOG_N=598. Cycle
   427 dispatching (fresh lane).
+- 2026-09-30 20:03 — cycle 427
+  (fix-281) reconciled:
+  CYCLE_ALERT: SERVE-WEDGE —
+  LIVE STICK OPEN AT RUN 6
+  (still NO release since the
+  19:28:59 open): [19:50:20]
+  (h=000 p=9, fb=852 +12 (tail
+  now 7 straight ≥+8: +8/+9/
+  +15/+13/+12/+12/+12 → 864),
+  kv=3812 +41 = RE-ARM ×7
+  NAMED, apc=1402 flat ×4, ev
+  421409/103807, bytes +57665
+  ≥54K = 9TH straight → heat-run
+  RECORD extended, rmax=1) run 5
+  → [19:55:41] (h=000 p=9,
+  fb=864 +12, kv=3851 +39,
+  apc=1402 flat ×5 HOLD, ev
+  421929/103915 (flower pace
+  eased again), bytes +55692
+  ≥54K = 10TH STRAIGHT (heat-run
+  RECORD now 10: +58649→…→
+  +55692; every fire in this
+  stick = heat-on-heat form; no
+  cooling row inside the run),
+  rmax=1) run 6. NOT RELEASED —
+  7 consecutive rows shy of run
+  13 = RECORD BREAK (epoch
+  12-row record); 14+ = DEEP
+  RECORD. apc: flat ×5 hold
+  (chain closed at ×16). kv:
+  re-arm ×7 named (+41/+39 —
+  seven straight ≥+30 deltas
+  since the ×3 re-arm; no
+  sub-+30 yet). fb: 7 straight
+  ≥+8 (tail continuation). On-tag
+  PERFECT; no WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 180 of 271 clean (91
+  wedge rows). ROWLOG_N=600.
+  Cycle 428 dispatching (fresh
+  lane).
