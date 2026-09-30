@@ -4011,3 +4011,25 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 31 of 36 rows clean.
   ROWLOG_N=372. Cycle 283 dispatching
   (fresh lane).
+- 2026-09-30 00:29 — cycle 283 (fix-136,
+  escalation watch) reconciled: CYCLE_
+  ALERT: SERVE-WEDGE with stick RELEASED.
+  [00:22:35] clean (hb=200 fb=61 kv=429)
+  — the epoch-I 2-row stick (00:12:14 +
+  00:17:35) did NOT reach a 3rd
+  consecutive row; recovery confirmed.
+  BUT newest row [00:27:56] = fresh
+  ISOLATED wedge row (hb=000 fb=71 kv=
+  458 apc=212 bytes +53015 ev 51634/
+  12887) — ladder rungs deepening (53→61
+  →71, deepest fb spend in epoch I);
+  6 wedge rows in epoch I total (22:05,
+  22:20, 23:56, 00:12, 00:17, 00:27).
+  Still bounded: no WALL LOST, counters
+  advancing, CANARY_ALIVE_39394 +
+  HEALTH=200. Next marker (c284):
+  3rd consecutive row OR continued rung
+  deepening → direct-orchestrator deep-
+  dive. Epoch I: 34 of 40 rows clean.
+  ROWLOG_N=374. Cycle 284 dispatching
+  (fresh lane).
