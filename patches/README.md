@@ -5766,3 +5766,30 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 143 of 197 clean (54
   wedge rows). ROWLOG_N=528. Cycle
   389 dispatching (fresh lane).
+- 2026-09-30 13:52 — cycle 389
+  (fix-242) reconciled: CYCLE_OK —
+  ~13:45 slot RELEASED the 2-row
+  stick at run 2 (yardstick NOT
+  breached: no run-3 lineage, no
+  5th alarm touch): NEW row
+  [13:45:04] (h=200 p=9 wall=200
+  fb=474 kv=2219 apc=1159, ev
+  304764/75118). Post-release
+  streak = 1 (the release row).
+  fb back to smalls: +6 (468→474);
+  apc creep +7 (1152→1159); bytes
+  +76493 on the RELEASE row itself
+  = NEW epoch-high (prior high
+  +65654 at [13:29:21]) — heat
+  ON an untagged clean row with no
+  wedge fire behind it; the
+  heat-precedes-wedge correlate did
+  NOT repeat, but this record-heat
+  row is now the freshest correlate
+  reference for the next slot. kv
+  →2219, ev→304764/75118. No WALL
+  LOST / wall=000 anywhere; no
+  probe failures. Epoch I: 144 of
+  198 clean (54 wedge rows).
+  ROWLOG_N=529. Cycle 390
+  dispatching (fresh lane).
