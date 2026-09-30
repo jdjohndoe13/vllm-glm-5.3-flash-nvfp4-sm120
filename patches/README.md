@@ -5567,3 +5567,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   140 of 184 clean (44 wedge rows).
   ROWLOG_N=515. Cycle 382
   dispatching (fresh lane).
+- 2026-09-30 12:47 — cycle 382
+  (fix-235) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — NEW 2-row stick
+  OPEN: [12:36:46] (h=000 fb=386
+  apc=1061) + [12:42:06] (h=000
+  fb=396 kv=1931 apc=1065, ev
+  280857/69358) — the ~12:36 slot
+  broke the 2-row streak; no release
+  row yet. fb pace RE-ACCELERATED:
+  +10 at [12:42:06] (largest per-row
+  jump since the run-5 stick);
+  apc 1049→1065; bytes re-heat
+  persists (~+59–60K, third row
+  above the 48–52K band; cooling
+  paused — wedge-slot intensification
+  correlate holding). No WALL LOST /
+  wall=000 anywhere; no alarm touch
+  (run 2 < 3-lineage, <4 threshold).
+  Epoch I: 140 of 186 clean (46
+  wedge rows). ROWLOG_N=517. Cycle
+  383 dispatching (fresh lane).
