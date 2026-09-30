@@ -6086,3 +6086,35 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   213 clean (60 wedge rows).
   ROWLOG_N=544. Cycle 400
   dispatching (fresh lane).
+- 2026-09-30 15:15 — cycle 400
+  (fix-253) reconciled: CYCLE_OK —
+  ~15:07 slot fired CLEAN: streak
+  extended to 5 ([14:47:11]…
+  [15:07:32]); NEW clean row
+  [15:07:32] (h=200 p=9 wall=200
+  fb=514 kv=2419 apc=1220, ev
+  334256/82480, bytes +50727).
+  Threshold NOT touched. fb drift
+  RESUMED at +5 (the ×4 flat hold
+  ended); apc creep pace JUMPED
+  +6 (1214→1220, largest step
+  since the wedge in-slot +6s);
+  kv +26 (sharper than +3/+4
+  prior); bytes RE-HEATED +50727
+  (out of the norm back into the
+  elevated ~50K zone, just below
+  the 54–58K wedge-signature
+  range — the heat-precedes-wedge
+  correlate is armed again; the
+  last two such heat rows preceded
+  stick fires within 1–2 slots).
+  rmax=0 3rd isolate (on this
+  clean row; the rmax=1 stretch
+  closed at exactly 2 again;
+  rmax=0-under-tag NEVER formed).
+  No WALL LOST / wall=000
+  anywhere; no probe failures.
+  Epoch I: 154 of 214 clean (60
+  wedge rows). ROWLOG_N=545.
+  Cycle 401 dispatching (fresh
+  lane).
