@@ -3978,3 +3978,13 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). Epoch I: 30 of 33 rows
   clean. ROWLOG_N=369. Cycle 281
   dispatching (fresh lane).
+- 2026-09-30 00:11 — cycle 281 (fix-134)
+  reconciled: CYCLE_OK. [00:06:54]
+  clean: h=200 p=9 wall=200 fb=43 (flat)
+  kv=373 (+4) apc=198 bytes=+19263 ev
+  47446/11844 — no new wedge this cycle;
+  the 23:56:53 wedge remains lone/bounded
+  (no consecutive-row stick; escalation
+  signal unmet). Epoch I: 31 of 34 rows
+  clean. ROWLOG_N=370. Cycle 282
+  dispatching (fresh lane).
