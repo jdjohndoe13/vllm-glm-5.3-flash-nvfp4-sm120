@@ -6462,3 +6462,37 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   clean (66 wedge rows).
   ROWLOG_N=562. Cycle 411
   dispatching (fresh lane).
+- 2026-09-30 16:55 — cycle 411
+  (fix-264) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — the re-armed
+  correlate HIT: fresh stick fired
+  [16:40:45] (h=000 p=9 fb=615 +8,
+  kv=2819 +42, apc=1324 +2 nudge,
+  ev 362634/89329, bytes +62127
+  ≥54K, rmax=1 only on-tag) ALERT:
+  SERVE-WEDGE, EXACTLY 1 slot after
+  the ≥54K heat row [16:35:25]
+  (4th named flare→fire at lag 1);
+  then the live stick EXTENDED to
+  run 2 at [16:46:05] (h=000 p=9
+  fb=622 +7, kv=2868 +49 = NEW
+  largest family step, apc=1324
+  FLAT, ev 364426/89778, bytes
+  +63723 = NEW epoch-high ABOVE
+  the +63400 record). NOT a touch
+  (lineage stays 5); run 3 next =
+  worst-lineage watch; run 4 =
+  ALARM TOUCH (6th). kv ≥+30
+  family EXTENDS: +42/+49 (no
+  second brake). fb braked
+  (+8/+7; every row still
+  ADVANCES — no flat hold
+  anywhere). apc re-formed
+  flat-hold at 1324 after the
+  +2 nudge. On-tag PERFECT;
+  rmax=0-under-tag NEVER formed;
+  no WALL LOST / wall=000; no
+  probe failures. Epoch I: 167 of
+  235 clean (68 wedge rows).
+  ROWLOG_N=564. Cycle 412
+  dispatching (fresh lane).
