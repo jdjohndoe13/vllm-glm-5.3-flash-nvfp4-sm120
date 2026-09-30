@@ -4149,3 +4149,22 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   epoch I: 40 of 51 rows clean.
   ROWLOG_N=385. Cycle 291 dispatching
   (fresh lane).
+- 2026-09-30 01:41 — cycle 291 (fix-144,
+  escalation watch) reconciled: CYCLE_OK
+  (newest [01:35:45] clean: hb=200 fb=
+  105 FLAT kv=619 apc=318 ev 86101/
+  21493) — BUT family escalation marker
+  RECORDED: the stick ran THREE
+  consecutive wedge rows — [01:19:55]+
+  [01:25:16]+[01:30:36] (fb 98→104→105,
+  kv 586→606→611) — the FIRST 3-row
+  stick in epoch I, released at
+  [01:35:45]. Bounded-slide precedent
+  extended: no WALL LOST, counters
+  advanced throughout, server healthy.
+  New family state = 3-row stick
+  observed once; watch repeats or longer
+  sticks (≥4 = user-visible alarm).
+  Count: 12 wedge rows; epoch I: 41 of
+  53 rows clean. ROWLOG_N=387. Cycle 292
+  dispatching (fresh lane).
