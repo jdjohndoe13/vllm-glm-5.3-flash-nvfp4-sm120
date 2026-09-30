@@ -6292,3 +6292,42 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   221 clean (61 wedge rows).
   ROWLOG_N=552. Cycle 406
   dispatching (fresh lane).
+- 2026-09-30 15:58 — cycle 406
+  (fix-259) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — streak record
+  FIRST: [15:48:09] clean (fb=519 F
+  apc=1278 +5, ev 346690/85480,
+  bytes +28543 cool, kv=2478,
+  rmax=1 untagged-normal) → clean
+  streak 7 SET the NEW post-arrival
+  zone record ([15:17:54]→
+  [15:48:09]). THEN the ~15:53
+  slot WEDGE-FIRED: [15:53:30]
+  (h=000 p=9 fb=522 kv=2488
+  apc=1286, ev 349562/86155, bytes
+  +36350, rmax=1 = the only on-tag
+  pattern) ALERT: SERVE-WEDGE —
+  NEW live stick at ALERT run 1
+  (watched; NOT a touch: touch
+  lineage STAYS 5 — fixer prose
+  overread to 6; only fires
+  reaching run ≥4 count). NO heat
+  flare preceded (mid-band fields;
+  fires WITHOUT flares are
+  long-established — the correlate
+  stays probabilistic: fires can
+  come 1–5 slots after a flare OR
+  with no flare at all). fb
+  re-accelerated +3 on the wedge
+  row (519→522); apc settle
+  continues (bracket +14/+5/+7/+6/
+  +5/+8 — no back-to-back large
+  step); kv warming +12 → 2488; ev
+  grew; bytes mid-band (no flare).
+  On-tag pattern PERFECT;
+  rmax=0-under-tag NEVER formed;
+  no WALL LOST / wall=000; no
+  probe failures. Epoch I: 161 of
+  223 clean (62 wedge rows).
+  ROWLOG_N=554. Cycle 407
+  dispatching (fresh lane).
