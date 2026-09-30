@@ -4183,3 +4183,17 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 42 of 55 rows clean (13
   wedge rows). ROWLOG_N=389. Cycle 293
   dispatching (fresh lane).
+- 2026-09-30 01:58 — cycle 293 (fix-146,
+  escalation watch) reconciled: CYCLE_OK.
+  No new wedge rows; [01:51:24] (fb=118
+  kv=662 apc=348) and [01:56:44] (fb=119
+  kv=671 apc=362 ev 95177/23738) clean —
+  3 consecutive clean rows since wedge
+  #13; run-length story unchanged
+  (single-row wedges, no new sticks, ≥4
+  nowhere near); no WALL LOST anywhere;
+  fb aggregate drift normal; ev slots
+  keep climbing (~95k/23.7k). Epoch I:
+  44 of 57 rows clean (13 wedge rows).
+  ROWLOG_N=391. Cycle 294 dispatching
+  (fresh lane).
