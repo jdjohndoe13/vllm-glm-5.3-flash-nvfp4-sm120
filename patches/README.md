@@ -6797,3 +6797,41 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   clean (80 wedge rows).
   ROWLOG_N=582. Cycle 419
   dispatching (fresh lane).
+- 2026-09-30 18:41 — cycle 419
+  (fix-273) reconciled: CYCLE_OK —
+  touch-and-release (9th rapid
+  pulse): live stick EXTENDED run
+  1→2 at [18:26:33] (h=000 p=9,
+  fb=746 +9 = STEP-UP RE-ARM
+  NAMED FIRST (≥+8 landed before
+  any brake pair or flat hold),
+  kv=3319 +33 ≥+30 = MELT FAMILY
+  RE-ARMS (the melt ×5 record did
+  NOT land — +33 broke the sub-+30
+  streak at step 5), apc=1367 +1
+  = drip-chain ×4, ev 395729/
+  97520, bytes +54772 ≥54K heat
+  row (fire-lag RE-ARMS; first
+  ≥54K since the 18:15:53
+  low-tide disarm), rmax=1 only
+  on-tag) ALERT: SERVE-WEDGE —
+  then RELEASED in-window at
+  [18:31:34] (h=200 untagged:
+  fb=752 +6 sub-8, kv=3337 +18
+  (new sub-+30 count 1), apc=1368
+  +1 = drip-chain ×5 OPEN, ev
+  397244/97924, bytes +50454
+  cooled (armed-and-un-fired
+  again), rmax=0 on clean row).
+  Closed run 2 (no touch; lineage
+  stays 6); post-release streak 1.
+  File-emit gap RESOLVED: rows
+  resumed every slot (18:21:13 →
+  18:26:33 → 18:31:34); no second
+  gap. On-tag PERFECT
+  (rmax=0-under-tag NEVER formed).
+  No WALL LOST / wall=000; no
+  probe failures. Epoch I: 174 of
+  255 clean (81 wedge rows).
+  ROWLOG_N=584. Cycle 420
+  dispatching (fresh lane).
