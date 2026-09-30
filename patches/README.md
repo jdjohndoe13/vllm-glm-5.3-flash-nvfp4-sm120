@@ -6393,3 +6393,41 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   of 227 clean (64 wedge rows).
   ROWLOG_N=557. Cycle 409
   dispatching (fresh lane).
+- 2026-09-30 16:31 — cycle 409
+  (fix-262) reconciled: CYCLE_OK —
+  DOUBLE touch-and-release: the
+  run-2 stick ([16:03:53]→
+  [16:09:14]) released at
+  [16:14:30] (h=200 fb=561 kv=2628
+  apc=1321 flat, ev 357786/88148,
+  bytes +53076 cooled below band),
+  then a fresh 1-row stick touched
+  at [16:19:50] (h=000 fb=573,
+  rmax=1 untagged-fire) and
+  released again at [16:24:54]
+  (h=200 fb=586, ev 359714/88606,
+  bytes +48447). NO alarm touch
+  (max run 2; lineage stays 5);
+  post-release streak 1. FB
+  STEP-UP REALIZED: +13/+12/+13 =
+  first three consecutive ≥+12
+  steps (548→561→573→586; the
+  +8/+8/+10 did NOT hold); kv
+  ACCELERATING +42/+41/+35
+  (2628→2669→2704); apc FLAT ×3
+  at 1321 after the +31 break-out
+  (no back-to-back ≥+10 pair);
+  bytes cooled BELOW the 54–58K
+  band on all three rows
+  (epoch-high 63400 stands); ev
+  grew. On-tag pattern PERFECT;
+  rmax=0-under-tag NEVER formed;
+  minor past-row re-render
+  variation in ev values (rows
+  only, verdict anchored on the
+  newest-row rule). No WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 165 of 230 clean (65
+  wedge rows). ROWLOG_N=560.
+  Cycle 410 dispatching (fresh
+  lane).
