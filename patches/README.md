@@ -4081,3 +4081,16 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   ESCWALL release line. Epoch I: 35 of
   42 rows clean. ROWLOG_N=376. Cycle 286
   dispatching (fresh lane).
+- 2026-09-30 00:53 — cycle 286 (fix-139)
+  reconciled: CYCLE_OK. [00:43:22]
+  clean (hb=200 fb=74 kv=483 apc=246
+  ev 59582/14911) and [00:48:40] clean
+  newest (fb=80 kv=515 apc=248 ev
+  60858/15215) — the [00:38:17] wedge
+  released cleanly (2 consecutive clean
+  rows after it); no new hb=000 rows, no
+  sticks, no WALL LOST anywhere; fb
+  aggregate 73→80 = normal drift (de-armed
+  posture). Epoch I: 37 of 44 rows
+  clean (7 wedge rows). ROWLOG_N=378.
+  Cycle 287 dispatching (fresh lane).
