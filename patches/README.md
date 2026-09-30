@@ -6878,3 +6878,51 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   clean (82 wedge rows).
   ROWLOG_N=586. Cycle 421
   dispatching (fresh lane).
+- 2026-09-30 19:01 — cycle 421
+  (fix-275) reconciled: CYCLE_OK —
+  touch-and-release (11th rapid
+  pulse): 1-row stick fired
+  [18:47:34] (h=000 p=9, fb=759
+  +5, kv=3390 +29 = melt-chain
+  ×4 (one off the ≥+30 re-arm
+  line), apc=1384 +3 =
+  drip-chain ×8, ev 402532/
+  99135, bytes +62089 ≥54K
+  fire-row heat, rmax=1 only
+  on-tag) ALERT: SERVE-WEDGE —
+  fire form LANDED = LAG-1 (fired
+  one slot after the [18:42:14]
+  armed +62549 heat); released
+  in-window at [18:52:35]
+  (h=200 untagged: fb=765 +6,
+  kv=3416 +26 = melt-chain ×5
+  OPEN, apc=1386 +2 =
+  drip-chain ×9 OPEN, ev
+  403751/99405, bytes +56577 =
+  THIRD consecutive ≥54K heat
+  row (fire-lag watch ARMED AND
+  UN-FIRED, no successor yet),
+  rmax=1 on clean row).
+  Fire-lag family: fires now
+  include the lag-2 delayed form
+  (at [18:36:54]) alongside
+  lag-0 and lag-1; the +62089
+  charge did NOT fire at lag-1
+  (next slot clean — lag-2 slot
+  pending). bytes heat-band:
+  three straight ≥54K rows
+  (+62549 → +62089 → +56577).
+  apc: chain ×9 open (1353→…→
+  1386); no ≥+10. kv: melt-chain
+  ×5 open (+29/+26 both sub-+30;
+  re-arm ×2 not landed). fb:
+  sub-step drift (+2/+5/+6 —
+  nothing named). Run 1 only (no
+  touch; lineage stays 6);
+  post-release streak 1.
+  On-tag PERFECT; no WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 176 of 259 clean (83
+  wedge rows). ROWLOG_N=588.
+  Cycle 422 dispatching (fresh
+  lane).
