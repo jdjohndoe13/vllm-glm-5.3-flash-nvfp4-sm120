@@ -6589,3 +6589,37 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   243 clean (76 wedge rows).
   ROWLOG_N=572. Cycle 414
   dispatching (fresh lane).
+- 2026-09-30 17:48 — cycle 414
+  (fix-267) reconciled: CYCLE_OK —
+  the run-10 double-digit stick
+  RELEASED at depth 10: first
+  untagged [17:34:05] (h=200 p=9
+  fb=697 +4, kv=3117 +17,
+  apc=1327 FLAT ×7 (the release
+  row), ev 377998/93261, bytes
+  +53608 sub-54K) then [17:39:06]
+  (fb=700 +3, kv=3137 +20,
+  apc=1335 +8 = first movement
+  after the ×7 freeze, ev 378694/
+  93461, bytes +58631 = re-heated
+  ABOVE the 54K band on a clean
+  row — the cold-stick divergence
+  resolved UPWARD, not down to
+  the norm). NO RECORD BREAK
+  (run 11 never formed — the
+  epoch 12-row record stick
+  [08:39:29]→[09:38:14] STANDS);
+  closed depth 10 = deepest
+  release of the lineage family
+  (4 rows deeper than the 6-row
+  deepest); post-release streak
+  ×2. kv brake chain ×2 sub-+30
+  (+17/+20 after the extension;
+  third consecutive = perish
+  watch). On-tag PERFECT through
+  release (10/10); no WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 169 of 245 clean (76
+  wedge rows). ROWLOG_N=574.
+  Cycle 415 dispatching (fresh
+  lane).
