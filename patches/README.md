@@ -5588,3 +5588,28 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 140 of 186 clean (46
   wedge rows). ROWLOG_N=517. Cycle
   383 dispatching (fresh lane).
+- 2026-09-30 12:56 — cycle 383
+  (fix-236) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — the open 2-row stick
+  EXTENDED to run 3: NEW tagged row
+  [12:47:27] (h=000 fb=404 kv=1956
+  apc=1071, ev 282713/69727) after
+  [12:36:46]+[12:42:06]; NO release
+  row yet. Worst-lineage watch:
+  run 3 entered; ONE more tagged row
+  = run 4 = alarm re-touch (fourth
+  touch lineage: 12-row record,
+  4-row, 5-row). fb pace re-
+  accelerated: deltas +2, +10, +8
+  (396→404, run-5-stick-scale steps
+  w/ slight decay vs peak);
+  apc 1065→1071; bytes re-heat
+  persists ~5 rows above the 48–52K
+  band (ebbing ~57K); kv→1956; ev
+  →282713/69727. No WALL LOST /
+  wall=000 (h=200 all rows); ladder
+  bounded (rep=0); canary alive,
+  HEALTH=200. Epoch I: 140 of 187
+  clean (47 wedge rows). ROWLOG_N=
+  518. Cycle 384 dispatching (fresh
+  lane).
