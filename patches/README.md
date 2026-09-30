@@ -6709,3 +6709,47 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   249 clean (78 wedge rows).
   ROWLOG_N=578. Cycle 417
   dispatching (fresh lane).
+- 2026-09-30 18:22 — cycle 417
+  (fix-270) reconciled: CYCLE_OK —
+  touch-and-release (8th rapid
+  pulse): heat row [18:05:23]
+  (h=200 untagged, fb=723 FLAT,
+  ev 387114/95441, bytes +59591
+  ≥54K, apc=1353 +9 after the ×3
+  freeze, kv=3230 +7) → the
+  wedge FIRED at lag 1 ([18:10:44]:
+  h=000, fb=728 +5, kv=3252 +22,
+  apc=1353 flat, ev 388974/95909,
+  bytes +55934) ALERT: SERVE-WEDGE
+  — 1-row stick bounded on both
+  sides, released in-window at
+  [18:15:53] (h=200 untagged,
+  fb=731 +3, kv=3263 +11,
+  apc=1362 +9, ev 391201/96397,
+  bytes +50296 cooled). Run 1 only
+  (no touch; lineage stays 6);
+  post-release streak 1.
+  Fire-lag family: the lag-1 case
+  CONFIRMED LIVE again here
+  (alongside the lag-0 case at
+  [17:54:52]); the fire-row heat
+  row was NOT fired at lag 1
+  (armed-and-un-fired again). apc:
+  freeze broke → drip ×2 into a
+  drip-chain (+9/+9 with a flat
+  row between; a 3rd consecutive
+  movement names the drip-chain;
+  a ≥+10 move names the big-step
+  pair watch). kv: melt-chain ×3
+  (+7/+22/+11 — a fourth sub-+30
+  melts ×4; a ≥+30 re-arms). fb:
+  flat ×1 → +5/+3 (no regime
+  named — leans brake-family).
+  rmax=0 on the newest clean row
+  (on-tag PERFECT; rmax=0-under-
+  tag NEVER formed). No WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 173 of 252 clean (79
+  wedge rows). ROWLOG_N=581.
+  Cycle 418 dispatching (fresh
+  lane).
