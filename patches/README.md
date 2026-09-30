@@ -5061,3 +5061,31 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   141 clean (17 wedge rows). ROWLOG_N=
   472. Cycle 360 dispatching (fresh
   lane).
+- 2026-09-30 09:08 — cycle 360
+  (fix-213) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE 🔴 USER-VISIBLE ALARM.
+  Stick EXTENDED to run-length 5
+  consecutive hb=000 rows ([08:39:29],
+  [08:44:50], [08:50:10], [08:55:31],
+  [09:00:51]; ≥4 threshold crossed at
+  [08:55:31]) — past epoch-I worst
+  (3-row stick); newest [09:00:51]
+  (h=200 p=9 wall=200 fb=179 kv=991
+  apc=721 ev 161321/40091); NO WALL
+  LOST, no wall=000, BOOTCOUNT=1.
+  Direct deep-dive 09:06 (read-only):
+  ESCAPE_COUNT 18→36 (18 new in ~1 h
+  load wave), ALL UNIFORM closes
+  (walls 10.4–136.8 s, fallbacks≤2),
+  RELEASE_COUNT=0 (240 s cap never
+  reached) — engine ladder verified
+  BOUNDED throughout the stick;
+  KVL_COUNT=1019, FALLBACK_COUNT=183,
+  KV-LOOKUP heartbeat healthy 09:02–09:04.
+  Heavy-load correlate: bytes +50–62K
+  per row since ~08:05; user notified
+  per policy; cadence continues, watch
+  release next cycle. Epoch I: 124 of
+  144 clean (20 wedge rows). ROWLOG_N=
+  475. Cycle 361 dispatching (fresh
+  lane).
