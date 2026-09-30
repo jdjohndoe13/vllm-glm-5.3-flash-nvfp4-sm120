@@ -5214,3 +5214,21 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   clean (30 wedge rows). ROWLOG_N=
   488. Cycle 366 dispatching (fresh
   lane).
+- 2026-09-30 10:21 — cycle 366
+  (fix-219) reconciled: CYCLE_OK —
+  wedge slot SKIPPED CLEAN. 1 new
+  clean row: [10:14:57] (h=200 p=9
+  wall=200 fb=247 kv=1310 apc=863,
+  ev 193278/48018); clean tail now
+  2 consecutive rows ([10:09:40],
+  [10:14:57]) — first extended post-
+  record-release streak; the ~5:20
+  cadence slot passed with NO wedge
+  (dense regime absorbing the load).
+  No WALL LOST / wall=000 anywhere;
+  fb 241→247 (aggregate); apc
+  858→863; heavy band persists
+  (+57–64K rows/row window). Epoch
+  I: 128 of 158 clean (30 wedge
+  rows). ROWLOG_N=489. Cycle 367
+  dispatching (fresh lane).
