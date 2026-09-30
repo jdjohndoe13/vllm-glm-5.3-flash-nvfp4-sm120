@@ -4220,3 +4220,18 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   drift normal. Epoch I: 47 of 60 rows
   clean (13 wedge rows). ROWLOG_N=394.
   Cycle 296 dispatching (fresh lane).
+- 2026-09-30 02:24 — cycle 296 (fix-149,
+  escalation watch) reconciled: CYCLE_OK.
+  Wedge #14 at [02:17:09] (hb=000 fb=134
+  kv=727 apc=374 ev 102661/25561 — note
+  console-echo typo '25561:0' in lane
+  paste; row values otherwise standard)
+  — ISOLATED single-row, released by
+  [02:22:10] newest clean (hb=200 fb=136
+  kv=736 apc=380 ev 103473/25792); the
+  6-row clean streak ended by this
+  bounded stick; no WALL LOST anywhere;
+  fb aggregate drift normal. Epoch I:
+  48 of 62 rows clean (14 wedge rows).
+  ROWLOG_N=396. Cycle 297 dispatching
+  (fresh lane).
