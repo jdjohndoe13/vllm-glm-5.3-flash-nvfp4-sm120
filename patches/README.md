@@ -4284,3 +4284,14 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   load (bytes +14.7k, smallest since
   23:21). Epoch I: 54 of 68 rows clean.
   Cycle 301 dispatching (fresh lane).
+- 2026-09-30 02:54 — cycle 301 (fix-154)
+  reconciled: CYCLE_OK. [02:47:28] and
+  [02:52:29] (fb=136 kv=749 apc=399 ev
+  109661/27409) clean — 7-row clean
+  streak ([02:22:10]…[02:52:29]), longest
+  since the 16-row run ending at wedge
+  #3; no new hb=000 rows (still 14
+  wedges); no WALL LOST; fb flat since
+  [02:22:10] (no fallback events). Epoch
+  I: 56 of 70 rows clean. ROWLOG_N=402.
+  Cycle 302 dispatching (fresh lane).
