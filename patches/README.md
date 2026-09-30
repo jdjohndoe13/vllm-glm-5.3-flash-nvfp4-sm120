@@ -5317,3 +5317,34 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 130 of 166 clean (36
   wedge rows). ROWLOG_N=497. Cycle
   371 dispatching (fresh lane).
+- 2026-09-30 11:14 — cycle 371
+  (fix-224) reconciled: CYCLE_OK —
+  ALARM THRESHOLD TOUCHED, STICK
+  RELEASED BOUNDEDLY. The 3-row tie
+  stick extended to run 4 at
+  [11:02:31] (h=000 fb=307 apc=909)
+  — the ≥4 user-visible alarm
+  threshold was TOUCHED (warning
+  delivered) — then the stick
+  RELEASED at [11:07:32] (h=200
+  p=9 wall=200 fb=310 kv=1555
+  apc=915, ev 223080/55195) BEFORE
+  run 5; newest row clean. NEW
+  epoch-I bounded-stick worst = 4
+  rows (well below the 12-row
+  record). Fourth direct deep-dive
+  11:12: ESCAPE_COUNT 45→57 (+12
+  UNIFORM closes, walls 10.4 s in
+  the stick window), RELEASE_COUNT=
+  0 — 240 s cap verified NEVER
+  reached THROUGH the run-4 stick;
+  FALLBACK_COUNT 214→310, no
+  fallbacks=3 lines, BOOTCOUNT=1,
+  KV-LOOKUP hits healthy. No WALL
+  LOST / wall=000 anywhere. fb
+  298→310 aggregate; apc 908→915;
+  load heavy with marginal cooling
+  at release (+43018). Epoch I:
+  131 of 168 clean (37 wedge
+  rows). ROWLOG_N=499. Cycle 372
+  dispatching (fresh lane).
