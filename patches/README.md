@@ -6227,3 +6227,37 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=550.
   Cycle 404 dispatching (fresh
   lane).
+- 2026-09-30 15:45 — cycle 404
+  (fix-257) reconciled: CYCLE_OK —
+  ~15:38 slot fired CLEAN: streak
+  extended to 5 ([15:17:54]…
+  [15:38:01]); NEW clean row
+  [15:38:01] (h=200 p=9 wall=200
+  fb=519 F kv=2465 apc=1267, ev
+  342932/84622, bytes +38442).
+  Threshold NOT touched (touch
+  lineage stays 5). ONE more
+  clean row ties the 6-row
+  post-arrival zone record
+  ([13:45:04]→[14:10:08]). fb FLAT
+  extends ×4 at 519; apc settle
+  HOLDS (bracket +14/+5/+7 — no
+  second consecutive large step);
+  bytes mid-band re-tick +38442 —
+  NO new flare (probabilistic
+  correlate window not opened);
+  kv warming +5; ev mild growth.
+  Render variance note: this dump
+  printed [15:02:32] fb=514 where
+  prior probes rendered 509
+  (past-row re-rendering inside
+  the live rowlog emit window;
+  the new-row rule is unaffected
+  — newest-row values consistent).
+  On-tag pattern PERFECT;
+  rmax=0-under-tag NEVER formed;
+  no WALL LOST / wall=000; no
+  probe failures. Epoch I: 159 of
+  220 clean (61 wedge rows).
+  ROWLOG_N=551. Cycle 405
+  dispatching (fresh lane).
