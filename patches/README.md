@@ -5546,3 +5546,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   of 183 clean (44 wedge rows).
   ROWLOG_N=514. Cycle 381
   dispatching (fresh lane).
+- 2026-09-30 12:38 — cycle 381
+  (fix-234) reconciled: CYCLE_OK —
+  ~12:31 due-slot fired CLEAN
+  (skipped): clean streak extended
+  to 2 ([12:26:20]+[12:31:26]); NEW
+  clean row [12:31:26] (h=200 p=9
+  wall=200 fb=384 kv=1875 apc=1049,
+  ev 276713/68347). fb 380→384 (+4
+  mild drift, deceleration regime
+  continues); apc 1047→1049; bytes
+  re-heat HELD at ~+60K for a second
+  row (above the 48–52K band —
+  cooling trend paused, no wedge
+  formed anyway). No WALL LOST /
+  wall=000 anywhere; no alarm
+  touch. Ladder bounded (dive #6
+  verified through run-5 + release:
+  0 new escapes, cap 0). Epoch I:
+  140 of 184 clean (44 wedge rows).
+  ROWLOG_N=515. Cycle 382
+  dispatching (fresh lane).
