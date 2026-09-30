@@ -4260,3 +4260,15 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   50 of 64 rows clean (14 wedge rows).
   ROWLOG_N=398. Cycle 299 dispatching
   (fresh lane).
+- 2026-09-30 02:42 — cycle 299 (fix-152,
+  escalation watch) reconciled: CYCLE_OK.
+  [02:37:12] newest clean (h=200 p=9
+  wall=200 fb=136 FLAT 4th row running
+  kv=744 apc=391 ev 107541/26887); no
+  new hb=000 rows; 4-row clean streak
+  ([02:22:10]…[02:37:12]); no WALL LOST
+  anywhere; no stick start (epoch max
+  stick stays 3). Quiet load row.
+  Epoch I: 52 of 66 rows clean (14
+  wedge rows). ROWLOG_N=399. Cycle 300
+  dispatching (fresh lane).
