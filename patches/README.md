@@ -6431,3 +6431,34 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=560.
   Cycle 410 dispatching (fresh
   lane).
+- 2026-09-30 16:44 — cycle 410
+  (fix-263) reconciled: CYCLE_OK —
+  rapid-fire #4 touch-and-release:
+  fresh 1-row stick fired [16:30:14]
+  (h=000 p=9 fb=595 +9 FIRST
+  sub-+12 brake of the regime,
+  kv=2734 +30 first brake below
+  +35, apc=1321 flat ×4, ev
+  361386/88992, bytes +52119
+  mid-zone, rmax=1 only on-tag)
+  ALERT: SERVE-WEDGE — released one
+  row later at [16:35:25] (h=200
+  untagged: fb=607 +12 re-advance,
+  kv=2777 +43 LARGEST family step,
+  apc=1322 +1 nudge, ev 362126/
+  89245, bytes +56804 = NEW ≥54K
+  heat row → correlate RE-ARMED).
+  Post-release streak reset then
+  restarted at 1. No touch (max
+  run 2 all-day; lineage stays 5).
+  The rebound story: every row
+  advances; fb pace braked once
+  then re-armed; kv braked once
+  then drew the largest family
+  step. On-tag PERFECT;
+  rmax=0-under-tag NEVER formed; no
+  WALL LOST / wall=000; no probe
+  failures. Epoch I: 166 of 232
+  clean (66 wedge rows).
+  ROWLOG_N=562. Cycle 411
+  dispatching (fresh lane).
