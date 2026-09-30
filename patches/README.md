@@ -5165,3 +5165,27 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   I: 125 of 152 clean (27 wedge rows).
   ROWLOG_N=483. Cycle 364 dispatching
   (fresh lane).
+- 2026-09-30 09:58 — cycle 364
+  (fix-217) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — RE-ENTRY. A NEW stick
+  opened 5:20 after the record-stick
+  release (matches epoch cadence);
+  clean tail lasted exactly 1 row
+  ([09:43:21]). Two new wedge rows:
+  [09:48:41] (h=000 fb=224 kv=1193
+  apc=841) + [09:54:01] (h=000 fb=230
+  kv=1217 apc=843, ev 181444/45095) =
+  tail hb=000 run-length 2, OPEN at
+  probe time (below the ≥4 alarm
+  threshold, not re-escalated). No
+  WALL LOST / wall=000 anywhere. No
+  new deep-dive (run<3 gate; 09:40
+  dive verified ladder bounded, 0
+  releases). fb 215→230 on the wedge
+  rows; apc slow-drifting 840→843;
+  heavy load persists (+57–59K
+  bytes/row). Vigilance: run≥4
+  re-escalates the user-visible alarm.
+  Epoch I: 125 of 154 clean (29
+  wedge rows). ROWLOG_N=485. Cycle
+  365 dispatching (fresh lane).
