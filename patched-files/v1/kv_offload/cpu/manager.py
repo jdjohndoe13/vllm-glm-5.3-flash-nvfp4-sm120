@@ -377,6 +377,14 @@ class CPUOffloadingManager(OffloadingManager):
                     self._policy.remove(key)
                     self._free_block(block)
 
+        if success and self._eviction_tombstones is not None and stored_keys:
+            # Tombstone hygiene 2026-09-30: a hash evicted (tombstoned) and
+            # then successfully stored again is live data; clear the residue
+            # so the bounded attribution registry reflects only genuine
+            # evictions.
+            for key in stored_keys:
+                self._eviction_tombstones.pop(get_offload_block_hash(key), None)
+
         if stored_keys and self.events is not None:
             self.events.append(
                 OffloadingEvent(
@@ -393,6 +401,32 @@ class CPUOffloadingManager(OffloadingManager):
         # pre-reset jobs, so no lazy cleanup is needed. The scheduler also
         # flushes in-flight load job IDs to the workers before any new stores
         # can begin, preventing a cross-direction data race on reused offload block IDs.
+        # 2026-09-30: before clearing the policy, advertise every currently
+        # tracked key as removed so downstream event consumers see the tier
+        # shrink on sleep/weight-update/resume. Emitted in chunks of 64k keys
+        # so a full-pool reset never produces one oversized event.
+        removed_keys = self._policy.stored_keys()
+        num_reset_events = 0
+        if self.events is not None and removed_keys:
+            _reset_event_chunk = 65536
+            for _chunk_start in range(0, len(removed_keys), _reset_event_chunk):
+                self.events.append(
+                    OffloadingEvent(
+                        keys=removed_keys[
+                            _chunk_start : _chunk_start + _reset_event_chunk
+                        ],
+                        medium=self.medium,
+                        removed=True,
+                    )
+                )
+                num_reset_events += 1
+        # Eviction tombstones are deliberately kept across reset_cache.
+        logger.info(
+            "CPU-TIER-RESET removals=%d tombstones_kept=%d events=%d",
+            len(removed_keys),
+            len(self._eviction_tombstones) if self._eviction_tombstones else 0,
+            num_reset_events,
+        )
         self._policy.clear()
         self._num_evictable_cache_blocks = 0
         self._num_write_pending_blocks = 0

@@ -13,3 +13,7 @@ v1/core/kv_cache_coordinator.py
 distributed/kv_transfer/kv_connector/v1/offloading/metrics.py
 model_executor/layers/fused_moe/runner/moe_runner.py
 v1/core/sched/scheduler.py
+v1/kv_offload/tiering/manager.py
+v1/kv_offload/cpu/policies/base.py
+v1/kv_offload/cpu/policies/lru.py
+v1/kv_offload/cpu/policies/arc.py

@@ -2008,6 +2008,14 @@ class OffloadingConnectorScheduler:
                 for jid in self._block_id_to_pending_jobs[bid]
             )
 
+        # Flush jobs for promotion-TTL retracted transfers (2026-09-30): the
+        # worker must wait a wedged promotion out before its dst block ids are
+        # reused; routed through the same jobs_to_flush channel reset_cache
+        # uses. Optional attribute for manager classes without the TTL patch.
+        _retained_flush = getattr(self.manager, "drain_flush_job_ids", None)
+        if _retained_flush is not None:
+            self._current_batch_jobs_to_flush.update(_retained_flush())
+
         partial_store_jobs = self._build_partial_tail_store_jobs(scheduler_output)
         normal_store_jobs = self._build_store_jobs(scheduler_output)
         meta = OffloadingConnectorMetadata(
