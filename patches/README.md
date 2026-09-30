@@ -5926,3 +5926,47 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 149 of 205 clean (56
   wedge rows). ROWLOG_N=536. Cycle
   395 dispatching (fresh lane).
+- 2026-09-30 14:37 — cycle 395
+  (fix-248) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — ALARM TOUCHED,
+  5th: the tail stick extended to
+  run 4 ([14:15:28]→[14:31:29]):
+  [14:26:09] (h=000 fb=484 apc=
+  1192, ev 320217/79036, bytes
+  ~57K) = run 3 (worst-lineage
+  watch entered) + [14:31:29]
+  (h=000 fb=490 kv=2312 apc=1196,
+  ev 322917/79669) = RUN 4, NO
+  5ROW TOUCH REACHEDS STILL (alarm
+  touched at run 4, no release).
+  Record lineage: 12-row epoch
+  record still stands, 7-row
+  released post-record worst, 5-row
+  bounded worst. Eighth DIRECT
+  deep-dive (14:33, through run-4
+  depth): ESCAPE_COUNT 77→90 (+13,
+  ALL UNIFORM ≤2-fallback
+  SERVERKILL escapes at walls 10.4
+  s only — six closes: 13:37:15/
+  13:43:48/14:15:40/14:19:28/
+  14:21:16/14:26:55);
+  FALLBACK_COUNT 434→493 (+59);
+  KVL→2322 (+263, largest yet);
+  RELEASE_COUNT=0 — cap STILL never
+  reached through run-4 depth; no
+  fallbacks=3; BOOTCOUNT=1; hits
+  healthy with PERFECT 1:1 g0FAE
+  trace convergence INSIDE the
+  wedge window (6:6, 108:108, 111:
+  111, 131:131) — no degradation
+  signal. kv increments elevated
+  (+29/+27 after +24 wedge-row
+  spike); rmax=1 all 4 stick rows
+  (rmax=0-under-tag combo NEVER
+  formed); bytes sustained ~57K
+  re-heat; fb +6/+6 moderate steady.
+  No WALL LOST / wall=000 anywhere;
+  no probe failures. Epoch I: 149
+  of 207 clean (58 wedge rows).
+  ROWLOG_N=538. Cycle 396
+  dispatching (fresh lane).
