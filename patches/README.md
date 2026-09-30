@@ -4049,3 +4049,35 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   23:56, 00:12, 00:17, 00:27). ROWLOG_N=
   375. Cycle 285 dispatching (fresh
   lane).
+- 2026-09-30 00:52 — cycle 285 (fix-138,
+  escalation watch) reconciled: CYCLE_
+  ALERT: SERVE-WEDGE on newest row
+  [00:38:17] (hb=000 fb=73 kv=477; rowlog
+  fb aggregate breached the fb=71 watch
+  threshold). Prior row [00:32:56] clean
+  → isolated single-row wedge (no
+  consecutive stick; 7 wedge rows in
+  epoch I). DEEP-DIVE (direct-orchestrator
+  read-only engine-log scan, script
+  /tmp/escwall_deepdive.sh) DISMISSES the
+  deepening alarm: latest.log =
+  engine-20260929-205722.log (epoch-I
+  boot only, BOOTCOUNT=1); KVL_COUNT=501,
+  FALLBACK_COUNT=78, ESCAPE_COUNT=18 with
+  UNIFORM ladder form — every SERVERKILL
+  closed at fallbacks=2 wall≈10.4 s (e.g.
+  21:08:11 … 00:43:35 tail); RELEASE_
+  COUNT=0 (no escape touched the 240 s
+  cap — bounded by design). REINTERPRETA-
+  TION: rowlog fb is a CUMULATIVE count
+  of fallback EVENTS (load-dependent)
+  across all requests in a window, NOT
+  per-request ladder depth; engine ladder
+  flat at 2 → bounded form INTACT.
+  Escalation posture DE-ARMED for depth;
+  new watch triggers: ≥3 consecutive
+  hb=000 rows, any WALL LOST marker,
+  fallbacks=3 in engine log, or first
+  ESCWALL release line. Epoch I: 35 of
+  42 rows clean. ROWLOG_N=376. Cycle 286
+  dispatching (fresh lane).
