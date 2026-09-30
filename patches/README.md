@@ -4033,3 +4033,19 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   dive. Epoch I: 34 of 40 rows clean.
   ROWLOG_N=374. Cycle 284 dispatching
   (fresh lane).
+- 2026-09-30 00:36 — cycle 284 (fix-137,
+  escalation watch) reconciled: CYCLE_OK.
+  [00:32:56] clean (hb=200 fb=71 FLAT
+  kv=464 apc=225 bytes +60503 ev 53482/
+  13426) — the 00:27:56 wedge stayed
+  ISOLATED (released, no 3rd consecutive
+  row); no WALL LOST anywhere; all
+  counters advancing. Open watch item:
+  per-wedge rung lineage deepening
+  (38→49→53→71); trigger for deep-dive =
+  next wedge eating beyond fb=71 or any
+  WALL LOST marker. Epoch I: 35 of 41
+  rows clean (6 wedge rows: 22:05, 22:20,
+  23:56, 00:12, 00:17, 00:27). ROWLOG_N=
+  375. Cycle 285 dispatching (fresh
+  lane).
