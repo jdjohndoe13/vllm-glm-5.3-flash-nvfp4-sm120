@@ -5821,3 +5821,31 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   clean (54 wedge rows). ROWLOG_N=
   531. Cycle 391 dispatching (fresh
   lane).
+- 2026-09-30 14:05 — cycle 391
+  (fix-244) reconciled: CYCLE_OK —
+  ~14:00 slot fired CLEAN: streak
+  extended to 4 ([13:45:04] +
+  [13:50:05] + [13:55:06] +
+  [14:00:06]); NEW clean row
+  [14:00:06] (h=200 p=9 wall=200
+  fb=474 F kv=2226 apc=1177, ev
+  310289/76481, bytes +25389).
+  Threshold NOT touched. fb FLAT
+  extends to ×4 at 474 (drift fully
+  stalled — longest flat-hold since
+  the c371–c374 window); apc creep
+  mild restart +3 (1174→1177);
+  bytes 3rd consecutive below-band
+  row (cool-down deepening toward
+  the +15–25K norm; floor record
+  still +21653 at [13:55:06]);
+  rmax=0 now on TWO consecutive
+  rows ([13:55:06]+[14:00:06]) —
+  no longer an isolate, still
+  benign (no tag); kv→2226;
+  ev→310289/76481. No WALL LOST /
+  wall=000 anywhere; no probe
+  failures. Epoch I: 147 of 201
+  clean (54 wedge rows). ROWLOG_N=
+  532. Cycle 392 dispatching (fresh
+  lane).
