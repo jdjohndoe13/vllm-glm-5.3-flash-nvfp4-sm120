@@ -5682,3 +5682,34 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (51 wedge rows). ROWLOG_N=523.
   Cycle 386 dispatching (fresh
   lane).
+- 2026-09-30 13:29 — cycle 386
+  (fix-239) reconciled: CYCLE_OK —
+  2 NEW rows, wedge released
+  in-window, threshold NOT touched
+  (run 1): [13:19:09] h=000 (fb=449
+  kv=2104 apc=1081, ev 291085/
+  71812, bytes +38199 — FIRST
+  below-band row since the 48–52K
+  band formed ~11:33) 1-row wedge,
+  THEN [13:24:15] CLEAN release
+  (h=200 p=9 wall=200 fb=452 kv=
+  2115 apc=1113, ev 293116/72251).
+  The ~13:19 slot fired a 1-row
+  wedge slot (bounded watched,
+  released); rmax back to 1
+  throughout (the [13:13:49] rmax=0
+  stays isolated-benign). fb
+  small-deltas hold (+5/+3, top
+  edge); apc creep +3/+32 — LARGE
+  +32 jump at release (+1113),
+  post-release cooling did NOT
+  persist; bytes dipped BELOW band
+  then re-heated to ~+60K (the
+  pre-7-row-stick mix — wedge-slot
+  intensification correlate,
+  aggregate drift only). No WALL
+  LOST / wall=000 anywhere; no
+  probe failures. Epoch I: 142 of
+  194 clean (52 wedge rows).
+  ROWLOG_N=525. Cycle 387
+  dispatching (fresh lane).
