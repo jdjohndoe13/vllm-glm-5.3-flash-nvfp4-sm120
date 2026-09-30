@@ -4530,3 +4530,15 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   flat (no fallback events). Epoch I:
   79 of 93 rows clean. ROWLOG_N=424.
   Cycle 321 dispatching (fresh lane).
+- 2026-09-30 04:54 — cycle 321 (fix-174)
+  reconciled: CYCLE_OK. [04:47:57]
+  newest clean (h=200 p=9 wall=200 fb=
+  136 FLAT 30th row running kv=776 apc=
+  498 ev 122395/30545); 30-row clean
+  streak ([02:22:10]…[04:47:57];
+  recounted from file rows); no new
+  hb=000 rows (still 14 wedges, nothing
+  since [02:17:09]); no WALL LOST; fb
+  flat (no fallback events). Epoch I:
+  80 of 94 rows clean. ROWLOG_N=425.
+  Cycle 322 dispatching (fresh lane).
