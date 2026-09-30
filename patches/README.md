@@ -6039,3 +6039,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   150 of 210 clean (60 wedge
   rows). ROWLOG_N=541. Cycle 398
   dispatching (fresh lane).
+- 2026-09-30 14:59 — cycle 398
+  (fix-251) reconciled: CYCLE_OK —
+  ~14:52 slot fired CLEAN: streak
+  extended to 2 ([14:47:11] +
+  [14:52:12]); NEW clean row
+  [14:52:12] (h=200 p=9 wall=200
+  fb=509 F kv=2390 apc=1209, ev
+  330172/81435, bytes +20646).
+  Threshold NOT touched. apc creep
+  mild +4 (1205→1209); bytes DEEP
+  COOL: +20646 (below the ~45K
+  band into the low-20K zone —
+  wedge outflow fully subsided,
+  near the old +15–25K norm);
+  ev-slot deltas FLAT; rmax=0 ×2
+  consecutive post-release rows
+  (benign; rmax=0-under-tag
+  NEVER formed). No WALL LOST /
+  wall=000 anywhere; no probe
+  failures. Epoch I: 151 of 211
+  clean (60 wedge rows).
+  ROWLOG_N=542. Cycle 399
+  dispatching (fresh lane).
