@@ -6496,3 +6496,44 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   235 clean (68 wedge rows).
   ROWLOG_N=564. Cycle 412
   dispatching (fresh lane).
+- 2026-09-30 17:09 — cycle 412
+  (fix-265) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — the live stick
+  EXTENDED run 2 → 5 = ALARM TOUCH
+  (6th): NEW tagged rows [16:51:26]
+  (h=000 p=9 fb=631 +9, kv=2907
+  +39 extension, apc=1325 +1,
+  ev 365850/90150, bytes +54901
+  in-band), [16:56:46] (h=000 p=9
+  fb=640 +9, kv=2935 +28 brake,
+  apc=1326 +1, ev 368402/90827,
+  bytes +47191 first sub-54K
+  in-stick), [17:02:07] (h=000 p=9
+  fb=648 +8, kv=2959 +24 brake,
+  apc=1327 +1, ev 371334/91486,
+  bytes +45999 sub-54K ×2). Touch
+  lineage 5 → 6; depth 5 = ONE
+  slot short of the deepest
+  released lineage (6-row released
+  [14:15:28]→[14:42:10]); run 6
+  next would EXCEED that deepest
+  released lineage. Trending
+  details: fb brake continues
+  cleanly +9/+9/+8 (every row
+  advances, no flat hold, no
+  re-arm); apc +1 drips ×3 (no
+  ≥+10 pair); kv: family extended
+  once (+39) then the BRAKE
+  returned (+28/+24 ×2 sub-+30);
+  bytes: DOME COOLING divergence —
+  sub-54K ×2 while hb=000 sticks
+  are live (novel context worth
+  watching; the band hold ended).
+  On-tag PERFECT (all window
+  tagged rows exactly one
+  rmax=1); rmax=0-under-tag NEVER
+  formed; no WALL LOST / wall=000;
+  no probe failures. Epoch I: 167
+  of 238 clean (71 wedge rows).
+  ROWLOG_N=567. Cycle 413
+  dispatching (fresh lane).
