@@ -5189,3 +5189,28 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 125 of 154 clean (29
   wedge rows). ROWLOG_N=485. Cycle
   365 dispatching (fresh lane).
+- 2026-09-30 10:12 — cycle 365
+  (fix-218) reconciled: CYCLE_OK —
+  dense-cadence wedges all bounded.
+  3 new rows: 2-row re-entry stick
+  [09:48:41]+[09:54:01] RELEASED at
+  [09:59:09] (h=200 p=9 wall=200
+  fb=239 apc=843); an immediate
+  follow-up 1-row wedge [10:04:29]
+  (h=000 fb=240 apc=844) RELEASED
+  at [10:09:40] (h=200 p=9 wall=200
+  fb=241 kv=1281 apc=858, ev
+  189668/47040) = new clean tail,
+  1-row streak, no stick open. Wedge
+  slots alternating with 1-row
+  release streaks every ~5:20 under
+  the heavy wave — cadence dense but
+  no stick extended toward ≥4. No
+  WALL LOST / wall=000 anywhere; no
+  new deep-dive (bounded ≤2-row
+  sticks; trio of dives verified
+  ladder bounded). fb 230→241;
+  apc s843→858. Epoch I: 127 of 157
+  clean (30 wedge rows). ROWLOG_N=
+  488. Cycle 366 dispatching (fresh
+  lane).
