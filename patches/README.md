@@ -6972,3 +6972,51 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=590.
   Cycle 423 dispatching (fresh
   lane).
+- 2026-09-30 19:18 — cycle 423
+  (fix-277) reconciled: CYCLE_OK —
+  touch-and-release (13th rapid
+  pulse): live stick EXTENDED run
+  1→2 at [19:08:16] (h=000 p=9,
+  fb=774 +5, kv=3467 +35 ≥+30 =
+  RE-ARM ×2 NAMED (the melt ×8
+  chain did NOT form), apc=1394
+  +3 = drip-chain ×12, ev
+  408871/100775, bytes +58649
+  ≥54K NEW heat row (fire-lag
+  re-armed), rmax=1 only on-tag)
+  ALERT: SERVE-WEDGE — then
+  RELEASED in-window at
+  [19:13:21] (h=200 untagged:
+  fb=779 +5, kv=3491 +24 (new
+  sub-+30 count 1 post re-arm ×2),
+  apc=1398 +4 = DRIP-CHAIN ×13
+  OPEN, ev 410897/101261 (flower
+  pace ~+1.8–2.0K/slot steady),
+  bytes +60288 ≥54K, rmax=1 on
+  clean row). Closed run 2 (no
+  touch; lineage stays 6);
+  post-release streak 1.
+  Fire-lag watch: the +58649
+  heat's lag-1 successor
+  [19:13:21] did NOT fire and
+  did NOT cool — heat-on-heat:
+  the successor was itself a
+  fresh ≥54K row (+60288),
+  extending the heat-run to 2
+  consecutive ≥54K rows (a 3rd
+  would match the old 3-row band
+  +62549/62089/56577); the watch
+  re-arms on the +60288 heat
+  (armed-and-un-fired, no
+  successor yet). fb: the +4
+  brake candidate DIED without
+  confirmation (successor +5 —
+  the uncalled gap between
+  brake +3/+4 and re-arm ≥+8;
+  nothing named). On-tag
+  PERFECT; no WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 178 of 263 clean (85
+  wedge rows). ROWLOG_N=592.
+  Cycle 424 dispatching (fresh
+  lane).
