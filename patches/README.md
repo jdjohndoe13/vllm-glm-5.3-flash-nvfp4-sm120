@@ -5275,3 +5275,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 130 of 163 clean (33
   wedge rows). ROWLOG_N=494. Cycle
   369 dispatching (fresh lane).
+- 2026-09-30 10:53 — cycle 369
+  (fix-222) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — 1-row wedge opened
+  after the 2-row clean tail
+  ([10:36:03]+[10:41:10]) ended:
+  [10:46:30] (h=000 fb=292 kv=1474
+  apc=889, ev 206714/51207) tagged
+  = newest row; tail hb=000 run-
+  length 1, below both the 3-row
+  old-worst tie and the ≥4 alarm
+  gate. No WALL LOST / wall=000
+  anywhere; fb 285→292 (aggregate);
+  apc 885→889; heavy band persists
+  (+55–56K/row). Dense-but-bounded
+  regime continues; next rows decide
+  release (bounded 1–2-row pattern)
+  vs stick extension toward tie or
+  alarm. Epoch I: 130 of 164 clean
+  (34 wedge rows). ROWLOG_N=495.
+  Cycle 370 dispatching (fresh
+  lane).
