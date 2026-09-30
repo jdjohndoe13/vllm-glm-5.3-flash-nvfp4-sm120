@@ -6009,3 +6009,33 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   208 clean (59 wedge rows).
   ROWLOG_N=539. Cycle 397
   dispatching (fresh lane).
+- 2026-09-30 14:54 — cycle 397
+  (fix-250) reconciled: CYCLE_OK —
+  threshold-touched-and-released
+  (deeper-first-release): NEW
+  tagged row [14:42:10] (h=000
+  fb=503 apc=1205, ev 327193/
+  80771) extended the tail run to
+  6 (PAST the 5-row worst, toward
+  the 7-row released post-record
+  worst; 6th touch of this stick's
+  alarm state... no — touch count
+  lineage = 5 events), THEN
+  RELEASED at [14:47:11] (h=200
+  p=9 wall=200 fb=509 kv=2386
+  apc=1205, ev 330116/81435, bytes
+  +44787, rmax=0 on release row
+  only). Released run-length 6 =
+  below the 7-row released
+  post-record worst; epoch record
+  still 12. fb pace settled: +4/
+  +6 (the +9 accel declined, back
+  on the +4–6/row pace); apc 1205
+  flat at release; kv +16/+24;
+  rmax=0-under-tag NEVER formed
+  (all 6 stick rows rmax=1). No
+  WALL LOST / wall=000 anywhere;
+  no probe failures. Epoch I:
+  150 of 210 clean (60 wedge
+  rows). ROWLOG_N=541. Cycle 398
+  dispatching (fresh lane).
