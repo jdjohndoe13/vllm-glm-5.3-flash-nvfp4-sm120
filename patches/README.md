@@ -6364,3 +6364,32 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   226 clean (63 wedge rows).
   ROWLOG_N=556. Cycle 408
   dispatching (fresh lane).
+- 2026-09-30 16:19 — cycle 408
+  (fix-261) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — live stick
+  EXTENDED to run 2: NEW tagged row
+  [16:09:14] (h=000 p=9 fb=548
+  kv=2586 apc=1321, ev 355434/
+  87606, bytes +59472 above-band
+  hold, rmax=1 = the only on-tag
+  pattern) ALERT: SERVE-WEDGE
+  ([16:03:53] run 1 → run 2,
+  consecutive). NOT a touch
+  (lineage stays 5); run 3 next =
+  worst-lineage watch; run 4 =
+  ALARM TOUCH (6th). Pace shift
+  deepens: fb +8/+8/+10 (522→530→
+  538→548); kv ACCELERATING +27/
+  +31/+40 (2546→2586); apc settle
+  resumed +1 after the +31
+  break-out; bytes cooled OFF the
+  +63400 epoch-high but HOLDS
+  above the 54–58K band; ev grew.
+  On-tag PERFECT (3 tagged rows in
+  window, each exactly one
+  rmax=1); rmax=0-under-tag NEVER
+  formed; no WALL LOST / wall=000;
+  no probe failures. Epoch I: 163
+  of 227 clean (64 wedge rows).
+  ROWLOG_N=557. Cycle 409
+  dispatching (fresh lane).
