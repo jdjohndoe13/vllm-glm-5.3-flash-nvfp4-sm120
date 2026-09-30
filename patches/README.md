@@ -5116,3 +5116,27 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   124 of 147 clean (23 wedge rows).
   ROWLOG_N=478. Cycle 362 dispatching
   (fresh lane).
+- 2026-09-30 09:40 — cycle 362
+  (fix-215) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE (stick EXTENDED — newest
+  row tagged). Run-length now 11
+  consecutive hb=000 rows ([08:39:29]
+  →[09:32:53]); 3 new rows; newest
+  [09:32:53] (h=200 p=9 wall=200 fb=
+  213 kv=1142 apc=721(F) ev
+  170384/42361); NO WALL LOST, no
+  wall=000, BOOTCOUNT=1. Third direct
+  deep-dive 09:40: ESCAPE_COUNT 43→45
+  (+2, both fallbacks=2 wall=10.4 s
+  UNIFORM), FALLBACK_COUNT 208→214,
+  RELEASE_COUNT=0 (cap never reached),
+  no fallbacks=3 lines, KV-LOOKUP hits
+  healthy through 09:37 — ladder holds
+  bounded across the whole stick.
+  apc flat 721 for 7 rows; heavy load
+  persists (+48–64K bytes/row); fb
+  drift 200→213. User-visible alarm
+  continues; vigilance only. Epoch I:
+  124 of 150 clean (26 wedge rows).
+  ROWLOG_N=481. Cycle 363 dispatching
+  (fresh lane).
