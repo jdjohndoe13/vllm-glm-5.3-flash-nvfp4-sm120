@@ -6665,3 +6665,47 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   of 247 clean (77 wedge rows).
   ROWLOG_N=576. Cycle 416
   dispatching (fresh lane).
+- 2026-09-30 18:09 — cycle 416
+  (fix-269) reconciled: CYCLE_OK —
+  touch-and-release (7th rapid
+  pulse): 1-row stick fired
+  [17:54:52] (h=000 p=9 fb=713
+  +5, kv=3192 +25 = FIFTH
+  consecutive sub-+30, apc=1344
+  FLAT ×3 (freeze resumes — no
+  third movement), ev 384486/
+  94763, bytes +55590 ≥54K heat
+  row, rmax=1 only on-tag) ALERT:
+  SERVE-WEDGE — NO ≥54K heat row
+  preceded (lag-1 row [17:49:31]
+  was +50198 below band; NOT the
+  7th named correlate — a
+  NO-FLARE fire); released
+  in-window at [18:00:07] (h=200
+  untagged: fb=723 +10, kv=3223
+  +31 = family RE-ARMS one row
+  after the melt, apc=1344 flat,
+  ev 386026/95165, bytes +47629).
+  Run 1 only (no touch; lineage
+  stays 6); post-release streak 1.
+  The ≥54K heat row [17:54:52]
+  did NOT fire at lag 1 (cooled)
+  — fire-lag watch armed and
+  un-fired; fires continue both
+  with and without flares
+  (fine-grained correlate). kv
+  family thrash: melt-deepened
+  ×5 then re-arm +31 (watch
+  extension/melt alternation
+  windows). apc re-frozen ×3 at
+  1344 (motion regime did NOT
+  confirm). fb +5/+10 (neither
+  re-arm ×2, nor brake chain, nor
+  a flat hold formed — regime
+  TBD). On-tag PERFECT
+  (rmax=0-under-tag NEVER formed);
+  no WALL LOST / wall=000; no
+  probe failures. Epoch I: 171 of
+  249 clean (78 wedge rows).
+  ROWLOG_N=578. Cycle 417
+  dispatching (fresh lane).
