@@ -5296,3 +5296,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   (34 wedge rows). ROWLOG_N=495.
   Cycle 370 dispatching (fresh
   lane).
+- 2026-09-30 11:02 — cycle 370
+  (fix-223) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — OLD-WORST TIE #2.
+  The 1-row wedge extended to a
+  3-row stick: [10:46:30] + [10:51:51]
+  (h=000 fb=293 apc=904) + [10:57:11]
+  (h=000 fb=298 kv=1506 apc=908, ev
+  213246/52854) — tail run 3 re-tells
+  the pre-record 3-row worst (loud,
+  NOT the alarm); last hb=200 row
+  was [10:41:10] (no release since);
+  bounded regime still intact. No
+  WALL LOST / wall=000 anywhere; fb
+  292→298 (aggregate); apc 889→908;
+  heavy band persists (+57–64K/row).
+  Next slot decides: 4th consecutive
+  hb=000 row = ALARM vs 1 untagged
+  hb=200 row = release (bounded).
+  Epoch I: 130 of 166 clean (36
+  wedge rows). ROWLOG_N=497. Cycle
+  371 dispatching (fresh lane).
