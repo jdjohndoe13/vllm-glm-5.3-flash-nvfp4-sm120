@@ -7349,3 +7349,63 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=607.
   Cycle 431 dispatching (fresh
   lane).
+- 2026-09-30 20:53 — cycle 431
+  (fix-285) reconciled:
+  CYCLE_ALERT: SERVE-WEDGE —
+  LIVE STICK OPEN AT RUN 4 =
+  ALARM TOUCH (8th): the
+  NO-HEAT stick EXTENDED —
+  [20:38:06] (h=000 p=9, fb=934
+  +9 = STEP-UP PAIR NAMED (2nd
+  consecutive ≥+8 after the
+  tail-×12 break), kv=4090 +31
+  = RE-ARM ×12 NAMED, apc=1410
+  +1 = DRIP-CHAIN ×20 NAMED
+  (2nd consecutive movement —
+  chain re-grows), ev
+  434601/107115, bytes +51487
+  sub-54K TAGGED = NO-HEAT FIRE
+  ×2 NAMED, rmax=1) run 2 →
+  [20:43:26] (h=000 p=9, fb=943
+  +9 (3rd straight ≥+8),
+  kv=4122 +32 (re-arm ×12
+  continues), apc=1410 FLAT
+  (chain PAUSED), ev
+  435469/107269, bytes +48229
+  sub = NO-HEAT ×3, rmax=1) run
+  3 = WORST-LINEAGE WATCH →
+  [20:48:46] (h=000 p=9, fb=947
+  +4 (breaks the ≥+8 chain,
+  sub-8 unnamed), kv=4134 +12 =
+  FIRST SUB-+30 → MELT WATCH
+  NAMED (after the ×12 re-arm),
+  apc=1425 +15 = movement after
+  pause (consecutive counter
+  resets to 1; LARGEST APC STEP
+  SEEN (+15 ≥+10); a 2nd
+  consecutive ≥+10 movement
+  names the big-step pair
+  watch), ev 438465/108008
+  (flower pace ELEVATED +2996 —
+  1st ≥+3K slot; a 2nd names an
+  ev pace jump), bytes +49102
+  sub = NO-HEAT ×4, rmax=1) run
+  4 = ALARM TOUCH (8th) LOUD.
+  NOT RELEASED — no untagged row
+  since the stick opened at
+  20:32:45. NO-HEAT FIRE ×4
+  straight sub-54K (the ≥54K
+  band stays CLOSED — last ≥54K
+  tagged row [20:06:22]; the
+  10-straight heat-run record
+  stands). apc: chain ×20 paused
+  then +15 break-out step. kv:
+  re-arm ×12 (+31/+32) then
+  melt watch. fb: step-up pair
+  (+9/+9) then +4. On-tag
+  PERFECT; no WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 182 of 281 clean (99
+  wedge rows). ROWLOG_N=610.
+  Cycle 432 dispatching (fresh
+  lane).
