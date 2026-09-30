@@ -5713,3 +5713,28 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   194 clean (52 wedge rows).
   ROWLOG_N=525. Cycle 387
   dispatching (fresh lane).
+- 2026-09-30 13:35 — cycle 387
+  (fix-240) reconciled: CYCLE_OK —
+  ~13:29 slot fired CLEAN (no
+  wedge): streak extended to 2
+  ([13:24:15]+[13:29:21]); NEW
+  clean row [13:29:21] (h=200 p=9
+  wall=200 fb=452 kv=2124 apc=1131,
+  ev 297048/73276). Threshold NOT
+  touched. fb FLAT: 452→452 — the
+  first fb-hold row since the
+  c371–c374 window (deceleration
+  phase); apc creep continued
+  1113→1131 (+18, not settled);
+  bytes +65654 = NEW epoch-HIGH
+  per-row bytes delta, breaking
+  above the 57–60K pre-stick mix
+  WITHOUT a wedge (untagged heat at
+  epoch-high — the intensify
+  correlate steepens). No WALL
+  LOST / wall=000 anywhere;
+  PROBE_EXIT=0, canary alive,
+  HEALTH=200. Epoch I: 143 of 195
+  clean (52 wedge rows). ROWLOG_N=
+  526. Cycle 388 dispatching (fresh
+  lane).
