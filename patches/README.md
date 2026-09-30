@@ -4119,3 +4119,19 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 39 of 48 rows clean (9 wedge
   rows). ROWLOG_N=382. Cycle 289
   dispatching (fresh lane).
+- 2026-09-30 01:21 — cycle 289 (fix-142)
+  reconciled: CYCLE_ALERT: SERVE-WEDGE.
+  Wedge #10 of epoch I at [01:19:55]
+  (hb=000 fb=98 FLAT on wedge row kv=586
+  apc=292 ev 78009/19451) — ISOLATED:
+  [01:14:35] clean (fb=98 kv=581 apc=
+  271), release expected next row; no
+  consecutive stick, no WALL LOST
+  anywhere. Cadence now steady ~10-15
+  min (gaps 15:34 / 10:21 / 15:34) —
+  regular recurring bounded wedge
+  pattern, not degradation (engine
+  ladder flat fb=2). Epoch I: 40 of 50
+  rows clean (10 wedge rows). ROWLOG_N=
+  384. Cycle 290 dispatching (fresh
+  lane).
