@@ -4094,3 +4094,15 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   posture). Epoch I: 37 of 44 rows
   clean (7 wedge rows). ROWLOG_N=378.
   Cycle 287 dispatching (fresh lane).
+- 2026-09-30 01:03 — cycle 287 (fix-140)
+  reconciled: CYCLE_OK. Wedge #8 of
+  epoch I at [00:54:00] (hb=000 fb=81
+  kv=522 apc=255 ev 63322/15890) —
+  ISOLATED single-row wedge, released by
+  [00:59:01] clean (hb=200 fb=86 kv=539
+  apc=259); no consecutive stick, no
+  WALL LOST anywhere; fb 74→80→86 =
+  normal aggregate drift (de-armed
+  posture). Epoch I: 38 of 46 rows
+  clean (8 wedge rows). ROWLOG_N=380.
+  Cycle 288 dispatching (fresh lane).
