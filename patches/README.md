@@ -5738,3 +5738,31 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   clean (52 wedge rows). ROWLOG_N=
   526. Cycle 388 dispatching (fresh
   lane).
+- 2026-09-30 13:45 — cycle 388
+  (fix-241) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — NEW 2-row stick
+  OPEN: [13:34:41] (h=000 fb=458
+  apc=1148, ev 300368/74028) +
+  [13:40:02] (h=000 fb=468 kv=2188
+  apc=1152, ev 302520/74681) — the
+  ~13:34 slot broke the 2-row
+  streak ([13:24:15]+[13:29:21]);
+  no release row yet; run 3 =
+  worst-lineage watch, run ≥4 =
+  alarm touch (5th). WEDGE-CORRELATE
+  CONFIRMED: the untagged epoch-high
+  heat row [13:29:21] (bytes +65654
+  ) PRECEDED both tagged rows —
+  heat preceded wedge fire (same
+  preconditioning correlate as the
+  7-row stick). fb FLAT BROKE:
+  452→458→468 (+6/+10, run-5-stick-
+  scale steps); apc 1131→1148→1152
+  (creep decelerating); bytes back
+  into the 57–60K mix (no new
+  epoch-high). No WALL LOST /
+  wall=000 anywhere (h=200 all
+  rows); ladder bounded (cap 0).
+  Epoch I: 143 of 197 clean (54
+  wedge rows). ROWLOG_N=528. Cycle
+  389 dispatching (fresh lane).
