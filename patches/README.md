@@ -6118,3 +6118,48 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=545.
   Cycle 401 dispatching (fresh
   lane).
+- 2026-09-30 15:23 — cycle 401
+  (fix-254) reconciled: CYCLE_OK —
+  wedge fired in-window and
+  RELEASED in-window (like the
+  13:19→13:24 slot): NEW rows
+  [15:12:53] (h=000 p=9 fb=515
+  apc=1228, ev 335448/82876, bytes
+  +30993, rmax=1 = the only
+  on-tag pattern) ALERT:
+  SERVE-WEDGE + [15:17:54] (hb=200
+  untagged: fb=518 kv=2443
+  apc=1237, ev 338156/83406, bytes
+  +44068). Run only 1 (NOT
+  alarm-touch); the 5-row clean
+  streak ([14:47:11]→[15:07:32])
+  closed at EXACTLY 5 (not the
+  record-tying 6); post-release
+  streak restarts at 1. HEAT
+  correlate NOW FIRMLY NAMED:
+  [15:07:32] heat row (~50K
+  re-heat, fb jump +5, kv +26)
+  → wedge fired exactly 1 slot
+  later — 3rd confirmed instance
+  (the [13:45:04]-lineage gap was
+  wider — heat rows AWAIT the
+  next stick, at short or long
+  lag). On-tag pattern PERFECT:
+  the wedge row carries EXACTLY
+  ONE rmax=1; rmax=0-under-tag
+  NEVER formed. fb DECELERATED
+  (+1 wedge, +3 release → 518);
+  apc ACCELERATED further (+8/+9
+  → 1237); kv warming again +7/+
+  17 → 2443; ev grew; bytes
+  cooled to 30993 at the wedge
+  row then re-heated to +44068
+  on release (elevated zone,
+  above norm, below the 54–58K
+  signature). rmax=0 again on the
+  newest clean row. No WALL LOST /
+  wall=000 anywhere; no probe
+  failures. Epoch I: 155 of 216
+  clean (61 wedge rows).
+  ROWLOG_N=547. Cycle 402
+  dispatching (fresh lane).
