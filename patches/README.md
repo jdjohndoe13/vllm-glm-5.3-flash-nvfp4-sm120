@@ -7299,3 +7299,53 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=604.
   Cycle 430 dispatching (fresh
   lane).
+- 2026-09-30 20:40 — cycle 430
+  (fix-284) reconciled:
+  CYCLE_ALERT: SERVE-WEDGE —
+  7TH-TOUCH-AND-RELEASE LANDMARK:
+  the run-10 stick RELEASED at
+  the first untagged row
+  [20:22:21] (h=200 untagged:
+  fb=909 +8 = TAIL ×12 NAMED —
+  12th straight ≥+8, on the
+  release row; kv=4007 +25 =
+  melt-chain (2nd sub-+30);
+  apc=1408 FLAT ×2; ev
+  432033/106521; bytes +45878)
+  with the run CLOSED AT 10 — NO
+  RECORD BREAK (the 12-row epoch
+  record [08:39:29]→[09:38:14]
+  stands; this release TIES the
+  10-row deep-release lineage
+  record). Then a clean row
+  [20:27:25] (post-release streak
+  2: fb=915 +6 mid-gap unnamed
+  (tail broke), kv=4027 +20 = 3rd
+  sub-+30 (melt-chain ×3 in
+  view), apc=1408 flat ×3, ev
+  432721/106661) before the wedge
+  RE-OPENED at [20:32:45] (h=000
+  p=9, fb=925 +10, kv=4059 +32 ≥
+  +30 = RE-ARM ×11 NAMED, apc=
+  1409 +1 = DRIP-CHAIN RE-ARMS
+  ×19, ev 434049/106980, bytes
+  +48041 sub-54K TAGGED = NO-HEAT
+  FIRE again (1st sub-54K tagged
+  row of the NEW stick; the prior
+  ×2 cannot extend as ×3 — the
+  untagged release rows break
+  tagged-row consecutiveness),
+  rmax=1) — NEW STICK OPEN AT RUN
+  1. The ≥54K band stays CLOSED
+  (last ≥54K tagged row
+  [20:06:22]). apc: chain
+  re-armed ×19. kv: melt-chain ×3
+  then re-arm ×11. fb: tail ×12
+  on the release row, broken by
+  +6 mid-gap, then +10. On-tag
+  PERFECT; no WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 182 of 278 clean (96
+  wedge rows). ROWLOG_N=607.
+  Cycle 431 dispatching (fresh
+  lane).
