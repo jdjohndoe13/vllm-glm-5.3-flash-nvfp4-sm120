@@ -5140,3 +5140,28 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   124 of 150 clean (26 wedge rows).
   ROWLOG_N=481. Cycle 363 dispatching
   (fresh lane).
+- 2026-09-30 09:47 — cycle 363
+  (fix-216) reconciled: CYCLE_OK —
+  ALARM CLEARED. The 12-row stick
+  (12 consecutive hb=000 rows,
+  [08:39:29]→[09:38:14], the
+  epoch-I record: ~64 min) released
+  with TWO final rows in-window:
+  [09:38:14] (h=000 fb=214 apc=734)
+  then [09:43:21] (h=200 p=9 wall=200
+  fb=215 kv=1162 apc=840(F), ev
+  175804/43687; +87208 bytes = window
+  max). Ladder held bounded through the
+  whole stick (3 dives: 45 escapes,
+  0 releases, cap never reached, no
+  fallbacks=3, BOOTCOUNT=1); finished
+  aggregate fb drift 153→215 during
+  wedge cluster. Alarm does not
+  re-fire; no WALL LOST / wall=000
+  anywhere. Heavy load past the stick
+  (+62–87K bytes). NEW clean tail row
+  [09:43:21] = newest; watch for
+  relapse under sustained load. Epoch
+  I: 125 of 152 clean (27 wedge rows).
+  ROWLOG_N=483. Cycle 364 dispatching
+  (fresh lane).
