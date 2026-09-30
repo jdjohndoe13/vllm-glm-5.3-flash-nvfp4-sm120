@@ -5970,3 +5970,42 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   of 207 clean (58 wedge rows).
   ROWLOG_N=538. Cycle 396
   dispatching (fresh lane).
+- 2026-09-30 14:46 — cycle 396
+  (fix-249) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — the alarm-touch
+  stick EXTENDED to run 5: NEW
+  tagged row [14:36:50] (h=000
+  fb=499 kv=2346 apc=1199, ev
+  325145/80140, bytes +54583)
+  after [14:15:28]→[14:31:29] run
+  4; NO release row yet. Depth now
+  BEYOND the old 5-row bounded-
+  worst; still below the released
+  7-row post-record worst and the
+  12-row epoch record. Ninth
+  DIRECT deep-dive (14:43, through
+  run-5 depth + in-stick):
+  ESCAPE_COUNT 90→92 (+2, BOTH
+  UNIFORM ≤2-fallback escapes at
+  walls EXACTLY 10.4 s incl an
+  in-stick close 14:42:46);
+  FALLBACK_COUNT 493→505 (+12);
+  KVL→2370 (+48); RELEASE_COUNT=0
+  — cap STILL never reached
+  through run-5 depth; no
+  fallbacks=3; BOOTCOUNT=1; hits
+  healthy with near-perfect ≤3-
+  token differentiation (162:164,
+  184:186, 191:193 — no
+  degradation). Trend: fb +9 (mild
+  accel past the +6/row pace);
+  apc 1199 (+3); bytes ~53K
+  (slight cooling); kv 2346
+  (largest single-step +34); rmax=
+  1 all 5 stick rows (no rmax=0-
+  under-tag combo ever). No WALL
+  LOST / wall=000 anywhere; no
+  probe failures. Epoch I: 149 of
+  208 clean (59 wedge rows).
+  ROWLOG_N=539. Cycle 397
+  dispatching (fresh lane).
