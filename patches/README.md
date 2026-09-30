@@ -5348,3 +5348,24 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   131 of 168 clean (37 wedge
   rows). ROWLOG_N=499. Cycle 372
   dispatching (fresh lane).
+- 2026-09-30 11:19 — cycle 372
+  (fix-225) reconciled: CYCLE_OK —
+  clean streak extended to 2
+  ([11:07:32]+[11:12:39]); NEW
+  clean row [11:12:39] (h=200 p=9
+  wall=200 fb=310 kv=1564 apc=935,
+  ev 225884/55920). NO NEW WEDGE —
+  FIRST fb-hold since the wedge
+  cluster: fb HELD FLAT at 310
+  across the whole window (zero
+  aggregate drift, row-proved)
+  while apc kept climbing
+  915→935 and the heavy band
+  persisted (+60439). Ladder fully
+  bounded (through run-4 stick per
+  dive #4); no WALL LOST /
+  wall=000 anywhere; no alarm
+  touch this cycle. Epoch I: 132
+  of 169 clean (37 wedge rows).
+  ROWLOG_N=500. Cycle 373
+  dispatching (fresh lane).
