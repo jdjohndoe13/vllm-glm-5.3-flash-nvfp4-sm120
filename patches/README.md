@@ -4996,3 +4996,23 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 122 of 136 rows clean.
   ROWLOG_N=467. Cycle 357 dispatching
   (fresh lane).
+- 2026-09-30 08:29 — cycle 357 (fix-210)
+  reconciled: CYCLE_OK. [08:23:48]
+  newest clean (h=200 p=9 wall=200; no
+  ALERT tag; kv=841 apc=692 ev
+  148370/36898); fb ROSE 136→141 on
+  [08:23:48] — first fallback-EVENT
+  delta since [02:22:10] (69 flat rows
+  [02:22:10]…[08:18:47]); +5 events
+  under heavy load (bytes +54257):
+  aggregate load drift per de-armed
+  semantics, NOT an escalation (no
+  wedge, no hb=000, no wall loss);
+  73-row clean streak
+  ([02:22:10]…[08:23:48], record
+  growing; recounted from file rows); no
+  new hb=000 rows (still 14 wedges,
+  nothing since [02:17:09]); no WALL
+  LOST. Epoch I: 123 of 137 rows clean.
+  ROWLOG_N=468. Cycle 358 dispatching
+  (fresh lane).
