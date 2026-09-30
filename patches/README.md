@@ -6191,3 +6191,39 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=548.
   Cycle 403 dispatching (fresh
   lane).
+- 2026-09-30 15:39 — cycle 403
+  (fix-256) reconciled: CYCLE_OK —
+  streak extended to 4
+  ([15:17:54]…[15:33:01]): NEW
+  clean rows [15:28:00] (fb=519 F
+  apc=1255 +14 SPIKE, ev 340960/
+  84091, bytes +49073 near-50K
+  flare, rmax=1 untagged-normal) +
+  [15:33:01] (fb=519 F apc=1260
+  +5, ev 341676/84380, bytes
+  +25211 cooled into norm, rmax=0).
+  NO alarm touch (fixer prose
+  over-read: conflated the clean
+  streak with the ALERT
+  run-length — the file rows are
+  authoritative: ZERO tagged rows
+  in-window; the yardstick counts
+  consecutive hb=000 rows only).
+  NOTE: the [15:28:00] near-50K
+  flare (+49073, below the 50727
+  checkpoint) COMPLETED without a
+  wedge firing — a non-firing
+  flare; the heat correlate stays
+  probabilistic (lag varies,
+  flares can hold). fb ×3 flat
+  hold at 519; apc +14 spike then
+  decel +5 (net +19 over 2
+  slots); kv warming gentle +4/+3
+  → 2460; ev grew. On-tag pattern
+  PERFECT; rmax=0-under-tag NEVER
+  formed. No WALL LOST / wall=000
+  anywhere; no probe failures.
+  Epoch I: 158 of 219 clean (61
+  wedge rows). ROWLOG_N=550.
+  Cycle 404 dispatching (fresh
+  lane).
