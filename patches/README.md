@@ -7111,3 +7111,55 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=595.
   Cycle 426 dispatching (fresh
   lane).
+- 2026-09-30 19:50 — cycle 426
+  (fix-280) reconciled:
+  CYCLE_ALERT: SERVE-WEDGE —
+  LIVE STICK OPEN AT RUN 4 =
+  ALARM TOUCH (7th): the stick
+  EXTENDED — [19:34:19] (h=000
+  p=9, fb=815 +15 = 3RD
+  consecutive ≥+8 → RE-ARM ×3
+  NAMED (then +13/+12 = 5
+  straight ≥+8 → 840), kv=3685
+  +50 = re-arm ×6, apc=1402
+  FLAT, ev 417345/102782,
+  bytes +62797 ≥54K = 6TH
+  straight → heat-run RECORD
+  extended to 6, rmax=1) run 2
+  → [19:39:39] (h=000 p=9,
+  fb=828 +13, kv=3730 +45,
+  apc=1402 flat ×2, ev
+  417997/102979, bytes +61295
+  ≥54K = 7th straight, rmax=1)
+  run 3 = WORST-LINEAGE WATCH →
+  [19:45:00] (h=000 p=9, fb=840
+  +12, kv=3771 +41, apc=1402
+  flat ×3 = DRIP-CHAIN CLOSED AT
+  ×16 (17th movement did NOT
+  form), ev 419737/103402,
+  bytes +56732 ≥54K = 8TH
+  STRAIGHT (heat-run RECORD now
+  8: +58649→+60288→+69052→
+  +66418→+67588→+62797→+61295→
+  +56732; the newest row is
+  itself an armed heat: a 9th
+  straight = name it), rmax=1)
+  run 4 = ALARM TOUCH (7th) —
+  thresholds escalated loudly;
+  NOT RELEASED (no untagged row
+  since the stick opened at
+  19:28:59). TOUCH LINEAGE
+  6→7. apc: drip-chain CLOSED
+  at ×16 (flat ×3). kv: re-arm
+  ×6 named (+50/+45/+41; no
+  sub-+30 since the ×3 re-arm —
+  melt clock keeps resetting; a
+  steady ≥+30 stream so far).
+  fb: re-arm ×3 named (+15); 5
+  straight ≥+8 (with the prior
+  +8/+9 → 800). On-tag PERFECT;
+  no WALL LOST / wall=000; no
+  probe failures. Epoch I: 180
+  of 269 clean (89 wedge
+  rows). ROWLOG_N=598. Cycle
+  427 dispatching (fresh lane).
