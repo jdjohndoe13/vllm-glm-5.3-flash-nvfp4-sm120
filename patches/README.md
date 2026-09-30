@@ -5408,3 +5408,23 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   172 clean (37 wedge rows).
   ROWLOG_N=503. Cycle 375
   dispatching (fresh lane).
+- 2026-09-30 11:42 — cycle 375
+  (fix-228) reconciled: CYCLE_OK —
+  the ~11:33 wedge due-slot fired
+  on cadence: 1-row bounded stick
+  [11:33:25] (h=000 fb=320 kv=
+  1622 apc=982, ev 241781/59860)
+  RELEASED within the window at
+  [11:38:44] (h=200 p=9 wall=200
+  fb=321 kv=1630 apc=992, ev
+  247139/61169); 5-row streak
+  [11:07:32]→[11:28:04] ended; new
+  clean tail 1-row. No WALL LOST /
+  wall=000 anywhere; no alarm
+  touch; fb 316→320→321 (pre-heat-
+  scale +4/+1); apc 969→992; bytes
+  cooling modestly (+52K/+48K, off
+  the 64–66K top band). Epoch I:
+  136 of 174 clean (38 wedge
+  rows). ROWLOG_N=505. Cycle 376
+  dispatching (fresh lane).
