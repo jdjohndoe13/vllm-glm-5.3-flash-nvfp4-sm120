@@ -5252,3 +5252,26 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   clean (32 wedge rows). ROWLOG_N=
   491. Cycle 368 dispatching (fresh
   lane).
+- 2026-09-30 10:44 — cycle 368
+  (fix-221) reconciled: CYCLE_OK —
+  OLD-WORST TIE THEN RELEASE. The
+  open stick extended to run 3 at
+  [10:30:58] (h=000 fb=275 apc=871)
+  = epoch-I pre-record 3-row worst
+  re-tell (loud but not the alarm),
+  then RELEASED at [10:36:03]
+  (h=200 p=9 wall=200 fb=282 kv=
+  1432 apc=871, ev 202022/50073)
+  BEFORE run 4 — alarm NOT re-raised;
+  bounded again. Latest [10:41:10]
+  (h=200 p=9 wall=200 fb=285 kv=
+  1447 apc=885, ev 204658/50714)
+  = clean tail 2 rows ([10:36:03],
+  [10:41:10]). No WALL LOST /
+  wall=000 anywhere; fb 267→285
+  aggregate; apc 871→885; heavy
+  band mostly (+50–56K, one +46K
+  dip unconfirmed as cool-down).
+  Epoch I: 130 of 163 clean (33
+  wedge rows). ROWLOG_N=494. Cycle
+  369 dispatching (fresh lane).
