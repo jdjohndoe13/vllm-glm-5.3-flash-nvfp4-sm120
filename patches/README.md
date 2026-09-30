@@ -7204,3 +7204,51 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=600.
   Cycle 428 dispatching (fresh
   lane).
+- 2026-09-30 20:12 — cycle 428
+  (fix-282) reconciled:
+  CYCLE_ALERT: SERVE-WEDGE —
+  LIVE STICK OPEN AT RUN 8
+  (still NO release since the
+  19:28:59 open): [20:01:01]
+  (h=000 p=9, fb=873 +9 = 8TH
+  straight ≥+8 → tail ×8 NAMED,
+  kv=3884 +33 = re-arm ×8,
+  apc=1402 FLAT = flat ×6 HOLD
+  NAMED (6th consecutive flat),
+  ev 423749/104379, bytes
+  +50727 SUB-54K = THE FIRST
+  COOLING ROW INSIDE THE STICK —
+  the 10-straight ≥54K heat-run
+  CLOSED AT 10, rmax=1) run 7 →
+  [20:06:22] (h=000 p=9, fb=883
+  +10 = 9TH straight ≥+8 → tail
+  ×9, kv=3922 +38 = re-arm ×9,
+  apc=1405 +3 = THE FLAT BROKE —
+  DRIP-CHAIN RE-ARMS AT ×17, ev
+  426029/104981 (ev pace
+  recovered +2280), bytes
+  +55932 ≥54K = NEW HEAT-RUN
+  STREAK 1 (heat-on-heat form),
+  rmax=1) run 8. NOT RELEASED —
+  5 further straight tagged rows
+  to run 13 = RECORD BREAK
+  (epoch 12-row record); 14+ =
+  DEEP RECORD. First cooling row
+  inside the stick: heat-on-heat
+  form BROKE at [20:01:01]
+  (+50727) — the 10-straight
+  landmark stands; a new ≥54K
+  band opens at [20:06:22]
+  (+55932). apc: flat ×6 hold
+  named, then broken by +3 →
+  chain re-armed ×17. kv: re-arm
+  ×8 → ×9 (+33/+38; no sub-+30
+  in nine straight ≥+30 deltas
+  since the ×3 re-arm). fb: tail
+  ×8 → ×9 (+9/+10). On-tag
+  PERFECT; no WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 180 of 273 clean (93
+  wedge rows). ROWLOG_N=602.
+  Cycle 429 dispatching (fresh
+  lane).
