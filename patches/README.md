@@ -5037,3 +5037,27 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 124 of 139 rows clean
   (15 wedges). ROWLOG_N=470. Cycle 359
   dispatching (fresh lane).
+- 2026-09-30 08:48 — cycle 359 (fix-212)
+  reconciled: CYCLE_ALERT: SERVE-WEDGE
+  (2-row stick IN PROGRESS — newest row
+  tagged). NEW wedge rows [08:39:29]
+  (h=000 fb=153) and [08:44:50]
+  (h=000 fb=162) — consecutive
+  hb=000, run-length 2, OPEN at probe
+  time (no release row yet); the
+  1-row stick [08:29:08] had released
+  clean [08:34:09] (fb 148, kv=863)
+  ending the prior 73-row streak; wedge
+  cadence tightened (~5m20s after
+  release vs 6h12m prior gap);
+  heavy-load correlate (bytes ~+53K on
+  stick rows, ev 156705/38949); NO
+  WALL LOST, no wall=000; run=2 < ≥4
+  user-visible alarm (ties epoch-I
+  2-row stick record form; next row is
+  the 3-tie / ≥4 watch point); fb
+  148→162 (+14 window, row-proved
+  aggregate drift). Epoch I: 124 of
+  141 clean (17 wedge rows). ROWLOG_N=
+  472. Cycle 360 dispatching (fresh
+  lane).
