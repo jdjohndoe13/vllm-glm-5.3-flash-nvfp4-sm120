@@ -4168,3 +4168,18 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Count: 12 wedge rows; epoch I: 41 of
   53 rows clean. ROWLOG_N=387. Cycle 292
   dispatching (fresh lane).
+- 2026-09-30 01:48 — cycle 292 (fix-145,
+  escalation watch) reconciled: CYCLE_OK.
+  Wedge #13 at [01:41:06] (hb=000 fb=107
+  kv=626 apc=325 ev 89433/22332) —
+  ISOLATED single-row; released
+  immediately by [01:46:06] newest clean
+  (hb=200 fb=110 kv=640 apc=339 ev
+  91741/22950). Stick run-lengths RESET
+  from the 3-row peak back to single-row
+  (no lengthening); cadence steady
+  (hb=000 every ~2-4 rows); no WALL LOST
+  anywhere; fb aggregate drift normal.
+  Epoch I: 42 of 55 rows clean (13
+  wedge rows). ROWLOG_N=389. Cycle 293
+  dispatching (fresh lane).
