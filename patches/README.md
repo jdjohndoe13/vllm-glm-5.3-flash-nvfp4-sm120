@@ -6163,3 +6163,31 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   clean (61 wedge rows).
   ROWLOG_N=547. Cycle 402
   dispatching (fresh lane).
+- 2026-09-30 15:32 — cycle 402
+  (fix-255) reconciled: CYCLE_OK —
+  ~15:22 slot fired CLEAN: clean
+  streak now 2 ([15:17:54] +
+  [15:22:54]); NEW clean row
+  [15:22:54] (h=200 p=9 wall=200
+  fb=519 kv=2453 apc=1241, ev
+  340068/83923, bytes +43657).
+  Threshold NOT touched. fb
+  deceleration DEEPENED beyond the
+  +3–5 alert-window pace at +1;
+  apc acceleration STALLED (the
+  +8/+9 chain settled to +4 →
+  1241); kv warming continues +10;
+  ev grew slightly. bytes still
+  ELEVATED +43657 with slight
+  COOLING (−411) — did NOT
+  re-heat into the ~50K+ zone;
+  correlate not triggered. rmax=0
+  again (on the newest clean
+  row); on-tag pattern PERFECT;
+  rmax=0-under-tag NEVER formed.
+  No WALL LOST / wall=000
+  anywhere; no probe failures.
+  Epoch I: 156 of 217 clean (61
+  wedge rows). ROWLOG_N=548.
+  Cycle 403 dispatching (fresh
+  lane).
