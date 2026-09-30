@@ -7252,3 +7252,50 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=602.
   Cycle 429 dispatching (fresh
   lane).
+- 2026-09-30 20:25 — cycle 429
+  (fix-283) reconciled:
+  CYCLE_ALERT: SERVE-WEDGE —
+  LIVE STICK OPEN AT RUN 10
+  (still NO release since the
+  19:28:59 open): [20:11:42]
+  (h=000 p=9, fb=892 +9 = 10TH
+  straight ≥+8 → TAIL ×10
+  NAMED, kv=3955 +33 = RE-ARM
+  ×10 NAMED, apc=1408 +3 =
+  DRIP-CHAIN ×18 NAMED (2nd
+  consecutive movement), ev
+  428145/105537 (flower +2116),
+  bytes +52959 SUB-54K TAGGED =
+  NO-HEAT FIRE — NEW VARIANT
+  INSIDE THIS STICK (the
+  new-heat-band streak from the
+  armed +55932 closed at 1),
+  rmax=1) run 9 → [20:17:02]
+  (h=000 p=9, fb=901 +9 (11th
+  straight ≥+8), kv=3982 +27 =
+  FIRST SUB-+30 → MELT WATCH
+  NAMED (breaks the ten-straight
+  ≥+30 chain), apc=1408 Δ0 =
+  FLAT HOLD (chain PAUSED), ev
+  430057/105987 (flower +1912),
+  bytes +47246 sub-54K TAGGED =
+  2ND consecutive NO-HEAT FIRE
+  row (2 straight sub-54K fires
+  in-stick), rmax=1) run 10.
+  NOT RELEASED — 3 further
+  tagged rows to run 13 = RECORD
+  BREAK (epoch 12-row record; 2
+  more = run 12). No-heat fire
+  variant ×2 consecutive (stick
+  was all heat-on-heat until the
+  [20:01:01] cooling row opened
+  the door). apc: chain ×18 then
+  flat pause. kv: re-arm ×10
+  then melt watch. fb: tail ×10
+  → 11th straight. On-tag
+  PERFECT; no WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 180 of 275 clean (95
+  wedge rows). ROWLOG_N=604.
+  Cycle 430 dispatching (fresh
+  lane).
