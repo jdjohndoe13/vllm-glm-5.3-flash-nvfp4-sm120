@@ -6331,3 +6331,36 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   223 clean (62 wedge rows).
   ROWLOG_N=554. Cycle 407
   dispatching (fresh lane).
+- 2026-09-30 16:09 — cycle 407
+  (fix-260) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — new rows:
+  [15:58:33] (h=200 p=9 fb=530
+  kv=2515 apc=1289, ev 351986/
+  86762, bytes +57038 — re-heated
+  INTO the 54–58K signature band)
+  RELEASED the run-1 stick
+  in-window; [16:03:53] (h=000 p=9
+  fb=538 kv=2546 apc=1320, ev
+  354086/87213, bytes +63400 = NEW
+  epoch-high ABOVE the 54–58K
+  band, rmax=1 = the only on-tag
+  pattern) ALERT: SERVE-WEDGE —
+  brand-new live stick at run 1
+  after just ONE clean row
+  (fastest re-fire since the
+  cluster opened; the 7-row
+  record streak closed at
+  [15:48:09] in c406). NOT a
+  touch (lineage stays 5). Pace
+  shifts: fb stepped UP to +8/+8
+  (522→530→538); apc +31 single
+  step (first ≥+10; no
+  back-to-back pair yet); kv
+  accelerating +27/+31; bytes
+  epoch-high. On-tag PERFECT;
+  rmax=0-under-tag NEVER formed;
+  no WALL LOST / wall=000; no
+  probe failures. Epoch I: 163 of
+  226 clean (63 wedge rows).
+  ROWLOG_N=556. Cycle 408
+  dispatching (fresh lane).
