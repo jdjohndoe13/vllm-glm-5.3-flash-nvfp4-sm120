@@ -7409,3 +7409,50 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=610.
   Cycle 432 dispatching (fresh
   lane).
+- 2026-09-30 21:06 — cycle 432
+  (fix-286) reconciled: CYCLE_OK —
+  touch-and-release (8th-touch-
+  and-release): the NO-HEAT
+  stick's 5TH tagged row
+  [20:54:07] (h=000 p=9, fb=953
+  +6 sub-8 unnamed, kv=4158 +24
+  = 2ND consecutive sub-+30 →
+  MELT-CHAIN NAMED (melt ×2),
+  apc=1429 +4 sub-+10 = chain
+  continues ×21 (BIG-STEP PAIR
+  did NOT land — the +15 was not
+  repeated ≥+10), ev 439705/
+  108322 (flower +1240 sub-3K),
+  bytes +56415 ≥54K = BAND
+  RE-OPENED named (heat-run
+  streak 1 of the new band;
+  NO-HEAT ×5 did NOT form),
+  rmax=1) ALERT → then RELEASED
+  in-window at [20:59:07] (h=200
+  untagged: fb=963 +10 ≥+8 =
+  RE-ARM NAMED (first of the
+  regime watch forms after the
+  +4 break), kv=4192 +34 ≥+30 =
+  RE-ARM ×13 LANDS (breaking the
+  melt-chain), apc=1430 +1
+  sub-+10 = chain ×22 OPEN, ev
+  441341/108781 (+1636 sub-3K —
+  EV PACE JUMP did NOT land),
+  bytes +47639 sub-54K (the band
+  closed again on the release row
+  — the +56415 heat's lag-1
+  successor cleaned:
+  armed-and-un-fired)). Closed
+  run 5 (no record break; touch
+  lineage retired at 8);
+  post-release streak 1. apc:
+  chain ×22 open (sub-+10
+  movements; big-step watch armed
+  again on any ≥+10). kv: re-arm
+  ×13 (+34). fb: re-arm named
+  (+10). On-tag PERFECT; no WALL
+  LOST / wall=000; no probe
+  failures. Epoch I: 183 of 283
+  clean (100 wedge rows).
+  ROWLOG_N=612. Cycle 433
+  dispatching (fresh lane).
