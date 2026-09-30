@@ -5428,3 +5428,20 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   136 of 174 clean (38 wedge
   rows). ROWLOG_N=505. Cycle 376
   dispatching (fresh lane).
+- 2026-09-30 11:51 — cycle 376
+  (fix-229) reconciled: CYCLE_OK —
+  the ~11:44 due-slot fired CLEAN
+  (no wedge): clean streak
+  extended to 2 ([11:38:44]+[11:43:58]);
+  NEW clean row [11:43:58] (h=200
+  p=9 wall=200 fb=326 kv=1650
+  apc=996, ev 251918/62438). fb
+  321→326 (+5 steady small-scale,
+  no pre-heat spike); apc 992→996;
+  bytes ~49K plateau (no re-heat,
+  still elevated vs +15–25K norm).
+  No WALL LOST / wall=000 anywhere;
+  no alarm touch. Epoch I: 137 of
+  175 clean (38 wedge rows).
+  ROWLOG_N=506. Cycle 377
+  dispatching (fresh lane).
