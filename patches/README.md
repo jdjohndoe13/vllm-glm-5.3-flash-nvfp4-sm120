@@ -5901,3 +5901,28 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   203 clean (54 wedge rows).
   ROWLOG_N=534. Cycle 394
   dispatching (fresh lane).
+- 2026-09-30 14:27 — cycle 394
+  (fix-247) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — NEW 2-row stick
+  OPEN: [14:15:28] (h=000 fb=474 F
+  kv=2232 apc=1187, ev 313533/
+  77323, bytes +22062 in-norm) +
+  [14:20:49] (h=000 fb=478 kv=2256
+  apc=1190, ev 317077/78195, bytes
+  +56055 re-heat) — the ~14:15 slot
+  broke the 6-row streak (the
+  post-arrival record, 7 not
+  reached); no release row yet.
+  fb: FLAT held ×7 THROUGH the
+  wedge row, then resumed +4; apc
+  +1 then +3 (pace shifted from
+  the +5 steady); rmax=0 run ENDED
+  at exactly 4 (no 5th row, and no
+  rmax=0-under-tag combo ever
+  formed — both new tagged rows
+  carry rmax=1); kv wedge-row spike
+  +24. No WALL LOST / wall=000
+  anywhere; no probe failures.
+  Epoch I: 149 of 205 clean (56
+  wedge rows). ROWLOG_N=536. Cycle
+  395 dispatching (fresh lane).
