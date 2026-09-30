@@ -6835,3 +6835,46 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   255 clean (81 wedge rows).
   ROWLOG_N=584. Cycle 420
   dispatching (fresh lane).
+- 2026-09-30 18:51 — cycle 420
+  (fix-274) reconciled: CYCLE_OK —
+  touch-and-release (10th rapid
+  pulse): 1-row stick fired
+  [18:36:54] (h=000 p=9, fb=752
+  Δ+0 = FLAT HOLD NAMED FIRST,
+  kv=3344 +7 (2nd consecutive
+  sub-+30 → MELT-CHAIN WATCH),
+  apc=1374 +6 = drip-chain ×6
+  (SIXTH consecutive movement),
+  ev 399848/98573, bytes +48896
+  sub-cool, rmax=1 only on-tag)
+  ALERT: SERVE-WEDGE — NO fresh
+  ≥54K heat row in lag-1 (the
+  +54772 armed heat was two rows
+  back with its lag-1 successor
+  already cooled; this fire =
+  lag-2/delayed form outside the
+  named lag-0/lag-1 frames);
+  released in-window at
+  [18:42:14] (h=200 untagged:
+  fb=754 +2 sub-brake/sub-step,
+  kv=3361 +17 = melt-chain ×3,
+  apc=1381 +7 = drip-chain ×7
+  OPEN, ev 401184/98844,
+  bytes +62549 = NEW ≥54K heat
+  row (fire-lag re-armed;
+  armed-and-un-fired — no
+  successor yet), rmax=1 on clean
+  row). Run 1 only (no touch;
+  lineage stays 6); post-release
+  streak 1. apc: chain ×7 open
+  (1353→1362→1366→1367→1368→1374
+  →1381); no ≥+10. kv: melt-chain
+  ×3 landed post-re-arm (the
+  melt-record clock restarted at
+  the +33 re-arm). fb: flat named
+  (+0) then +2. On-tag PERFECT; no
+  WALL LOST / wall=000; no probe
+  failures. Epoch I: 175 of 257
+  clean (82 wedge rows).
+  ROWLOG_N=586. Cycle 421
+  dispatching (fresh lane).
