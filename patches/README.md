@@ -5391,3 +5391,20 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   171 clean (37 wedge rows).
   ROWLOG_N=502. Cycle 374
   dispatching (fresh lane).
+- 2026-09-30 11:34 — cycle 374
+  (fix-227) reconciled: CYCLE_OK —
+  clean streak extended to 5
+  ([11:07:32]→[11:28:04]): NEW
+  clean row [11:28:04] (h=200 p=9
+  wall=200 fb=316 kv=1608 apc=969,
+  ev 240142/59463). FB HOLD at 310
+  BROKE: drift resumed (+6 → 316,
+  aggregate, after the 4-window
+  flat hold). apc 960→969; bytes
+  marginal off the top band
+  (+58045). No WALL LOST /
+  wall=000 anywhere; no new wedge;
+  no alarm touch. Epoch I: 135 of
+  172 clean (37 wedge rows).
+  ROWLOG_N=503. Cycle 375
+  dispatching (fresh lane).
