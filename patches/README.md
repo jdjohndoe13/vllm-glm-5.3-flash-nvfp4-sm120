@@ -5232,3 +5232,23 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   I: 128 of 158 clean (30 wedge
   rows). ROWLOG_N=489. Cycle 367
   dispatching (fresh lane).
+- 2026-09-30 10:33 — cycle 367
+  (fix-220) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — NEW 2-row stick
+  OPEN (clean streak ended after
+  [10:14:57]; no release row yet):
+  [10:20:17] (h=000 fb=255 apc=870)
+  + [10:25:38] (h=000 fb=267 kv=
+  1378 apc=871, ev 197126/48920).
+  No WALL LOST / wall=000 anywhere;
+  fb 247→267 (+20 across the stick
+  rows, drift); apc 863→871; heavy
+  band persists (+54–57K/brow). Stick
+  run=2: below the 3-row old-worst
+  tie and the ≥4 alarm threshold —
+  next rows decide; no new deep-dive
+  (run<3 gate; trio of dives verified
+  bounded). Epoch I: 128 of 160
+  clean (32 wedge rows). ROWLOG_N=
+  491. Cycle 368 dispatching (fresh
+  lane).
