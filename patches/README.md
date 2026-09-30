@@ -3962,3 +3962,19 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   Epoch I: 29 of 31 rows clean.
   ROWLOG_N=367. Cycle 280 dispatching
   (fresh lane).
+- 2026-09-30 00:05 — cycle 280 (fix-133)
+  reconciled: CYCLE_OK with a new LONE
+  wedge note. [23:56:53] = 3rd lone
+  SERVE-WEDGE in epoch I (hb=000 kv=355
+  fb=38 apc=192 bytes +23358, no WALL
+  LOST marker) — bounded single-row
+  form held: full recovery by [00:01:53]
+  (h=200 wall=200 fb=43 +5 kv=369 +14
+  apc=194 bytes +35278 ev 46610/11833).
+  17-row clean run broken by the wedge;
+  wedge cadence so far ~hourly-ish
+  (22:05, 22:20, 23:56); escalation
+  signal STILL unmet (no consecutive
+  wedge rows). Epoch I: 30 of 33 rows
+  clean. ROWLOG_N=369. Cycle 281
+  dispatching (fresh lane).
