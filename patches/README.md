@@ -6537,3 +6537,55 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   of 238 clean (71 wedge rows).
   ROWLOG_N=567. Cycle 413
   dispatching (fresh lane).
+- 2026-09-30 17:37 — cycle 413
+  (fix-266) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — live stick
+  EXTENDED to run 10 (DOUBLE
+  DIGITS): NEW tagged rows
+  [17:07:27] (fb=656 +8, kv=2990
+  +31 ext, ev 371874/91646, bytes
+  +46794), [17:12:47] (fb=667 +11,
+  kv=3021 +31 double-ext, ev
+  373406/92031, bytes +45885),
+  [17:18:08] (fb=677 +10, kv=3048
+  +27 brake, ev 373490/92084,
+  bytes +45384 stick-low),
+  [17:23:28] (fb=686 +9, kv=3078
+  +30 ext, ev 373990/92112, bytes
+  +50219), [17:28:49] (fb=693 +7,
+  kv=3100 +22 brake, ev 375962/
+  92734, bytes +52775). Every named
+  depth CROSSED this cycle: run 6
+  EXCEEDS the deepest released
+  lineage (6-row); run 8 beyond
+  the 7-row released post-record
+  worst; RECORD BREAK at run 13 =
+  3 rows away (epoch 12-row
+  stick). Longest-held stick of
+  the epoch by a wide margin; NOT
+  released. apc DRIPS DEAD: flat
+  ×6 at 1327 (no ≥+10 movement
+  since the +31 break-out). bytes:
+  COLD-STICK DIVERGENCE ×7 sub-54K
+  sustained (45384 stick-low →
+  re-advance 52775, still
+  sub-band); no re-heat ≥54K on
+  any live row; the novel
+  deep-cold-stick context now
+  spans the ENTIRE 10-row stick.
+  kv family: extend/extend/brake/
+  extend/brake (2959→3100, +141
+  net; not perishing). fb:
+  clean-brake family intact
+  (+8/+11/+10/+9/+7; every row
+  advances; 629→693 over the
+  stick; the +11/+10 pair is a
+  modest mid-stick pace step).
+  On-tag PERFECT 10/10 (each
+  exactly one rmax=1);
+  rmax=0-under-tag NEVER formed;
+  no WALL LOST / wall=000; no
+  probe failures. Epoch I: 167 of
+  243 clean (76 wedge rows).
+  ROWLOG_N=572. Cycle 414
+  dispatching (fresh lane).
