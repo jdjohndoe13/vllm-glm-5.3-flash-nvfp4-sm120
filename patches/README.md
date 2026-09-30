@@ -5875,3 +5875,29 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   of 202 clean (54 wedge rows).
   ROWLOG_N=533. Cycle 393
   dispatching (fresh lane).
+- 2026-09-30 14:17 — cycle 393
+  (fix-246) reconciled: CYCLE_OK —
+  ~14:10 slot fired CLEAN: streak
+  extended to 6 ([13:45:04]…
+  [14:10:08]) = the LONGEST streak
+  since the 08:05 arrival cluster
+  (beats the post-arrival 5-row
+  best; epoch 73-row record still
+  stands). NEW clean row
+  [14:10:08] (h=200 p=9 wall=200
+  fb=474 F kv=2229 apc=1186, ev
+  311509/76833, bytes +19557).
+  Threshold NOT touched. fb FLAT
+  extends to ×6 at 474 (drift
+  fully stalled); apc creep +5
+  (1181→1186); bytes 2nd in-norm
+  row (+19557, floor record 18362
+  stands); rmax=0 extends to a
+  FOURTH consecutive row — still
+  benign/uncombined (no tagged row
+  under any rmax=0 row). No WALL
+  LOST / wall=000 anywhere; no
+  probe failures. Epoch I: 149 of
+  203 clean (54 wedge rows).
+  ROWLOG_N=534. Cycle 394
+  dispatching (fresh lane).
