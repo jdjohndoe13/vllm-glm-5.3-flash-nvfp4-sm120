@@ -5650,3 +5650,35 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   of 190 clean (50 wedge rows).
   ROWLOG_N=521. Cycle 385
   dispatching (fresh lane).
+- 2026-09-30 13:19 — cycle 385
+  (fix-238) reconciled: CYCLE_OK —
+  threshold-touched-and-released:
+  the stick extended to run 7 at
+  [13:08:48] (h=000 fb=441 kv=2077,
+  ev 286489/70734) then RELEASED at
+  [13:13:49] (h=200 p=9 wall=200
+  fb=444 kv=2089 apc=1078, ev
+  287305/70930) = a 7-row released
+  stick, the NEW post-record
+  released-depth worst (beats the
+  5-row prior worst; still below
+  the 12-row epoch record; 4th
+  touch lineage now: record-12,
+  4-row, 5-row, 7-row — all
+  released). fb +11 in-stick then
+  +3 at release (rapid decel at
+  release); apc plateau broke
+  1071→1074→1078 (creep resumed);
+  bytes 9th row above the band,
+  then cooled exactly INTO it at
+  release (+50714); kv→2089; ev
+  →287305/70930; rmax=0 on the
+  release row = first rmax≠1 since
+  [11:23:04] = bounded-release
+  drain correlate (benign). No
+  WALL LOST / wall=000 anywhere;
+  ladder bounded (cap 0 per dive
+  #7). Epoch I: 141 of 192 clean
+  (51 wedge rows). ROWLOG_N=523.
+  Cycle 386 dispatching (fresh
+  lane).
