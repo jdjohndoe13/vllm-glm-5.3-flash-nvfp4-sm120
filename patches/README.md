@@ -7020,3 +7020,42 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=592.
   Cycle 424 dispatching (fresh
   lane).
+- 2026-09-30 19:28 — cycle 424
+  (fix-278) reconciled: CYCLE_OK —
+  clean streak EXTENDED to 2:
+  [19:18:35] (h=200 p=9 untagged:
+  fb=783 +4 — tail now +4/+5/+5/
+  +4: EXPLICIT FLAG, the
+  uncalled-mid-gap drift pattern
+  is live and growing, no
+  standing name; kv=3538 +47
+  ≥+30 = RE-ARM ×3 NAMED (the
+  melt-chain ×2 watch DIED with
+  only one sub-+30 (+24)); apc=
+  1399 +1 = DRIP-CHAIN ×14
+  LANDED; ev 413193/101779
+  (flower pace ~+1.8–2.0K/slot,
+  modest uptick), bytes +69052
+  ≥54K = 3RD consecutive ≥54K
+  row → the 3-band match is
+  COMPLETE on CLEAN rows
+  (heat-on-heat non-resolution;
+  no fire, no cool; lag-1/lag-2
+  delayed fire remain ARMED AND
+  UN-FIRED for the ~19:23 slot),
+  rmax=1 on clean row). No wedge
+  fired this cycle — no release
+  row; touch lineage stays 6;
+  live ALERT run 0. Fire forms
+  now: lag-0/lag-1/lag-2
+  delayed/heat-on-heat
+  non-resolution; heat-run 3
+  completed (a 4th straight ≥54K
+  = NEW heat-run record).
+  On-tag PERFECT (rmax=0-under-
+  tag NEVER formed). No WALL OST /
+  wall=000; no probe failures.
+  Epoch I: 179 of 264 clean (85
+  wedge rows). ROWLOG_N=593.
+  Cycle 425 dispatching (fresh
+  lane).
