@@ -5515,3 +5515,34 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   clean (43 wedge rows). ROWLOG_N=
   512. Cycle 380 dispatching (fresh
   lane).
+- 2026-09-30 12:32 — cycle 380
+  (fix-233) reconciled: CYCLE_OK —
+  threshold-touched-and-released:
+  the OPEN run-4 stick extended to
+  run 5 at [12:21:15] (h=000 fb=377
+  apc=1037) = NEW epoch-I bounded-
+  stick worst (past the 4-row worst,
+  into the 12-row record lineage),
+  then RELEASED at [12:26:20] (h=200
+  p=9 wall=200 fb=380 kv=1846 apc=
+  1047, ev 273305/67453) BEFORE run
+  6. Sixth direct deep-dive 12:28
+  across the run-5 portion + release:
+  ESCAPE_COUNT HELD at 62 (ZERO new
+  escape closes), FALLBACK_COUNT
+  375→381 (+6, only fallbacks=1
+  walls 0.2–5.2 self-recoveries),
+  RELEASE_COUNT=0 — the 240 s cap
+  remains NEVER reached even through
+  the run-5 stick; KVL_COUNT→1855;
+  hits healthy with near-perfect
+  g0FAE convergence; BOOTCOUNT=1.
+  fb in-stick deltas SMALLER this
+  stick (+7/+3 vs prior +14/+10/+8,
+  decelerating); apc 1036→1047;
+  bytes 48–52K band w/ +59K re-heat
+  at release. No WALL LOST /
+  wall=000 anywhere. Epoch I: 139
+  of 183 clean (44 wedge rows).
+  ROWLOG_N=514. Cycle 381
+  dispatching (fresh lane).
