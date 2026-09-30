@@ -4197,3 +4197,14 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   44 of 57 rows clean (13 wedge rows).
   ROWLOG_N=391. Cycle 294 dispatching
   (fresh lane).
+- 2026-09-30 02:07 — cycle 294 (fix-147,
+  escalation watch) reconciled: CYCLE_OK.
+  No new wedge rows; [02:01:45] newest
+  clean (fb=126 kv=695 apc=369 ev
+  98393/24510) — 4-row clean streak since
+  wedge #13 ([01:46:06]…[02:01:45]); no
+  stick start, no WALL LOST anywhere;
+  fb aggregate drift normal. Epoch I:
+  45 of 58 rows clean (13 wedge rows).
+  ROWLOG_N=392. Cycle 295 dispatching
+  (fresh lane).
