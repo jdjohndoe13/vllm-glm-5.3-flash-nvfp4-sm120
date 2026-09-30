@@ -7059,3 +7059,55 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=593.
   Cycle 425 dispatching (fresh
   lane).
+- 2026-09-30 19:38 — cycle 425
+  (fix-279) reconciled:
+  CYCLE_ALERT: SERVE-WEDGE —
+  live stick open at run 1:
+  [19:28:59] fired as the 14th
+  rapid pulse — fire form =
+  LAG-2 DELAYED + HEAT-ON-HEAT
+  (the +69052 armed heat fired 2
+  slots later; the lag-1 slot
+  [19:23:38] cleaned first; the
+  firing row is itself a ≥54K
+  heat row); the heat-run
+  EXTENDED to a NEW 5-row RECORD
+  (+58649 → +60288 → +69052 →
+  +66418 → +67588; ≥54K rows
+  both before the fire — two
+  rows back and one row back).
+  First a clean row [19:23:38]
+  (h=200 untagged: fb=791 +8 =
+  RE-ARM NAMED (≥+8 — closed the
+  ×4 mid-gap-flag family),
+  kv=3581 +43 = RE-ARM ×4,
+  apc=1401 +2 = drip-chain ×15,
+  ev 415177/102354, bytes +66418
+  = 4TH consecutive ≥54K = NEW
+  HEAT-RUN RECORD, rmax=1 on
+  clean row) extending the
+  streak 2→3; then the fire row
+  [19:28:59] (h=000 p=9, fb=800
+  +9 = 2ND consecutive ≥+8,
+  kv=3635 +54 = re-arm ×5,
+  apc=1402 +1 = DRIP-CHAIN ×16
+  OPEN, ev 416697/102679 (flower
+  pace eased ~+1.5K/slot),
+  bytes +67588 = 5TH straight
+  ≥54K, rmax=1 only on-tag)
+  ALERT: SERVE-WEDGE. Live ALERT
+  run 1 (below ≥3 worst-lineage /
+  ≥4 ALARM TOUCH — no touch;
+  lineage stays 6); no release
+  pending at tail. apc: chain ×16
+  open; no ≥+10. kv: re-arm ×4
+  ×5 (+43/+54) — no sub-+30
+  since the ×3 re-arm (melt
+  clock keeps resetting). fb:
+  re-arm ×2 (+8/+9 → 800).
+  On-tag PERFECT; no WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 180 of 266 clean (86
+  wedge rows). ROWLOG_N=595.
+  Cycle 426 dispatching (fresh
+  lane).
