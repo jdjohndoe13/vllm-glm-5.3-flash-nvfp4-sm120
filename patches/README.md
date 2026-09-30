@@ -4135,3 +4135,17 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   rows clean (10 wedge rows). ROWLOG_N=
   384. Cycle 290 dispatching (fresh
   lane).
+- 2026-09-30 01:30 — cycle 290 (fix-143)
+  reconciled: CYCLE_ALERT: SERVE-WEDGE —
+  second 2-row stick of epoch I: the
+  [01:19:55] wedge did NOT release at
+  the next row; newest [01:25:16] also
+  hb=000 (fb=104 kv=606 apc=297 ev
+  80605/20164). Mirrors the 00:12:14/
+  00:17:35 stick which released at
+  [00:22:35] — release row expected next.
+  No WALL LOST anywhere; fb aggregate
+  drift normal. Count: 11 wedge rows;
+  epoch I: 40 of 51 rows clean.
+  ROWLOG_N=385. Cycle 291 dispatching
+  (fresh lane).
