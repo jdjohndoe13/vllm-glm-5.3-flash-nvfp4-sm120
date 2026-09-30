@@ -6926,3 +6926,49 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   wedge rows). ROWLOG_N=588.
   Cycle 422 dispatching (fresh
   lane).
+- 2026-09-30 19:09 — cycle 422
+  (fix-276) reconciled:
+  CYCLE_ALERT: SERVE-WEDGE —
+  live stick open at run 1:
+  [19:02:56] fired as the 12th
+  rapid pulse — fire form =
+  LAG-2 DELAYED (2nd lag-2
+  precedent: the armed +56577
+  heat fired 2 slots later;
+  [18:57:35] was the clean
+  lag-1 pass); the heat-band run
+  CLOSED at exactly 3 (+62549 →
+  +62089 → +56577; successors
+  sub-band: +15170 cool,
+  +45143). First a clean row
+  [18:57:35] (h=200 untagged:
+  fb=765 FLAT (+0) = FLAT HOLD
+  #1 named first, kv=3417 +1,
+  apc=1387 +1 = drip-chain ×10,
+  ev 403779/99420, rmax=1 on
+  clean row) extended the streak
+  1→2; then the fire row
+  [19:02:56] (h=000 p=9, fb=769
+  +4 = single brake-candidate
+  (brake NOT confirmed — needs a
+  consecutive +3/+4), kv=3432
+  +15 = melt-chain ×7, apc=1391
+  +4 = DRIP-CHAIN ×11 OPEN, ev
+  407079/100299 (flower crossed
+  400K), bytes +45143 sub-band,
+  rmax=1 only on-tag) ALERT:
+  SERVE-WEDGE. Live ALERT run 1
+  (below ≥3 worst-lineage / ≥4
+  ALARM TOUCH — no touch;
+  lineage stays 6); no release
+  pending at tail. apc: chain ×11
+  open; no ≥+10. kv: melt-chain
+  ×7 open (+29/+26/+1/+15;
+  re-arm ×2 not landed). fb: flat
+  #1 (+0) then +4. On-tag
+  PERFECT; no WALL LOST /
+  wall=000; no probe failures.
+  Epoch I: 177 of 261 clean (84
+  wedge rows). ROWLOG_N=590.
+  Cycle 423 dispatching (fresh
+  lane).
