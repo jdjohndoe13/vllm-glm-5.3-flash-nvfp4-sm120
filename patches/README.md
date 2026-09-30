@@ -5486,3 +5486,32 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   of 179 clean (41 wedge rows).
   ROWLOG_N=510. Cycle 379
   dispatching (fresh lane).
+- 2026-09-30 12:20 — cycle 379
+  (fix-232) reconciled: CYCLE_ALERT:
+  SERVE-WEDGE — ALARM THRESHOLD
+  RE-TOUCHED. The 2-row stick
+  extended to run 4: tail [11:59:54],
+  [12:05:14], [12:10:35] (h=000 fb=362
+  apc=1033), [12:15:55] (h=000 fb=370
+  kv=1796 apc=1036, ev 267259/66106)
+  — NO release row yet at probe time
+  (matches the epoch bounded-stick
+  worst from [10:46:30]→[11:02:31]).
+  Fifth direct deep-dive 12:18:
+  ESCAPE_COUNT 57→62 (+5 incl.
+  in-stick closes 12:02–12:04 and
+  12:15:47, ALL walls 10.4 s at
+  fallbacks=2), RELEASE_COUNT=0 —
+  240 s cap remains NEVER reached
+  even through this OPEN run-4 stick;
+  FALLBACK_COUNT 310→375; KV-LOOKUP
+  hits healthy 12:13–12:18 incl.
+  fallbacks=1 walls 0.2–0.3 recovers;
+  BOOTCOUNT=1. fb steps large in-
+  stick: +14/+10/+8; apc 1031→1036;
+  bytes cooled back to the 48–52K
+  band. No WALL LOST / wall=000
+  anywhere. Epoch I: 138 of 181
+  clean (43 wedge rows). ROWLOG_N=
+  512. Cycle 380 dispatching (fresh
+  lane).
