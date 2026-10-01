@@ -7632,3 +7632,52 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
    gpu=0 — no OOM/GPU watchdog
    patterns. ROWLOG_N=819.
    Cycle 436 dispatch pending (orchestrator).
+
+   Cycle 436 (epoch II turbo regime,
+   watch lane): CYCLE_OK. Full quiet
+   window, probes 20:26:57 ->
+   20:32:05. Station CANARY_ALIVE
+   pid=60644 on both probes, no
+   restart; HEALTH=200 both probes.
+   ROWLOG_N 820 -> 821, exactly +1:
+   probe 1 ended on the [20:25:36]
+   row; the new row [20:30:37]
+   h=200 p=9 500=0 oom=0 shm=0
+   gpu=0 hb=200 fb=0 kv=3 rep=0
+   apc=31 bytes=+21229, alert-free
+   (no SERVE-WEDGE tag); zero
+   h=000/hb=000 rows in the window
+   (no watch / ALARM TOUCH layering,
+   no CYCLE_ALERT). Evidence pass on
+   engine-20261001-200011.log
+   (newest log re-confirmed — still
+   the 20:00:11 boot): 0
+   Traceback / AssertionError /
+   ImportError lines; promotion
+   retractions (promotion timeout /
+   fail / suppressed +
+   CPU-TIER-RESET): ZERO again this
+   window — the designed quiet
+   surface stays quiet while lookups
+   resolve normally, so its absence
+   is itself proof the patch+turbo
+   state machine holds; escape-loop
+   recurrence NONE (no ESCWALL
+   release rows, no SERVERKILL
+   churn; KV-LOOKUP count 3,
+   resolved with no re-escape
+   repeat; the epoch-I 4-min
+   stupefying wedge did not come
+   back). Log tail 20:32:17
+   healthy: POST /v1/chat/completions
+   200 OK (192.168.2.208), GET
+   /metrics 200 OK, SpecDecoding +
+   KV Transfer metrics live
+   (mean acceptance 2.33, mirrored
+   keys=9738, 0 evictions / 0
+   tombstones); apc 26 -> 31 and
+   stores flowing (bytes +21229);
+   all rows oom=0 gpu=0 — no
+   OOM/GPU watchdog patterns.
+   ROWLOG_N=821.
+   Cycle 437 dispatch pending (orchestrator).
