@@ -7454,5 +7454,82 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
   LOST / wall=000; no probe
   failures. Epoch I: 183 of 283
   clean (100 wedge rows).
-  ROWLOG_N=612. Cycle 433
-  dispatching (fresh lane).
+   ROWLOG_N=612. Cycle 433
+   dispatching (fresh lane).
+
+   Cycle 433 (backfill, PROBE-FAIL
+   lane). The c433 lane errored
+   (fix-287) and the relay paused at
+   ~21:36 yesterday — record closed
+   late with the full span. In the
+   gap: incident investigation (all
+   source-verified) named the wedge
+   class: a promotion lookup that
+   hangs (phantom HIT_PENDING, no
+   timeout upstream) plus a stale-
+   hit ESCAPE LOOP — request
+   8273541c (hit=195584) re-claimed
+   the same stale hit every escape
+   cycle for ~25 min (6 loops ≈260s:
+   fallback ×10s + SERVERKILL ->
+   ESCWALL release 240s "until
+   boundary change" never came) on
+   boot 20261001-143345 (14:33).
+   User waited 20 min, killed it at
+   [15:26:55]; epoch I ends (100
+   wedge rows + this incident).
+   Patch suite landed FIRST: commit
+   7b44fc4 (promotion-TTL retract +
+   failure surfacing + flush
+   routing + reset events +
+   tombstone hygiene; 7 files) with
+   PARITY_GATE_PASS 19/19 into BOTH
+   patched-files/ and the venv
+   (two earlier aborted boots
+   13:44/14:02 = shm_broadcast
+   warmup hangs, parent exit, NO
+   engine error — cold-reboot
+   flakiness, patch NOT implicated;
+   third boot healthy). Fixer
+   round 2 (fix-288) added late-
+   report tolerance + drain_flush
+   routing before the assert
+   surface; all green. Then user
+   directive: "try 1 time, wait 3
+   seconds max, no multi-minute
+   fallbacks" -> launcher turbo
+   (commit 89b660e): five exports
+   re-defaulted on BOTH launchers
+   (stale-hit TTL 60->3s, fallback
+   limit 2->1, escape wall 240->3s,
+   promotion TTL 30->3s, fail TTL
+   10->3s; backups
+   .bak-20261001-turbo; md5 e2f57a
+   18 / dc7ec008 replace
+   2cab139c/e1ca15f9). Station died
+   [14:19:59] rc=0 in reboot chaos;
+   restarted [20:10] pid=60644,
+   first row NEWBOOTLOG h=200
+   hb=200 apc=2 (ROWLOG_N grew 612
+   -> ~817 across the outage).
+   Turbo boot verified 20:00:11
+   (engine-20261001-200011): engine
+   environ carry all five knobs
+   =3/1/3/3/3; 0 tracebacks/
+   assertion errors; traffic
+   serving, stores flowing; no
+   promotion-timeout/fail lines yet
+   (fresh cache, nothing stuck).
+   Verdict: PROBE-FAIL cycles 433
+   (lane errored; incident
+   root-caused and resolved via
+   patch suite + turbo knobs). 
+   Epoch II declared: new-boot
+   watch over the turbo regime
+   (expected fast syndrome: with
+   wall=3s a bad lookup re-escapes
+   every ~4-5s instead of ~260s —
+   ESCWALL release density is
+   EXPECTED; alert only on engine
+   condition, not cadence). Cycle
+   434 dispatching (fresh lane).
