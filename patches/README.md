@@ -7738,4 +7738,68 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
     tombstones); apc 31 -> 55 and
     stores flowing (bytes +47232).
     ROWLOG_N=822.
-    Cycle 438 dispatch pending (orchestrator).
+     Cycle 438 (backfill, folded with
+     incident). First c438 watch
+     dispatch (fix-293) died AT
+     DISPATCH on infra Bad Gateway
+     (~20:44) — no probe, no row,
+     repo untouched (verified clean).
+     Wedge RECURRENCE documented:
+     the 20:00:11 boot wedged again
+     [20:44:20] (request
+     bb090b5ca2c425a5, ~10 min of
+     3 s-wall escape loops pasted by
+     the user) -> user rebooted ->
+     fresh boot 20:57:34
+     (engine-20261001-205734; API
+     pid 67769, EngineCore 68312).
+     Structural root cause CONFIRMED
+     on the fresh boot: turbo knobs
+     compressed the wait (fallbacks=1
+     wall=0.1 + 3 s ESCWALL) but the
+     escape does NOT change the tier
+     report for the parked request —
+     claim persists (hit=99328
+     cov=0/99; groups g0FAE/g2SW1EM/
+     g3SW1EM/g4SW1EM each claiming
+     98/99) -> release -> re-claim ->
+     identical escape, ~4-5 s loop
+     forever; fresh boot re-wedged
+     within ~15 min (request
+     b9211e3a5fe8966f, 60 lines by
+     [21:13]) while other users kept
+     200-OKs (health 200 throughout —
+     not total freeze, but the wedged
+     request never terminates).
+     Verdict: CYCLE_ALERT:
+     WEDGE-LOOP-RECURRENCE (epochs II
+     window 434-437 clean; 438
+     recurrence before its lane ever
+     ran).      request never terminates).
+     Patch v2 implemented DIRECTLY
+     by the orchestrator (fix-294
+     lane infra-failed: upstream
+     closed, file untouched; spec
+     executed in-line for speed):
+     per-request ESCAPE-REFUSAL
+     window — knob
+     VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_
+     SECS (default 60 s, 0 = off):
+     on SERVERKILL escape the
+     request's tier claims are
+     REFUSED for the window (pure
+     miss) so the request re-prefills
+     ACTIVELY instead of parking;
+     refusal clears on request
+     teardown and re-arms on repeat
+     escapes. ROWLOG_N stays 822
+     (first c438 lane died pre-probe;
+     station pid 60644 alive).
+     Legacy-gloss note: wall=3 s made
+     the loop FAST, not SAFE — the
+     decision layer was still
+     missing. Patch v2 deploy awaits
+     orchestrator (user restart
+     after, with the new knob
+     exported on both launchers).
+     Cycle 439 dispatch pending (post-deploy).
