@@ -409,6 +409,7 @@ class RequestOffloadState:
     # on every refusal expiry. Clearing happens with the refusal fields on
     # any real boundary change; a DIFFERENT (genuinely improved) claim
     # always flows through.
+    escape_claim_active: bool = False
     escape_claim_hit_tokens: int = -1
     escape_claim_num_computed: int = -1
 
@@ -1361,6 +1362,7 @@ class OffloadingConnectorScheduler:
                 req_status.stale_hit_wall_start = 0.0
                 req_status.escape_refusal_until = 0.0
                 req_status.escape_refusal_notified = False
+                req_status.escape_claim_active = False
                 req_status.escape_claim_hit_tokens = -1
                 req_status.escape_claim_num_computed = -1
             else:
@@ -1417,8 +1419,6 @@ class OffloadingConnectorScheduler:
                     req_status.stale_hit_wall_start = 0.0
                     req_status.escape_refusal_until = 0.0
                     req_status.escape_refusal_notified = False
-                    req_status.escape_claim_hit_tokens = -1
-                    req_status.escape_claim_num_computed = -1
                 else:
                     logger.debug(
                         "KV-LOOKUP escape req=%s local=%d",
@@ -1469,19 +1469,20 @@ class OffloadingConnectorScheduler:
                     req_status.deferred_lookup_start_time = lookup_start
             else:
                 self._maybe_observe_lookup_async_delay(req_status)
-        # ESC-CLAIM 2026-10-01: while the escape refusal window is active,
+        # ESC-CLAIM 2026-10-01: while an escape claim-blockout is armed,
         # a manager claim identical to the one that wedged this request is
         # presented as a true miss and the lookup returns (0, False)
-        # without entering the stale-hit ladder. Without this the tier's
-        # group state keeps re-advertising the false coverage right after
-        # each refusal expiry and the request hot-loops instantly. This
-        # keeps the window quiet (debug-only) and gives the scheduler a
-        # clean zero-hit boundary on which normal chunked recompute
-        # admission can proceed; boundary progress re-enables real claims.
+        # without entering the stale-hit ladder. The blockout persists
+        # until a genuine boundary change (progress or a different claim)
+        # clears it — independent of the refusal window, so short windows
+        # (VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS) or wall races cannot
+        # resurrect the false claim. This keeps the request in a clean
+        # zero-hit state on which normal chunked recompute admission can
+        # proceed; boundary progress re-enables real claims.
         if (
             num_hit_tokens
             and self._escape_refusal_secs > 0
-            and req_status.escape_refusal_until > time.monotonic()
+            and req_status.escape_claim_active
             and num_hit_tokens == req_status.escape_claim_hit_tokens
             and num_computed_tokens == req_status.escape_claim_num_computed
         ):
@@ -1566,6 +1567,7 @@ class OffloadingConnectorScheduler:
                                 now + self._escape_refusal_secs
                             )
                             req_status.escape_refusal_notified = False
+                            req_status.escape_claim_active = True
                             req_status.escape_claim_hit_tokens = num_hit_tokens
                             req_status.escape_claim_num_computed = (
                                 num_computed_tokens
@@ -1588,8 +1590,13 @@ class OffloadingConnectorScheduler:
             req_status.stale_hit_escape = False
             req_status.escape_refusal_until = 0.0
             req_status.escape_refusal_notified = False
-            req_status.escape_claim_hit_tokens = -1
-            req_status.escape_claim_num_computed = -1
+            if (
+                num_hit_tokens != req_status.escape_claim_hit_tokens
+                or num_computed_tokens != req_status.escape_claim_num_computed
+            ):
+                req_status.escape_claim_active = False
+                req_status.escape_claim_hit_tokens = -1
+                req_status.escape_claim_num_computed = -1
         req_status.stale_hit_last_hit_tokens = num_hit_tokens
         req_status.stale_hit_last_num_computed = num_computed_tokens
         req_status.stale_hit_last_ts = now
