@@ -387,6 +387,20 @@ class RequestOffloadState:
     stale_hit_fallback_count: int = 0
     stale_hit_wall_start: float = 0.0
     stale_hit_escape: bool = False
+    # ESC-REFUSAL 2026-10-01: while set (monotonic deadline), the ESCWALL
+    # hard-release is SUPPRESSED for this request until the deadline
+    # lapses. Rationale: with a 3s escape wall the wall-release itself
+    # re-triggers the false tier claim within the same scheduler step
+    # (identifier side unchanged), hot-looping the wedge request (hit ->
+    # fallback -> escape) forever. Holding escape mode with (0, False)
+    # through a quiet refusal window keeps the scheduler-core admission
+    # relaxation armed (VLLM_KV_OFFLOAD_ESCAPE_RELAX_FULL_FIT, see the
+    # core sched scheduler.py hook) and gives the chunked recompute path
+    # a steady chance to admit the request as blocks free, instead of
+    # only during a 1-step release window. Re-arms on every new escape.
+    escape_refusal_until: float = 0.0
+    # one-shot log guard so the refusal window is not spammy
+    escape_refusal_notified: bool = False
 
     def __post_init__(self) -> None:
         # One state per KV cache group (indexed by original group index):
@@ -715,6 +729,27 @@ class OffloadingConnectorScheduler:
                 _wall_env,
             )
             self._escape_wall_secs = 240.0
+
+        # ESC-REFUSAL 2026-10-01: quiet-window after a SERVERKILL escape.
+        # While active for a request, the ESCWALL hard-release does not
+        # fire and escape keeps answering (0, False) without re-arming the
+        # stale-hit ladder or re-scanning the manager, so a false tier
+        # claim (groups advertising a hit whose own coverage is empty)
+        # cannot hot-loop the request on every wall cycle. 0 disables.
+        _ref_env = os.environ.get("VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS")
+        try:
+            self._escape_refusal_secs = (
+                max(0.0, float(_ref_env.strip()))
+                if _ref_env is not None and _ref_env.strip()
+                else 60.0
+            )
+        except ValueError:
+            logger.warning(
+                "Invalid VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=%r; "
+                "using default 60.0",
+                _ref_env,
+            )
+            self._escape_refusal_secs = 60.0
 
         # ESC211 2026-09-21: escape the pin-cadence stall. After
         # VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT zero-progress stale-hit
@@ -1314,6 +1349,8 @@ class OffloadingConnectorScheduler:
                 req_status.stale_hit_repeat_count = 0
                 req_status.stale_hit_fallback_count = 0
                 req_status.stale_hit_wall_start = 0.0
+                req_status.escape_refusal_until = 0.0
+                req_status.escape_refusal_notified = False
             else:
                 # ESCWALL 2026-09-29: absolute release wall. When escape
                 # mode has held with NO boundary change past
@@ -1331,6 +1368,29 @@ class OffloadingConnectorScheduler:
                     self._escape_wall_secs > 0
                     and _esc_hold >= self._escape_wall_secs
                 ):
+                    # ESC-REFUSAL 2026-10-01: do not cold-re-arm while the
+                    # request's escape refusal window is active — that
+                    # release is what lets the false tier claim re-fire on
+                    # the very next lookup and hot-loop the wedge. Keep
+                    # escape mode (relax hook stays armed for the core).
+                    if (
+                        self._escape_refusal_secs > 0
+                        and req_status.escape_refusal_until
+                        > time.monotonic()
+                    ):
+                        if not req_status.escape_refusal_notified:
+                            logger.info(
+                                "KV-LOOKUP escape refusal req=%s window=%.0f",
+                                request.request_id,
+                                self._escape_refusal_secs,
+                            )
+                            req_status.escape_refusal_notified = True
+                        logger.debug(
+                            "KV-LOOKUP escape req=%s local=%d (refusal hold)",
+                            request.request_id,
+                            num_computed_tokens,
+                        )
+                        return 0, False
                     logger.info(
                         "KV-LOOKUP ESCWALL release req=%s local=%d "
                         "wall=%.1f (no boundary change; cold re-arm)",
@@ -1343,6 +1403,8 @@ class OffloadingConnectorScheduler:
                     req_status.stale_hit_repeat_count = 0
                     req_status.stale_hit_fallback_count = 0
                     req_status.stale_hit_wall_start = 0.0
+                    req_status.escape_refusal_until = 0.0
+                    req_status.escape_refusal_notified = False
                 else:
                     logger.debug(
                         "KV-LOOKUP escape req=%s local=%d",
@@ -1459,6 +1521,11 @@ class OffloadingConnectorScheduler:
                         req_status.stale_hit_escape = True
                         req_status.stale_hit_pinned_until = 0.0
                         req_status.stale_hit_fallback_count = 0
+                        if self._escape_refusal_secs > 0:
+                            req_status.escape_refusal_until = (
+                                now + self._escape_refusal_secs
+                            )
+                            req_status.escape_refusal_notified = False
                     elif self._stale_hit_pin_seconds > 0:
                         req_status.stale_hit_pinned_until = (
                             time.monotonic() + self._stale_hit_pin_seconds
@@ -1475,6 +1542,8 @@ class OffloadingConnectorScheduler:
             req_status.stale_hit_fallback_count = 0
             req_status.stale_hit_wall_start = 0.0
             req_status.stale_hit_escape = False
+            req_status.escape_refusal_until = 0.0
+            req_status.escape_refusal_notified = False
         req_status.stale_hit_last_hit_tokens = num_hit_tokens
         req_status.stale_hit_last_num_computed = num_computed_tokens
         req_status.stale_hit_last_ts = now
