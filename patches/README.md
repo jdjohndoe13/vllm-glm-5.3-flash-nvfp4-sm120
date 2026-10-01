@@ -7975,4 +7975,89 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
    escapes release fast, serving
    continuous, hb ladder clean, no
    loop alerts). ROWLOG_N=843.
-     Cycle 442 dispatch pending (orchestrator).
+   Cycle 442 (epoch II post-v2 boot):
+   CYCLE_OK. Window probes 22:34:32 ->
+   22:41:26, station CANARY_ALIVE_60644
+   on both, no restart (pid 60644
+   alive); HEALTH timings 200 @
+   22:34:32 and 200 @ 22:41:26.
+   ROWLOG_N 843 -> 845 -> 846 (md5
+   f57d79031c7cbe68a293b227e486271e ->
+   5c9b4f3d09233b802e897054cb0cf910 ->
+   cccc141b756bacee4ad1e8f6b01c9621),
+   append-only +3 rows from the c441
+   tip ([22:29:27] and [22:34:30]
+   landed after c441's read; one true
+   window row), no rebase, no
+   NEWBOOTLOG. Window row [22:39:50]
+   h=200 p=9 500=0 oom=0 shm=0 gpu=0
+   hb=000 fb=35 kv=232 rmax=1 rep=0
+   apc=56 bytes=+50626 ev=12404.0,
+   11503.0,2878.0 carries ALERT:
+   SERVE-WEDGE; the hb=000 run is
+   exactly ONE row, isolated between
+   clean hb=200 rows ([22:34:30] and
+   the successor) -> watch level only
+   per ladder rule; no 2-consecutive
+   -> no ALARM TOUCH, no CYCLE_ALERT.
+   Envelope clean on every row (500=0
+   oom=0 shm=0 gpu=0 rep=0 rmax=1);
+   counters climb (fb 28->35, kv
+   188->232, apc 45->56, ev
+   12412,8296,2091 -> 12404,11503,2878
+   = tier full with churn). Boot log
+   engine-20261001-214203.log still
+   newest (mtime 22:48:41, 752075 B)
+   -> no mid-window rebase; refusal
+   knob still 60 with direct environ
+   proof from the scripted pgrep -f
+   'vllm serve' read: API id 82175's
+   environ holds
+   VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS
+   =60 (the user restart to the 5 s
+   launcher default has not happened
+   yet; the 21:42:10 envs.py WARNING
+   calling the var unknown is benign
+   boot noise, the connector reads it
+   directly and every refusal line
+   proves it active). Evidence pass on
+   the boot log: Traceback=0;
+   ImportError|AssertionError=0;
+   OOM/GPU-watchdog raw=0, real=0.
+   Patch v2 regime engaged as
+   designed: SERVERKILL total 41 = 28
+   (c441 baseline) + 13 new (22:31:41
+   -> 22:48:22), all fallbacks=1, wall
+   0.2-0.3 except one wall=0.9
+   (22:48:22), on 13 NEW distinct req
+   ids with every event a distinct id
+   (inter-event spacing 16-295 s) ->
+   no same-id re-escape in-window;
+   log-wide per-id tally: 41 escape
+   lines over 40 distinct ids, only
+   84c3892f-978c11f2 ever escaped
+   twice (c440's pair 60 s apart =
+   benign refusal-window re-arm) ->
+   WEDGE-LOOP-POSTV2 absent. Refusals
+   24 total (+8 new, 22:31:44 ->
+   22:45:34), ALL window=60. ESCWALL
+   release=1 (still only the 22:08:08
+   cold re-arm line; no new release
+   this window). KVL total 272. Log
+   tail 22:48:41 healthy: POST 200 OK
+   x2 (192.168.2.208), Running 1 /
+   Waiting 1, prompt 2875.6 tok/s,
+   SpecDecoding live (mean acceptance
+   3.18), per-position acceptance
+   0.862/0.707/0.614, KV Transfer
+   metrics live (mirrored keys=33894,
+   cpu_allocated=12412,
+   evictable=12412, free list=0), MFU
+   7.6 TF/s/GPU 170.8 GB/s/GPU.
+   Verdict: CYCLE_OK -> post-v2 boot
+   healthy (refusals hold window=60,
+   escapes single-strike and spaced,
+   serving continuous, hb ladder
+   watch-level only, no loop alerts).
+   ROWLOG_N=846.
+     Cycle 443 dispatch pending (orchestrator).
