@@ -7919,4 +7919,60 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
    release fast, refusals hold at
    window=60, serving continuous, miss
    ladder watch-level only). ROWLOG_N=841.
-     Cycle 441 dispatch pending (orchestrator).
+   Cycle 441 (epoch II post-v2 boot):
+   CYCLE_OK. Window probes 22:22:11 ->
+   22:29:09, station CANARY_ALIVE_60644
+   on both, no restart; HEALTH timings
+   200 @ 22:22:11 and 200 @ 22:29:09.
+   ROWLOG_N 841 (tip) -> 842 -> 843
+   (md5 d76649a57e4cd5e49372ad29f9ed679a
+   -> 663a82127bbcffb68bce23110eeebb09
+   -> f57d79031c7cbe68a293b227e486271e),
+   append-only +2 rows across the
+   handoff ([22:19:23] pre-window
+   append + [22:24:24] in-window), no
+   rebase, no NEWBOOTLOG. Boot log
+   engine-20261001-214203.log still
+   newest (APIPID 82175 unchanged, mtime
+   22:29:58, 547471 B) -> no mid-window
+   boot change; refusal knob still 60
+   (environ VLLM_KV_OFFLOAD_ESCAPE_
+   REFUSAL_SECS=60; the user restart to
+   the 5 s launcher default has not
+   happened yet). Envelope clean on
+   every row (500=0 oom=0 shm=0 gpu=0
+   rep=0 rmax=1); both window rows
+   h=200 hb=200, zero hb=000 rows ->
+   watch ladder untouched, no ALARM
+   TOUCH; counters climb (fb 18->25,
+   kv 136->172, apc 32->36, ev
+   12412,1261,357 -> 12412,2832,729 =
+   tier full with churn). Evidence pass:
+   Traceback=0; ImportError|
+   AssertionError=0; real OOM/GPU-
+   watchdog=0. SERVERKILL total 28 =
+   18 baseline + 10 new (22:19:25 ->
+   22:28:39) on 27 distinct log ids,
+   the 10 new all fallbacks=1 wall
+   0.1-0.2 except one wall=21.2
+   (22:22:30, isolated between clean
+   rows); all 10 new ids unique -> no
+   same-id recape in-window, only
+   multi-escape id remains 84c3892f-
+   978c11f2 (c440's pair 60 s apart =
+   benign re-arm) -> WEDGE-LOOP-POSTV2
+   absent. Refusals 16 total (+6 new),
+   ALL window=60. ESCWALL release=1
+   (the 22:08:08 cold-re-arm line; no
+   new release this window). Log tail
+   22:29:57 healthy: POST 200 OK
+   streaming x3, Running 1, KV-LOOKUP
+   hit, APC-HIT nhash=26, KV store
+   14.32 GB, mirrored keys 12740,
+   evictable 12404, tombstones 1586.
+   Verdict: CYCLE_OK -> post-v2 boot
+   healthy (refusals hold window=60,
+   escapes release fast, serving
+   continuous, hb ladder clean, no
+   loop alerts). ROWLOG_N=843.
+     Cycle 442 dispatch pending (orchestrator).
