@@ -473,6 +473,17 @@ export VLLM_KV_OFFLOAD_HUGETLB_DIR="${VLLM_KV_OFFLOAD_HUGETLB_DIR:-/dev/hugepage
 # it is a patch-only variable read via os.environ.
 : "${EVICTION_TOMBSTONES:=8000000}"
 export VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES="${EVICTION_TOMBSTONES}"
+# ESCWALL 2026-09-29 (user-approved Tier-1+2 staging): under giant-prompt
+# churn the ESC211 escape (KV-LOOKUP stale-hit fallback -> SERVERKILL) is
+# the wedge engine. Trips escape sooner (TTL 150s->60s, fallback budget
+# 3->2) and gives escape mode an absolute hard wall (240s, ESCWALL release
+# in the connector) so a stuck escape cold-re-arms instead of holding
+# (0, False) forever. Previous values stay reachable by exporting overrides.
+export VLLM_KV_OFFLOAD_STALE_HIT_TTL_SECS="${VLLM_KV_OFFLOAD_STALE_HIT_TTL_SECS:-3}"
+export VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT="${VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT:-1}"
+export VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS="${VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS:-3}"
+export VLLM_KV_OFFLOAD_PROMOTION_TTL_SECS="${VLLM_KV_OFFLOAD_PROMOTION_TTL_SECS:-3}"
+export VLLM_KV_OFFLOAD_PROMOTION_FAIL_TTL_SECS="${VLLM_KV_OFFLOAD_PROMOTION_FAIL_TTL_SECS:-3}"
 
 # ============================================================================
 # Everything below is derived logic — usually no need to touch.
