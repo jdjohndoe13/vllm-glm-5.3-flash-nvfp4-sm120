@@ -7533,3 +7533,58 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
    EXPECTED; alert only on engine
    condition, not cadence). Cycle
    434 dispatching (fresh lane).
+
+   Cycle 434 (fresh clean lane,
+   epoch II turbo regime): CYCLE_OK.
+   First full watched window after
+   the turbo boot is green end to
+   end, probes 20:11:51 ->
+   20:17:00. Station CANARY_ALIVE
+   pid=60644 on both probes, no
+   restart; HEALTH=200 both
+   probes. ROWLOG_N 817 -> 818,
+   exactly +1: probe 1 ended on the
+   [20:10:34] NEWBOOTLOG row; the
+   new row [20:15:35] h=200 p=9
+   500=0 oom=0 shm=0 gpu=0 hb=200
+   fb=0 kv=1 rmax=0 apc=7
+   bytes=+20583, alert-free (no
+   SERVE-WEDGE tag); zero
+   h=000/hb=000 rows in the window
+   (no watch / ALARM TOUCH
+   layering, no CYCLE_ALERT).
+   Syndrome grep on
+   engine-20261001-200011.log: 0
+   Traceback / AssertionError /
+   ImportError lines.
+   Regime health: boot 20:00:11
+   now ~17 min stable with serving
+   traffic continuous (log tail
+   20:17:00-20:17:02: POST
+   /v1/chat/completions 200 OK
+   pairs + APC-HIT nhash=9/10).
+   Promotion retractions
+   (promotion timeout / fail /
+   suppressed + CPU-TIER-RESET):
+   ZERO. Nothing has run into the
+   3 s TTLs long enough to need
+   retracting; the designed
+   outcome is that this surface
+   stays quiet while lookups
+   resolve normally, so its
+   absence is itself proof the
+   patch+turbo state machine holds.
+   Escape-loop recurrence: NONE.
+   No ESCWALL release rows, no
+   SERVERKILL churn; the fresh log
+   carries one KV-LOOKUP line with
+   no re-escape repeat, consistent
+   with wall=3 s turning any bad
+   lookup into a fast re-escape
+   (seconds) instead of the
+   epoch-I ~260 s wedge; the 4-min
+   stupefying loop did not come
+   back. apc 2 -> 7 and stores
+   flowing (bytes +20583); nothing
+   stuck. ROWLOG_N=818.
+   Cycle 435 dispatch pending (orchestrator).
