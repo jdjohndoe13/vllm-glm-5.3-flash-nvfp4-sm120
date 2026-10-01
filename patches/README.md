@@ -7802,4 +7802,63 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
      orchestrator (user restart
      after, with the new knob
      exported on both launchers).
-     Cycle 439 dispatch pending (post-deploy).
+   Cycle 439 (post-patch-v2 boot lane):
+   CYCLE_OK. Window probes 21:50:15 ->
+   21:57:31. Station CANARY_ALIVE
+   pid=60644 on both probes, no restart;
+   HEALTH=200 both probes. ROWLOG_N
+   836 -> 837, exactly +1 (md5
+   02e4af7c296f3a1d2e611cfb7b68c7df ->
+   d2653a05f84d5c0a5719e3db6a67647a);
+   the new row [21:53:14] h=200 p=9
+   500=0 oom=0 shm=0 gpu=0 hb=200 fb=0
+   kv=4 rmax=1 rep=0 apc=6 bytes=
+   +121377 ev=1884.0,0.0,0.0, alert-
+   free (no SERVE-WEDGE tag). Post-v2
+   boot hb ladder: [21:43:13] =
+   NEWBOOTLOG informational rebase
+   (h=000 p=1, boot 21:42:03; not in
+   the miss ladder) and [21:48:14]
+   h=000 p=9 hb=000 shm=2 ev=?,?,? =
+   ONE isolated fresh hb=000 row
+   (boot-settling class; HEALTH probes
+   200 at 21:50 and 21:57 straddle it)
+   -> watch level only per ladder rule
+   (1 = watch), closed by the clean
+   successor row — no ALARM TOUCH, no
+   CYCLE_ALERT. Evidence pass on
+   engine-20261001-214203.log (newest
+   log re-confirmed, mtime 21:58:53):
+   Traceback=0; ImportError|
+   AssertionError=0; OOM-class grep
+   8 hits ALL = the benign boot banner
+   "If OOM'ed, check ..." x8 ranks at
+   21:45:37 ("Initial free memory
+   30.53 GiB, reserved 1.97 GiB
+   memory for KV Cache") — zero real
+   OOM / GPU-watchdog events, canary
+   oom=0 on every row. Patch v2 regime
+   engaged as designed: 4 isolated
+   SERVERKILL escapes at 21:56:21,
+   21:56:53, 21:57:31, 21:58:02 on
+   FOUR distinct req ids (1 each,
+   fallbacks=1 wall=0.2, ~30-40 s
+   apart); "KV-LOOKUP escape refusal
+   req=... window=60" fired twice
+   (21:56:56 req-af6595, 21:58:05
+   req-85ba17) — NOT alerts, that is
+   patch v2 engaging (quiet hold);
+   per-request repeat tally 1 each,
+   no rapid repeated escape cycles —
+   WEDGE-LOOP-POSTV2 absent; ESCWALL
+   release=0; KVL total 23. Log tail
+   21:58:53 healthy: POST 200 OKs
+   streaming, SpecDecoding + KV
+   Transfer metrics live (mirrored
+   keys=333864, stores flowing, 0
+   evictions / 0 tombstones). Verdict:
+   CYCLE_OK — post-v2 boot healthy
+   (escapes release fast, refusals
+   hold, serving continuous).
+   ROWLOG_N=837.
+     Cycle 440 dispatch pending (orchestrator).
