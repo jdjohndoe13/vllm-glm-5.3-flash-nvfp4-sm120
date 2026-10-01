@@ -7861,4 +7861,62 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
    (escapes release fast, refusals
    hold, serving continuous).
    ROWLOG_N=837.
-     Cycle 440 dispatch pending (orchestrator).
+   Cycle 440 (post-patch-v2 boot lane):
+   CYCLE_OK. Window probes 22:04:00 ->
+   22:17:29, station CANARY_ALIVE pid=60644
+   on both, no restart; HEALTH timings 200
+   @ 22:04:00 and 200 @ 22:17:29.
+   ROWLOG_N 837 -> 839 -> 841 (md5
+   d2653a05f84d5c0a5719e3db6a67647a ->
+   1fc43af7d1e35eac0a6d96fc7b8a39f7 ->
+   d76649a57e4cd5e49372ad29f9ed679a),
+   append-only +4 rows across the window,
+   no rebase (the [21:43:13] NEWBOOTLOG
+   row predates this window; both probes
+   saw pure appends). Fresh hb rows:
+   [21:58:35] and [22:09:15] hb=000
+   SERVE-WEDGE, each ISOLATED between
+   clean hb=200 rows ([22:03:55] and
+   [22:14:15]) -> watch level only, never
+   2 consecutive -> no ALARM TOUCH, no
+   CYCLE_ALERT; envelope clean on every
+   row (500=0 oom=0 shm=0 gpu=0 rep=0
+   rmax=1) and counters climb through all
+   windows (fb 0->18, kv 22->135, apc
+   6->26, ev 5044->9792->11772). Evidence
+   pass on engine-20261001-214203.log
+   (newest re-confirmed, mtime 22:17:32,
+   430131 B): Traceback=0;
+   ImportError|AssertionError=0; real
+   OOM / GPU-watchdog = 0. Patch v2
+   regime engaged as designed: SERVERKILL
+   total 18 on the log = 4 (c439's) + 14
+   new (22:01:39 -> 22:10:55) on 17
+   distinct req ids, all fallbacks=1
+   wall=0.2 spaced 20-90 s; one id
+   (84c3892f-978c11f2) escaped twice 60 s
+   apart (22:07:08 + 22:08:08) = the
+   refusal-window re-arm on re-escape,
+   NOT a rapid loop; other repeats 1 each
+   and rep=0 on every row ->
+   WEDGE-LOOP-POSTV2 absent. Refusals 10
+   on the log (2 c439's + 8 new), ALL
+   window=60 -> knob still 60 on this
+   boot (newest log unchanged, no user
+   restart yet; the 5 s default applies
+   only after a user restart); ESCWALL
+   release=1 (first release recorded on
+   this boot); KVL 23 -> 135 (+112
+   tier-probe lines in ~19 min, healthy
+   volume). Log tail 22:17:30 healthy:
+   POST 200 OK streaming, Running 1,
+   prompt 6727 tok/s, SpecDecoding metrics
+   live, KV stores 12.12 GB, mirrored
+   keys 15333, tier full with churn
+   (evictable 12412, evicted 652,
+   tombstones 208). Verdict: CYCLE_OK
+   -> post-v2 boot healthy (escapes
+   release fast, refusals hold at
+   window=60, serving continuous, miss
+   ladder watch-level only). ROWLOG_N=841.
+     Cycle 441 dispatch pending (orchestrator).
