@@ -401,6 +401,16 @@ class RequestOffloadState:
     escape_refusal_until: float = 0.0
     # one-shot log guard so the refusal window is not spammy
     escape_refusal_notified: bool = False
+    # ESC-CLAIM 2026-10-01: the exact (hit, boundary) fingerprint of the
+    # claim that triggered the SERVERKILL escape. While the escape refusal
+    # window is active, a manager claim matching this fingerprint is
+    # presented as a TRUE miss (0) so the tier cannot keep re-asserting a
+    # false hit (groups advertising coverage the request never stored)
+    # on every refusal expiry. Clearing happens with the refusal fields on
+    # any real boundary change; a DIFFERENT (genuinely improved) claim
+    # always flows through.
+    escape_claim_hit_tokens: int = -1
+    escape_claim_num_computed: int = -1
 
     def __post_init__(self) -> None:
         # One state per KV cache group (indexed by original group index):
@@ -1351,6 +1361,8 @@ class OffloadingConnectorScheduler:
                 req_status.stale_hit_wall_start = 0.0
                 req_status.escape_refusal_until = 0.0
                 req_status.escape_refusal_notified = False
+                req_status.escape_claim_hit_tokens = -1
+                req_status.escape_claim_num_computed = -1
             else:
                 # ESCWALL 2026-09-29: absolute release wall. When escape
                 # mode has held with NO boundary change past
@@ -1405,6 +1417,8 @@ class OffloadingConnectorScheduler:
                     req_status.stale_hit_wall_start = 0.0
                     req_status.escape_refusal_until = 0.0
                     req_status.escape_refusal_notified = False
+                    req_status.escape_claim_hit_tokens = -1
+                    req_status.escape_claim_num_computed = -1
                 else:
                     logger.debug(
                         "KV-LOOKUP escape req=%s local=%d",
@@ -1455,6 +1469,32 @@ class OffloadingConnectorScheduler:
                     req_status.deferred_lookup_start_time = lookup_start
             else:
                 self._maybe_observe_lookup_async_delay(req_status)
+        # ESC-CLAIM 2026-10-01: while the escape refusal window is active,
+        # a manager claim identical to the one that wedged this request is
+        # presented as a true miss and the lookup returns (0, False)
+        # without entering the stale-hit ladder. Without this the tier's
+        # group state keeps re-advertising the false coverage right after
+        # each refusal expiry and the request hot-loops instantly. This
+        # keeps the window quiet (debug-only) and gives the scheduler a
+        # clean zero-hit boundary on which normal chunked recompute
+        # admission can proceed; boundary progress re-enables real claims.
+        if (
+            num_hit_tokens
+            and self._escape_refusal_secs > 0
+            and req_status.escape_refusal_until > time.monotonic()
+            and num_hit_tokens == req_status.escape_claim_hit_tokens
+            and num_computed_tokens == req_status.escape_claim_num_computed
+        ):
+            logger.debug(
+                "KV-LOOKUP escape claim blocked req=%s hit=%d local=%d",
+                request.request_id,
+                num_hit_tokens,
+                num_computed_tokens,
+            )
+            req_status.stale_hit_last_hit_tokens = 0
+            req_status.stale_hit_last_num_computed = num_computed_tokens
+            req_status.stale_hit_last_ts = time.monotonic()
+            return 0, False
         req_status.update_num_hit_chunks(num_computed_tokens + (num_hit_tokens or 0))
 
         self._touch(req_status)
@@ -1526,6 +1566,10 @@ class OffloadingConnectorScheduler:
                                 now + self._escape_refusal_secs
                             )
                             req_status.escape_refusal_notified = False
+                            req_status.escape_claim_hit_tokens = num_hit_tokens
+                            req_status.escape_claim_num_computed = (
+                                num_computed_tokens
+                            )
                     elif self._stale_hit_pin_seconds > 0:
                         req_status.stale_hit_pinned_until = (
                             time.monotonic() + self._stale_hit_pin_seconds
@@ -1544,6 +1588,8 @@ class OffloadingConnectorScheduler:
             req_status.stale_hit_escape = False
             req_status.escape_refusal_until = 0.0
             req_status.escape_refusal_notified = False
+            req_status.escape_claim_hit_tokens = -1
+            req_status.escape_claim_num_computed = -1
         req_status.stale_hit_last_hit_tokens = num_hit_tokens
         req_status.stale_hit_last_num_computed = num_computed_tokens
         req_status.stale_hit_last_ts = now
