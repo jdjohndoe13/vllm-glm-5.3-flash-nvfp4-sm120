@@ -7680,4 +7680,62 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
    all rows oom=0 gpu=0 — no
    OOM/GPU watchdog patterns.
    ROWLOG_N=821.
-   Cycle 437 dispatch pending (orchestrator).
+    Cycle 437 dispatch pending (orchestrator).
+
+    Cycle 437 (epoch II turbo regime,
+    watch lane): CYCLE_OK with one
+    documented watch-layer row.
+    Window probes 20:33:50 ->
+    20:39:21. Station CANARY_ALIVE
+    pid=60644 on both probes, no
+    restart; HEALTH=200 both probes.
+    ROWLOG_N 821 -> 822, exactly +1:
+    probe 1 ended on the [20:30:37]
+    row; the new row [20:35:57]
+    h=200 p=9 500=0 oom=0 shm=0
+    gpu=0 hb=000 fb=0 kv=12 rmax=1
+    rep=0 apc=55 bytes=+47232
+    carries ALERT: SERVE-WEDGE — its
+    own serving gate h=200 held on
+    that row, and the hb=000 run is
+    exactly ONE row: per the
+    consecutive-row rule 1 = watch,
+    2 = ALARM TOUCH, 3+ =
+    CYCLE_ALERT, this lands at watch
+    level, not an alarm and not an
+    alert. Evidence pass on
+    engine-20261001-200011.log
+    (newest log re-confirmed — still
+    the 20:00:11 boot, no restart,
+    ~40 min stabilised uptime, no
+    NEWBOOTLOG rows since 20:10:34):
+    0 Traceback / AssertionError /
+    ImportError lines; 0 OOM / GPU
+    watchdog patterns (all rows
+    oom=0 gpu=0). Promotion
+    retractions (promotion timeout /
+    fail / suppressed +
+    CPU-TIER-RESET): ZERO again this
+    window — nothing stuck to
+    retract, the patch surface idle
+    by design while lookups churned
+    (KV-LOOKUP count 3 -> 35, each
+    event resolving with no
+    companion ESCWALL / SERVERKILL
+    or retraction line);
+    escape-loop recurrence NONE (no
+    same-request re-escape across
+    minutes, no WEDGE-LOOP, the
+    epoch-I 4-min stupefying wedge
+    did not come back). Log tail
+    20:40:07 healthy: POST
+    /v1/chat/completions 200 OK
+    (192.168.2.208), GET /metrics
+    200 OK, SpecDecoding + KV
+    Transfer metrics live (mean
+    acceptance 2.52, mirrored
+    keys=11578, 0 evictions / 0
+    tombstones); apc 31 -> 55 and
+    stores flowing (bytes +47232).
+    ROWLOG_N=822.
+    Cycle 438 dispatch pending (orchestrator).
