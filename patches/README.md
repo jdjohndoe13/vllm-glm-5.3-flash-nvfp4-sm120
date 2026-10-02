@@ -9571,4 +9571,91 @@ wedge-clean, healed hb row).
        isolated and healed; staged
        v3.1 claim-block still
        post-restart-gated).
-       Cycle 459 dispatch pending (orchestrator).
+       Cycle 459 (epoch II; pre-restart v2-era boot
+       held through the whole cycle; station pid
+       60644 alive at both probes, no restart, no
+       rebase): probe1 @05:21:52 HEALTH=200; single
+       300 s wait; probe2 @05:28:02 HEALTH=200.
+       ROWLOG_N 923 -> 924 (new rows: 05:16:22 h=200
+       p=9 500=0 clean; 05:21:43 hb=000 isolated
+       wedge rung with ALERT: SERVE-WEDGE marker, fb
+       frozen 1026, healed by 05:26:43 hb=200; no
+       2-run window, ALARM untouched); ROWLOG_MD5
+       923-end 5d57a2d0e5be862f30beb0e8e8461bcf ->
+       924-end 38e1e3880ac1c4f5965d3ae03e8826a4;
+       handoff baseline said 921/5d609e41:
+       superseded by two later aprows, probe
+       authoritative (append-only, NEWBOOTLOG not
+       counted).
+       Regime: newest engine log still
+       engine-20261001-231328.log; LIVELOG fd of API
+       PID 100422 resolves
+       /mnt/data/shared/models/vllm-glm-5.3-flash-
+       nvfp4/logs/engine-20261001-231328.log;
+       FDMATCH=yes; log 19042 lines @05:16:25 ->
+       19759 @05:32:21; boot v2-era; knob
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+       environ-proven on pid 100422; no new boot
+       through 05:32.
+       Whole-log counts: SERVERKILL 1026 -> 1026
+       (+0); escape refusal 27 -> 27 (+0); ESCWALL
+       release 818 -> 818 (+0); KV-LOOKUP hit 1923
+       -> 1950 (+27 benign serving lookups: 1947
+       @05:29:28, 1950 @05:32:50; one local=2048
+       @05:21:16 line, all others local=0; no
+       escape/refusal/SERVERKILL follow-up; engine
+       log matches handoff cross-counter 1923).
+       Fresh-window (10-02, t>=05:06:49, date-aware
+       scripted recheck): FW_EVENTS=0 whole:
+       SERVERKILL=0, refusal=0, ESCWALL=0; no burst
+       ids this cycle; ALERTSTRINGS_FRESH=0;
+       last escape event in log remains the
+       ledgered one-off a4825dcf5f9794d7 @04:59:30
+       (single frame, no repeat, silence pattern
+       intact after it).
+       Scripted 30-s same-id wedge detector: 141
+       FLAG30 frames ALL predate 04:59:30; last
+       flag window b7485652de1371fe 04:46:16 ->
+       04:46:17; burst clusters 23:25-23:53,
+       00:27-02:53, 03:06-04:46 = ledgered
+       wedge-burst cycles, expected pre-restart;
+       zero flags after 04:59:30; detector CLEAN
+       for this cycle's window (c457 WEDGE30=0
+       frame stands).
+       Census-tool note: first scripted pass used a
+       wrong seconds-cut (189409s) and a later pass
+       a date-bug (10-01 23:xx passing a 10-02
+       cut); both only inflated fresh-window
+       counters, never hid events; whole-log totals
+       plus the date-aware recheck are authoritative
+       and reconcile (KVL fresh 40 = c458 tail 13 +
+       24 by 05:29 + 3 by 05:32 = 1950 end total).
+       Frozen vets EXACT whole log (SK-only counts,
+       none moved): baf918c29f8971ac=47,
+       a55730aa2436f326=43, b85345868b69b2db=41,
+       a44edd70f7347af3=39, 82eccb5ddd9a76bd=35,
+       abf4c15de42aa3fb=31, 87cf48eadb6324ea=27,
+       ad87dfae2667eaf5=25, acd4af385c026201=21,
+       997c5c6e07d21b11=20, bdb1bd99838f808b=18,
+       ac6b62d8a85ce6f4=17, a8f5a2303ab27c9c=17,
+       a7d7ca4522378833=17, a1cb9c778c6c0671=17.
+       Traceback=0, ImportError/AssertionError=0,
+       real CUDA OOM/GPU watchdog=0 whole log and
+       in the fresh window; probe rows 500=0 oom=0
+       gpu=0 throughout.
+       Serving intact: POST /v1 200 OK 1253 -> 1370
+       (+117 @05:29:28), GET /metrics 200 OK 4209
+       -> 4485 (+276); apc 444 -> 491; fb frozen
+       1026 since 04:50:40; kv rowlog counter 4820
+       -> 4840; last raw log lines POST 200 OK +
+       GET 200 OK.
+       Post-restart incident: none (no restart;
+       first post-v3.1 microdetail stays pending;
+       WEDGE-LOOP-POSTV31 not applicable under the
+       v2-era boot).
+       Zero-delta quiet cycle -> standing regime
+       verdict persists: QUIET (no new wedges;
+       frozen vets EXACT; ladder rungs isolated and
+       healed; boot still pre-v3.1; staged v3.1
+       claim-blockout still post-restart-gated).
+       Cycle 460 dispatch pending (orchestrator).
