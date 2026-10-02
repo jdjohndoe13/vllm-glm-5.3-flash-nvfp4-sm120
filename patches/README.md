@@ -11534,4 +11534,116 @@ wedge-clean, healed hb row).
        CLEAN at close; REFUSAL=2/WALL=3 knobs
        proven; serving intact; staged v3.1
        still post-restart-gated).
-       Cycle 480 dispatch pending (orchestrator).
+       Cycle 480 (one-shot): station pid 60644 ALIVE
+       at both probes (10:01:50 probe1, 10:08:26
+       probe2); HEALTH=200 at both closes; no
+       station restart; ROWLOG_N 975 -> 978
+       across probes (handoff baseline 975:
+       rows 976+977 grew pre-probe1; 977 ->
+       978 by probe2), ROWLOG_MD5 fc48e0e1-lead
+       superseded -> 1477e4d3 (probe1) ->
+       ffbf3dbf (probe2); append-only, no
+       NEWBOOTLOG; probe is authoritative.
+       Regime: newest engine log still engine-
+       20261001-231328.log, fd-resolved by BOTH
+       API pid 100422 (fd1+fd2) and EngineCore
+       pid 100982 (fd1+fd2); find /mnt/data
+       shows no other engine-*.log (no
+       NEWBOOTLOG) - single boot, pre-v3.1 v2-
+       era whole cycle, NO restart; etime API
+       10:58:52 (boot-age proof), EngineCore
+       10:58:34, station 60644 etime 14:01:47;
+       knobs environ-proven at 10:12:21: API
+       pid 100422
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2 +
+       VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3,
+       EngineCore pid 100982 has the REFUSAL
+       knob; wall=3.0 log-proven; staged v3.1
+       claim-blockout (commit fee6cbf, md5
+       da376d25 PARITY_OK) still deployed,
+       post-restart-gated.
+       Engine counters (live through evidence
+       close 10:13:52, second scripted pass,
+       log size 7895833 growing): SK 1223 ->
+       1231 (+8), RF 27 (+0; last
+       b7485652de1371fe @04:46:17 unchanged;
+       per-id all 1/1), SW 926 -> 929 (+3
+       wall=3.0 cold re-arm local=0:
+       99693b6e70cf01da @10:01:18/21/24),
+       KVL 2530 -> 2641 (+111 running: 2595
+       local=0 [+96 benign] + exceptions 31 ->
+       46 [+15 in-window; split +1 local=1024,
+       +1 local=5120, +3 NEW class local=7168
+       @10:06:13/15 + 10:11:53, +10 local=6144;
+       ids all distinct except one 1 s re-hit
+       pair 82de98a9f86012f2 local=6144
+       hit=9216 x2 @10:08:08/09; all hit-class
+       lines, no wedge-loop shape; WATCH:
+       counter pace up, load shifting to
+       larger contexts]). TB 0, ImportError/
+       AssertionError 0, real CUDA-OOM 0,
+       GPU-watchdog 0, POST 5xx 0.
+       Wedge window: 10:00:06 -> 10:13:01, +8
+       SERVERKILL across 6 fresh ids (one 3x
+       re-arm trio + five singletons):
+       85ec0240d34b9b37 @10:00:06 hit=1024
+       wall=0.3; 88a21f2ef9052912 @10:00:45
+       hit=1024 wall=1.4; 99693b6e70cf01da x3
+       @10:01:16/18/22 hit=1024 at the wall=3.0
+       re-arm cadence (escapes then releases
+       @10:01:18/21/24 local=0 wall=3.0 cold);
+       addac8b418fd24fd @10:02:21 hit=122880
+       wall=0.2; 898ffe81432b7f64 @10:11:54
+       hit=93184 wall=0.3; 8658b04d62c1ef74
+       @10:13:01 hit=102400 wall=0.3
+       fallbacks=1. No refusal anywhere
+       in-window (RF +0); singleton ids
+       re-entered silent (no re-escape, no
+       refusal); trio released cleanly each
+       re-arm; c478/c479 burst ids stayed
+       silent (0 new SK from them); rowlog fb
+       1223 -> 1229 across rows 10:00:21 ->
+       10:05:31 (+6 = the six early SKs 1:1;
+       the two tail SKs land in the post-close
+       row). Final SK-silence to evidence
+       close 10:13:52 = 51 s; engine tail
+       normal KVL/APC traffic through
+       10:13:51.
+       Hb ladder: two NEW consecutive 000
+       rungs in-window - [09:55:00] h=200 p=9
+       500=0 oom=0 shm=0 gpu=0 hb=000 ALERT
+       SERVE-WEDGE and [10:00:21] hb=000 ALERT
+       (rung pair frames the burst start
+       10:00:06; rung1 was a silent hb
+       single-timeout, no SK in 09:48:17 ->
+       10:00:06) - healed at [10:05:31] hb=200.
+       Per gradation: 2 consecutive = ALARM
+       TOUCH (3+ rungs NOT reached; no
+       CYCLE_ALERT); detector CLEAN at cycle
+       close (last row hb=200, engine tail
+       healthy). Pre-cycle rungs 08:57:19,
+       09:28:58, 09:39:38 stay isolated+healed.
+       Serving intact: POST /v1/chat/completions
+       200 OK + GET /metrics 200 OK in tail
+       (APIServer pid=100422), 146x "200 OK"
+       in the last 400 log lines; GPU 98-99%
+       util 31772/32607 MiB; log growing.
+       WEDGE-LOOP-POSTV31: n/a (boot remains
+       pre-v3.1; the window stayed in the
+       established v2-era short-window burst
+       frame class, all cold-re-armed, silent
+       to close).
+       Post-restart incident: none (no
+       restart; first post-v3.1 microdetail
+       stays pending).
+       Verdict: ALARM TOUCH (hb ladder trigger
+       reached at the 2-rung pair, not to the
+       3+ CYCLE_ALERT rung; wedge frames all
+       short-window v2-era class, ids silent
+       to close; REFUSAL=2/WALL=3 knobs
+       proven; serving intact; ALARM state
+       passes forward to cycle 481 - any new
+       000 rung there completes the 3+ ladder
+       into CYCLE_ALERT territory; staged v3.1
+       still post-restart-gated).
+       Cycle 481 dispatch pending (orchestrator).
