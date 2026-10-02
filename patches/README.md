@@ -12597,4 +12597,102 @@ wedge-clean, healed hb row).
        wedge-loop shape, or hard failures;
        staged v3.1 stays post-restart-gated.
 
-       Cycle 489 dispatch pending (orchestrator).
+       Cycle 489 (epoch II; regime V2-era pre-v3.1:
+       no restart; live boot stays engine-20261001-
+       231328.log fd-proven under the remote
+       /mnt/data logs path; API 100422 + EngineCore
+       100982 appending (last line 13:08:05), 40375
+       lines; knobs carried REFUSAL=2/WALL=3
+       environ-proven (VLLM_KV_OFFLOAD_ESCAPE_*=
+       2/3); NEWBOOTLOG none, staged v3.1 still not
+       booted).
+
+       Station: pid 60644 alive at both probes, no
+       restart needed: probe1 NOW=13:00:16
+       HEALTH=200 CANARY_ALIVE_60644; probe2
+       NOW=13:06:57 HEALTH=200 (single 300 s wait
+       between).
+
+       ROWLOG (probe authoritative): start N=1011
+       md5 c87faeadfaf5b09a1abadf35cf697b05
+       @12:56:45 (probe1 fresh-row-free; equals
+       the c488 end) -> end N=1013 md5
+       b495f0c0b65663d5f798da3366eb46f2
+       @13:06:55; window 1011 -> 1013 = +2 rows
+       (13:01:46 + 13:06:55), every one h=200 p=9
+       500=0 clean; in-row fb 1560 held flat (no
+       engine SK in window).
+
+       Hb ladder: no fresh rung in this cycle.
+       Ladder total stays 13 rungs (last rung
+       13 @12:16:22); c488 QUIET holds: heal now
+       10 consecutive h=200 rows (12:21:30
+       through 13:06:55) after rung 13; detector
+       CLEAN at close with zero additions (no
+       re-arm).
+
+       Wedge side fully silent: SERVERKILL 1560 ->
+       1560 (+0; last 12:17:48 unchanged; engine
+       SK silent 49 min to the 13:06:55 probe2):
+       the c486 id-transient loops stay
+       recorded-frozen (SK-line counts):
+       b5905626dc40f40d 19x, 82c750aab6886df7 13x,
+       bce58087a2676c4f 12x, abf3d2da29f6e6a6 7x,
+       a215f803afbe9851 5x + 3 singles (last SK
+       b654e1ab68e3e3ef @12:17:48); no fresh ids
+       and no new kills in window. Frozen chains
+       silent: 865b845545bdc117 31x,
+       8f19eaa97a9ed265 16x, b9b9b07796cfbe9d 13x,
+       ae549f74d871fc43 11x; no known-id
+       recurrence.
+
+       escape refusal 42 -> 42 (+0; last refusal
+       12:14:43, window=2 singleton class of the
+       c486 loop starts, unchanged).
+
+       ESCWALL release 1190 -> 1190 (+0; last
+       12:16:19 wall=3.0 local=0 with the cold
+       re-arm shape; total +0 so the lifetime
+       release histogram carries over; wide-wall
+       class wall>10 still none new).
+
+       KVL 3355 -> 3367 (+12): local0 benign +12
+       (3246 -> 3265; fresh hits 12:56:28 through
+       13:08:05, all local=0 refusal-free and
+       SK-free, incl the 13:07:24 double hit req
+       990007f8af9bb4f0 hit=24576, healthy-cached
+       shape); exceptions 109 flat (no fresh
+       exception; histogram carries 6144=71,
+       1024=24, 2048=6, 7168=5, 5120=2 + FIRST
+       local=4096 req 91d406ccb3a7bc68 still
+       1 line); KVL/APC serving healthy.
+
+       Hard-failure scan clean: Traceback=0,
+       ImportError/AssertionError=0, real
+       'CUDA out of memory'=0, 'GPU watchdog'=0
+       (whole-file, 40375 lines). Station rows
+       h=200 p=9 500=0 oom=0 shm=0 gpu=0 across
+       both probes; serving tail intact: chat
+       POST 200 OK + GET /metrics 200 OK + APC
+       and spec-decode metrics flowing through
+       13:08:05.
+
+       WEDGE-LOOP-POSTV31: n/a (boot still
+       pre-v3.1; no post-restart incident; the
+       first v3.1 microdetail stays pending; the
+       c486 burst ids + c485 ids + frozen chains
+       hold the silent-once comparison snapshot).
+
+       Verdict: QUIET HOLDS (c488 verdict
+       repeats): rung-less window (ladder stays
+       13 rungs), all wedge counters flat at
+       c488 close values, hard failures zero,
+       serving intact, knobs carried
+       REFUSAL=2/WALL=3, HEALTH=200 both
+       probes, no restart. Downstream (cycle
+       490): stays QUIET-vigil; re-arm to alert
+       only on a fresh rung, a post-v3.1
+       wedge-loop shape, or hard failures;
+       staged v3.1 stays post-restart-gated.
+
+       Cycle 490 dispatch pending (orchestrator).
