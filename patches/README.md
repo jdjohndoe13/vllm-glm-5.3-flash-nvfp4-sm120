@@ -10830,4 +10830,70 @@ wedge-clean, healed hb row).
        pid 60644 alive; serving 200 intact;
        staged v3.1 claim-blockout still
        post-restart-gated).
-       Cycle 471 dispatch pending (orchestrator).
+       Cycle 471 (one-shot): station pid 60644 ALIVE
+       at both probes (08:00:06 probe1, 08:07:14
+       probe2); HEALTH=200 at both closes; no
+       station restart; ROWLOG_N 953 -> 955,
+       ROWLOG_MD5 6cb41e49 -> a99f0a19
+       (append-only; no NEWBOOTLOG).
+       Regime: newest engine log is still
+       engine-20261001-231328.log (newest-mtime
+       and LIVELOG fd of API pid 100422 both
+       resolve it); no restart - boot v2-era
+       whole cycle; API pid 100422 alive (pgrep
+       exact), EngineCore pid 100982 alive; knob
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2 and
+       VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3
+       environ-proven on pid 100422; staged v3.1
+       claim-blockout (commit fee6cbf, md5
+       da376d25 both dests PARITY_OK) still
+       deployed, post-restart-gated.
+       Engine counters: SK 1156 -> 1173 (+17),
+       RF 27 (+0; last b7485652de1371fe @04:46:17
+       unchanged), SW 901 -> 909 (+8 wall=3.0
+       cold re-arm), KVL 2257 -> 2291 (+34 benign
+       local=0); Traceback 0,
+       ImportError/AssertionError 0, CUDA-OOM 0,
+       GPU-watchdog 0.
+       Wedge window: 07:54:41 -> 08:00:31, +17
+       SERVERKILL across 9 fresh ids
+       (bdc371c76360cc58=6x,
+       8cb8410b855f8a11=3x,
+       a3a4961a89a860b4=2x, 6 singletons); every
+       fresh id silent since 08:00:31 (probe2
+       08:07:14; log tail 08:07:25, CLEAN).
+       Rowlog rows this cycle: [07:50:50] hb=200
+       carry-over row, [07:56:10] hb=000 one
+       isolated rung ALERT SERVE-WEDGE,
+       [08:01:13] hb=200 heal, [08:06:15] hb=200;
+       2-consecutive rungs never met; apc 804 ->
+       813, kv 5497 -> 5573, fb 1156 -> 1173
+       (fb +17 = SK +17 exact); tier-full churn
+       ev 152352 -> 159632.
+       Serving intact: POST 200 OK @08:07:23 and
+       08:07:24 (engine tail); rowlog h=200 rows
+       [07:50:50] -> [08:06:15]; log tail still
+       growing (mtime 08:07:25).
+       Post-restart incident: none (no restart;
+       first post-v3.1 microdetail stays
+       pending).
+       Standing pre-restart regime: wedge
+       activity present but inside the
+       one-off/short-of-window frame allowance -
+       ~6 min window, 9 fresh small-hit-count
+       ids (max 6x same id bdc371c76360cc58 at
+       the wall=3.0 re-arm cadence), single
+       hb=000 rung, healed, detector CLEAN at
+       cycle close; ladder trigger (2+
+       consecutive rungs) not reached.
+       Verdict: QUIET (SK 1156 -> 1173 +17
+       short-window ids silent since 08:00:31;
+       isolated hb=000 rung @07:56:10 healed
+       @08:01:13; RF +0, SW +8 re-arm, KVL +34
+       benign local=0; boot 231328 v2-era whole
+       cycle knob=2/WALL=3, API pid 100422 +
+       EngineCore 100982 alive, station pid
+       60644 alive; serving 200 intact; staged
+       v3.1 claim-blockout still
+       post-restart-gated).
+       Cycle 472 dispatch pending (orchestrator).
