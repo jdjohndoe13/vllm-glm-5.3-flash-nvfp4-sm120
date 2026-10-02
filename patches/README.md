@@ -12695,4 +12695,117 @@ wedge-clean, healed hb row).
        wedge-loop shape, or hard failures;
        staged v3.1 stays post-restart-gated.
 
-       Cycle 490 dispatch pending (orchestrator).
+       Cycle 490 (epoch II; regime V2-era
+       pre-v3.1 standing: no restart; live boot
+       stays engine-20261001-231328.log
+       fd-proven on BOTH pids (fds of API 100422
+       ="vllm serve" head-match + EngineCore
+       100982 under the remote /mnt/data logs
+       path; API lstart 10-01 23:13:27, EC
+       10-01 23:13:46), 40948 lines 10.1 MB
+       @13:20:53 read, last line 13:20:48 POST
+       /v1/chat/completions 200 OK; knobs
+       environ-proven WALL_SECS=3 and
+       REFUSAL_SECS=2 (carried 2/3); NEWBOOTLOG
+       none, newest engine file still 231328,
+       staged v3.1 still not booted).
+
+       Station: pid 60644 alive at both probes,
+       no restart needed: probe1 NOW=13:12:25
+       HEALTH=200 CANARY_ALIVE_60644; probe2
+       NOW=13:18:02 HEALTH=200 (single 300 s
+       wait between).
+
+       ROWLOG (probe authoritative): start
+       N=1013 md5 b495f0c0b65663d5f798da3366eb46f2
+       @13:06:55 (c489 close; probe1 md5
+       8f7332ccb686f721fbaa68283b0fb522
+       @13:12:09) -> end N=1015 md5
+       35b98e9dca8b00dbe0df4e0d37e02baa
+       @13:17:10; window 1013 -> 1015 = +2 rows
+       (13:12:09 + 13:17:10), every one h=200
+       p=9 500=0 clean; in-row fb 1560 held
+       flat (no engine SK in window).
+
+       Hb ladder: no fresh rung in this cycle.
+       Ladder total stays 13 rungs (last rung
+       13 @12:16:22); c489 QUIET holds: heal now
+       12 consecutive h=200 rows (12:21:30
+       through 13:17:10) after rung 13;
+       detector CLEAN at close with zero
+       additions (no re-arm).
+
+       Wedge side fully silent: SERVERKILL 1560
+       -> 1560 (+0; first 12:10:32, last
+       12:17:48 unchanged; engine SK silent
+       63 min to the 13:20:53 read; whole-file
+       SK id hist rescanned, all top ids
+       historical, no fresh id): the c486 loops
+       stay recorded-frozen: b5905626dc40f40d
+       19x (hist exact), 82c750aab6886df7 13x,
+       bce58087a2676c4f 12x, abf3d2da29f6e6a6
+       7x, a215f803afbe9851 5x + 3 singles
+       (last SK b654e1ab68e3e3ef @12:17:48);
+       frozen chains silent: 865b845545bdc117
+       31x (hist exact), 8f19eaa97a9ed265 16x,
+       b9b9b07796cfbe9d 13x, ae549f74d871fc43
+       11x; no known-id recurrence.
+
+       escape refusal 42 -> 42 (+0; last refusal
+       12:14:43, window=2 singleton class of the
+       c486 loop starts, unchanged).
+
+       ESCWALL release 1190 -> 1190 (+0; last
+       12:16:19 wall=3.0 local=0 with the cold
+       re-arm shape; wall histogram rescanned:
+       3.0=1159 dominant + 3.3=2 + one-off
+       7.8-9.1 singles; wide-wall wall>10 class
+       still 12 lines, none new).
+
+       KVL 3367 -> 3386 (+19): local0 benign
+       +12 (3265 -> 3277; fresh hits 13:09:04
+       -> 13:20:48 all local=0 refusal-free and
+       SK-free, incl the 13:20:48 doubled-line
+       pair req b4965e314fcec15b hit=134144 x2,
+       doubled-line benign shape); exceptions
+       109 flat (no fresh exception; histogram
+       carries 6144=71, 1024=24, 2048=6,
+       7168=5, 5120=2 + FIRST local=4096 req
+       91d406ccb3a7bc68 still 1 line); scan
+       partition now exact 3277 + 109 = 3386,
+       +7 remainder vs the c489 stated total
+       is baseline arithmetic, engine log
+       authoritative; KVL/APC serving healthy.
+
+       Hard-failure scan clean: Traceback=0,
+       ImportError/AssertionError=0, real
+       'CUDA out of memory'=0, 'GPU watchdog'=0
+       (whole-file, 40948 lines). Station rows
+       h=200 p=9 500=0 oom=0 shm=0 gpu=0 across
+       both probes; serving tail intact: chat
+       POST 200 OK at engine close (13:20:48),
+       station apc 1490 -> 1505 and station kv
+       7731 -> 7733 in window, fresh local=0
+       KVL hits flowing through 13:20:48.
+
+       WEDGE-LOOP-POSTV31: n/a (boot still
+       pre-v3.1; no post-restart incident; the
+       first v3.1 microdetail stays pending;
+       the c486 burst ids + c485 ids + frozen
+       chains hold the silent-once comparison
+       snapshot).
+
+       Verdict: QUIET HOLDS (c489 verdict
+       repeats): rung-less window (ladder stays
+       13 rungs), all wedge counters flat at
+       c489 close values (SK 1560 / refusal 42
+       / ESCWALL 1190), hard failures zero,
+       serving intact, knobs carried
+       REFUSAL=2/WALL=3, HEALTH=200 both
+       probes, no restart. Downstream (cycle
+       491): stays QUIET-vigil; re-arm to alert
+       only on a fresh rung, a post-v3.1
+       wedge-loop shape, or hard failures;
+       staged v3.1 stays post-restart-gated.
+
+       Cycle 491 dispatch pending (orchestrator).
