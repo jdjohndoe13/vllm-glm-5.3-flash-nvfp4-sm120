@@ -12808,4 +12808,92 @@ wedge-clean, healed hb row).
        wedge-loop shape, or hard failures;
        staged v3.1 stays post-restart-gated.
 
-       Cycle 491 dispatch pending (orchestrator).
+       Cycle 491 (epoch II, pre-v3.1 boot):
+       QUIET holds (repeat quiet). Station pid
+       60644 alive on both probes, HEALTH=200
+       at 13:24:55 and 13:32:09; ROWLOG_N
+       1016 -> 1017, md5
+       d6b073692e0ef08ae80fde14d8127016 ->
+       9cd0cf1aa83d255b7078aecd3ec3db94; sole
+       fresh row 13:27:22 h=200 p=9 500=0
+       oom=0 shm=0 gpu=0 hb=200 (clean).
+       No restart: fd-proven boot
+       engine-20261001-231328.log unchanged
+       (API 100422 started Oct 1 23:13:27,
+       EngineCore 100982), environ knob read
+       back REFUSAL=2/WALL=3, NEWBOOTLOG
+       none; still v2-era, staged v3.1 stays
+       post-restart-gated. Whole-file read
+       41506 lines (c490 40948).
+
+       Ladder: no new rung; last hb=000 row
+       stays 12:16:22 (13 rungs total); heal
+       chain now 14 consecutive clean h=200
+       rows (12:21:30 -> 13:27:22); ladder
+       stays DISCHARGED-clean, detector CLEAN
+       at close, no re-arm.
+
+       Wedge side: one minor SK one-off
+       (allowed) moves SERVERKILL 1560 ->
+       1561 (+1): fresh id 8998f90faa5c1dd3,
+       req chatcmpl-8998f90faa5c1dd3-8989c736,
+       13:24:55, shape = local=0 hit=147456
+       doubled line + stale-hit fallback
+       (budget=8 fallbacks=1 wall=0.2) + ONE
+       SERVERKILL -> escape, then silence
+       ~10 min to the 13:34 read; no refusal,
+       no ESCWALL release attached; station
+       fb 1560 -> 1561 tracks the same
+       event. All known ids hist exact vs
+       c490: b5905626dc40f40d 19x,
+       82c750aab6886df7 13x, bce58087a2676c4f
+       12x, abf3d2da29f6e6a6 7x,
+       a215f803afbe9851 5x, chains
+       865b845545bdc117 31x, 8f19eaa97a9ed265
+       16x, b9b9b07796cfbe9d 13x,
+       ae549f74d871fc43 11x, last single
+       b654e1ab68e3e3ef 1x (last old SK
+       12:17:48); no known-id recurrence.
+
+       escape refusal 42 -> 42 (+0; last
+       refusal 12:14:43 window=2, unchanged).
+
+       ESCWALL release 1190 -> 1190 (+0; last
+       12:16:19 wall=3.0 local=0 cold re-arm,
+       unchanged).
+
+       KVL 3386 -> 3403 (+17): local=0
+       subcounter 3277 -> 3293 (+16, fresh
+       benign hits flowing, last 13:34:08,
+       all refusal-free and SK-free except
+       the one-off above); exceptions 109 ->
+       110 (+1): fresh 13:24:52 req
+       chatcmpl-9fcfff846c7312f1-8697259c
+       local=1024 hit=96256 (1024-class 24
+       -> 25 by shape), 3 s before the
+       one-off, separate id, no follow-up;
+       serving healthy (KVL/APC fresh
+       through the read; station kv 7740 ->
+       7751, apc 1523 -> 1532 in window).
+
+       Hard-failure scan clean: Traceback=0,
+       ImportError/AssertionError=0, real
+       'CUDA out of memory'=0, 'GPU watchdog'
+       =0 (whole-file, 41506 lines).
+
+       WEDGE-LOOP-POSTV31: n/a (boot still
+       pre-v3.1; no post-restart incident;
+       the first v3.1 microdetail stays
+       pending; the silent-once comparison
+       snapshot carries).
+
+       Verdict: QUIET HOLDS (discharge rules
+       repeat): clean window with no new
+       rung, minor SK one-off allowed, all
+       other wedge counters flat at c490
+       close values, hard failures zero,
+       serving intact. Restart may come at
+       any time; post-restart verdict still
+       requires zero wedge-loop.
+
+       Cycle 492 dispatch pending (orchestrator).
