@@ -13012,4 +13012,131 @@ wedge-clean, healed hb row).
        post-restart verdict still requires
        zero wedge-loop.
 
-       Cycle 493 dispatch pending (orchestrator).
+       Cycle 493 (epoch II, standing pre-restart):
+       station pid 60644 alive at both probes
+       (14:01:42 / 14:07:13), HEALTH=200 at
+       each; no restart run; fd-proven live
+       boot: API pid 100422 (etime 14:54:59)
+       and EngineCore pid 100982 still write
+       the 10-01 23:13:28 boot log; newest
+       engine log still the 231328 file;
+       NEWBOOTLOG none; knob read back
+       REFUSAL=2/WALL=3 via API environ;
+       the whole cycle ran under the
+       standing v2-era regime; post-restart
+       regime criteria n/a this cycle.
+
+       Rowlog: ROWLOG_N 1021 (c492 close)
+       -> 1023 (probe 1 14:01:42; rows
+       13:53:17 and 13:58:37 landed
+       between) -> 1024 (close 14:07:13;
+       healing row 14:03:45); md5s
+       p1 a11ea8b0ab9f0baf16fa9013ef69808b
+       p2 eb4f81b958003a8b33710b971685cd91
+       (c492 close official
+       9118f6da4f2683d9753e785c1bb02480 at
+       N=1021); h=200 on every row;
+       serving fresh through close (kv
+       7818 -> 8011, apc 1583 -> 1621,
+       bytes +52..79k per row).
+
+       Ladder: ONE fresh isolated hb=000
+       rung: [13:58:37] ALERT: SERVE-WEDGE
+       (row keeps h=200 p=9, fb 1598, kv
+       7935, bytes +74.9k in-row), healed
+       [14:03:45] hb=200; no second
+       consecutive rung in this window;
+       rungs total 15 -> 16; NOT a 3+
+       consecutive ladder.
+
+       Wedge side: SERVERKILL 1570 -> 1613
+       (+43), all inside 13:55:46-14:00:18
+       (SK-free 13:47:07 to 13:55:45 and
+       after 14:00:19 to the 14:07:13
+       close); every line silent to close
+       (500=0, h=200 rows); whole-window
+       +43 == seven first-ever ids (fb
+       1570 -> 1613 exact cross-check).
+       Pre-rung burst 30 escapes across 5
+       new ids: b9964134112bcbc6 10x
+       13:55:46 to 13:56:13 hit=168960;
+       b87200c480ee91f4 8x 13:56:44 to
+       13:57:05 hit=54272; fresh single
+       b0e7819da8032065 13:57:17 hit=2048,
+       one escape then silence; b47dc24
+       ecf57ad13 9x 13:57:48 to 13:58:12
+       hit=58368; fresh pair bd96d3a0bb87
+       88b0 13:58:23 + 13:58:26 hit=176128;
+       rung 16 armed 11 s later at 13:58:37.
+
+       Post-rung: NEW-id 12x wedge loop req
+       chatcmpl-8d4dd24c5b1895b9-bf4b1583:
+       escapes 13:58:58 to 13:59:31 at 3 s
+       cadence, local=0 hit=58368, shape =
+       KV-LOOKUP hit + stale-hit fallback +
+       SERVERKILL -> escape (0, False)
+       each round; then fresh single
+       b4beedaedef5a457 14:00:18 hit=59392,
+       one escape then silence. Post-rung
+       total 13 = 12x loop + 1 single;
+       window 30 + 13 = +43 exact.
+
+       ESCWALL release 1193 -> 1229 (+36):
+       one release per escape except burst
+       first in each loop (9 + 7 + 8 + 1 +
+       11 = 36, singles none), every one
+       local=0 wall=3.0, no boundary
+       change; cold re-arm; zero releases
+       in 13:47:07-13:55:45 and after
+       13:59:32.
+
+       escape refusal 42 -> 42 (+0; last
+       refusal still 12:14:43 window=2).
+
+       KVL 3443 -> 3515 (+72): local=0 hit
+       subcounter 3331 -> 3403 (+72); raw
+       window hits 74 incl 2 inside c492's
+       close read; zero exception-class
+       lines in window; whole-file
+       exceptions 3515 - 3403 = 112
+       unchanged, the c492 doubling
+       (local=2048 13:43:28) did not recur;
+       last fresh hit 14:04:17 local=0
+       hit=1024, benign shape.
+
+       Hard-failure scan clean: Traceback=0,
+       ImportError/AssertionError=0, real
+       'CUDA out of memory'=0, 'GPU
+       watchdog'=0 (whole live log file).
+
+       WEDGE-LOOP-POSTV31: n/a (boot still
+       pre-v3.1; the 30-escape pre-rung
+       burst and the 12x same-id 3 s loop
+       are the standing v2-era wedge-burst
+       shape; the same pattern on a
+       post-restart boot would be the
+       alert; first v3.1 microdetail stays
+       pending). Post-restart incident:
+       none (no restart; first v3.1
+       microdetail stays pending).
+
+       Verdict: WATCH HELD (c492's ALARM
+       TOUCH load does not discharge): the
+       fresh isolated hb=000 rung (rung 16,
+       13:58:37, healed 14:03:45) = watch
+       note re-arm per this cycle's
+       discharge rules; no second
+       consecutive rung, no 3+ ladder, so
+       no ALARM TOUCH grade repeat and no
+       CYCLE_ALERT; hard failures zero,
+       serving intact, no known-id
+       recurrence; new ids all first-ever
+       and self-silenced. Forward rules: an
+       isolated rung repeats watch-note
+       re-arm; a fresh 2-consecutive pair
+       re-arms ALARM TOUCH; 3+ lifts to
+       CYCLE_ALERT. Restart may come at
+       any time; post-restart verdict
+       still requires zero wedge-loop.
+
+       Cycle 494 dispatch pending (orchestrator).
