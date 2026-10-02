@@ -9788,4 +9788,77 @@ wedge-clean, healed hb row).
        pid 100422 alive; staged v3.1
        claim-blockout still
        post-restart-gated).
-       Cycle 461 dispatch pending (orchestrator).
+       Cycle 461 (epoch II; v2-era boot held through the
+       whole cycle; user did not restart, no rebase):
+       station pid 60644 alive at both probes, no
+       restart needed; probe1 @05:52:45 HEALTH=200;
+       single 300 s wait; probe2 @05:59:42 HEALTH=200.
+       ROWLOG_N 929 -> 930 (probe rows: fresh row
+       [05:57:44] h=200 p=9 500=0 oom=0 shm=0 gpu=0
+       clean); ROWLOG_MD5 929-end
+       f7c4b479b43b4fe2189e646c77354b07 -> 930-end
+       d337a20b79d3258c7975c1eee8a47293; c460-end
+       baseline 927 (9e871683701fe32ae9abed8e9c2ba3d5)
+       superseded by two later aprows, probe
+       authoritative (append-only, NEWBOOTLOG never
+       appeared). The pre-census row [05:47:31] hb=000
+       (fb 1046 -> 1047, the ledgered a814c SK landing
+       on the next row) stayed an isolated SERVE-WEDGE
+       rung, healed by [05:52:44] hb=200; fresh row
+       05:57:44 clean; no 2-run window, ALARM
+       untouched.
+       Regime: newest engine log still
+       engine-20261001-231328.log; LIVELOG fd1/fd2 of
+       API PID 100422 both resolve it (FDMATCH=yes by
+       readlink); boot still v2-era; knob
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+       environ-proven on pid 100422; no new boot
+       through the 06:00 census (log 20938 lines,
+       +532).
+       Engine census (scripted, whole log): SERVERKILL
+       1047 -> 1047 (+0); escape refusal 27 -> 27 (+0);
+       ESCWALL release 833 -> 833 (+0); KV-LOOKUP hit
+       1995 -> 2010 (+15 benign serving lookups,
+       samples local=0 @05:54:23, @05:59:17,
+       @05:59:51); Traceback=0,
+       ImportError/AssertionError=0, real CUDA OOM /
+       GPU watchdog=0 whole log.
+       Fresh window 10-02 t>=05:46:32 (after c460's
+       last raw line): FRESH_SK=0, FRESH_RF=0,
+       FRESH_SW=0, FRESH_KVL=15 -> zero fresh wedge
+       machinery this cycle. Last SK still the
+       ledgered one-off a814c5ca1fdccd03 @05:44:00;
+       c460 burst ids stayed closed/silent:
+       8d3fc8142b88=13, bb6576aa418c=4, one-offs
+       9f243dcb69e0 / ae38dac1aea4 / a2c6487d8c0a;
+       no new top burst id. Last refusal still
+       b7485652de1371fe @04:46:17; last SW still
+       bb6576aa418c @05:36:46.
+       Vets frozen EXACT whole log, none moved (fresh
+       +0 fully attributed): baf918c29f89=47,
+       a55730aa2436=43, b85345868b69=41,
+       a44edd70f734=39, 82eccb5ddd9a=35,
+       abf4c15de42a=31, 87cf48eadb63=27,
+       ad87dfae2667=25, acd4af385c02=21,
+       997c5c6e07d2=20, bdb1bd99838f=18,
+       a1cb9c778c6c=17; midscale and wedge-era ids
+       hold.
+       30-s same-id refusal detector: CLEAN whole log
+       (RF_FLAG30_COUNT=0); fresh SK sweep trivially
+       clean (0 SK events in the window).
+       Serving intact: POST 200 OK 1474 whole log
+       (+40 vs 1434), GET /metrics 200 OK 4974 (+253
+       vs 4721); apc 533 -> 546; last raw log lines
+       GET 200 OK + POST 200 OK @05:59:52; BAD400
+       still the 2 ledgered client-400 lines; probe
+       rows 500=0 oom=0 shm=0 gpu=0.
+       Post-restart incident: none (no restart; first
+       post-v3.1 microdetail stays pending;
+       WEDGE-LOOP-POSTV31 not applicable under the
+       v2-era boot).
+       Verdict: QUIET (clean zero-wedge cycle;
+       c460's burst trigger did not recur; ladder
+       watch-grade solo rung only; boot still
+       pre-v3.1; staged v3.1 claim-blockout still
+       post-restart-gated).
+       Cycle 462 dispatch pending (orchestrator).
