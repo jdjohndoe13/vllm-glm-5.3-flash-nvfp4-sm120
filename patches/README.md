@@ -8587,4 +8587,103 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
       never logged) - only the user restart
       into staged v3.1 can break the loops.
       ROWLOG_N=888.
-       Cycle 449 dispatch pending (orchestrator).
+      Cycle 449 (one-shot, epoch II, no
+      restart): CYCLE_ALERT (standing,
+      expected pre-restart wall-cycling
+      regime; no new escalation, ladder
+      watch-grade). Probes 02:29:21 ->
+      02:37:39 on testcomp2, station
+      CANARY_ALIVE_60644 both, pid 60644
+      alive throughout, no restart needed;
+      HEALTH 200 @ 02:29:21 and 200 @
+      02:37:39. ROWLOG_N 889 -> 891 (md5
+      bf3c28e2e72fff337babe6ca35d61608 ->
+      0b4a2d4e28e6c31c468cd03f0ced3ef2;
+      c448-end baseline 888, md5
+      ef1b1d60d161e6c946017a085e3da09a;
+      append-only). Fresh rows [02:25:01]
+      and [02:30:11] clean hb=200, then a
+      single isolated SERVE-WEDGE row
+      [02:35:31] hb=000 - watch-grade
+      solo, no 2+/3+ zero-ladder, so the
+      epoch's deepest mark stays the c448
+      5-strike run [01:48:27]..[02:09:48],
+      recovered [02:15:00], clean
+      [02:20:00]. h=200, 500=0, oom=0,
+      shm=0, gpu=0 on every row: serving
+      intact. Regime: STILL baseline boot
+      engine-20261001-231328.log (v2-era;
+      user did not restart this cycle -
+      API pid 100422 unchanged, refusal
+      knob = 2 environ-proven
+      VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS;
+      claim blockout count = 0, so the
+      staged v3.1 was never loaded;
+      WEDGE-LOOP-POSTV31 stays armed; no
+      post-v3.1 incident to report).
+      Engine evidence pass ~02:38 census:
+      SERVERKILL 687 -> 754 total, +67
+      since c448; the long-frozen veteran
+      wall froze EXACT again:
+      (baf918c29f8971ac=47,
+      a55730aa2436f326=43,
+      b85345868b69b2db=41,
+      a44edd70f7347af3=39,
+      82eccb5ddd9a76bd=35,
+      abf4c15de42aa3fb=31,
+      ad87dfae2667eaf5=25,
+      acd4af385c026201=21,
+      997c5c6e07d21b11=20,
+      a7d7ca4522378833=17,
+      a4929a2bb818a4c8=10,
+      a99f2a15f6a0f05d=9,
+      b2394986999297bd=14; interior
+      a8f5a2303ab27c9c=17,
+      ac6b62d8a85ce6f4=17,
+      a8d54557bd6e244d=16 also froze) -
+      no loop growth on any tracked id.
+      Fresh live v2-era wedge-burst this
+      cycle, EXPECTED class:
+      858a90beec8840c1, 8x SERVERKILL in
+      ~21 s 02:42:01 -> :22 (hit=94208
+      fallbacks=1 wall=0.1, SK -> ESCWALL
+      release cold re-arm no boundary
+      change -> re-hit -> re-SK, 3-s
+      cadence loop); c448's burst id
+      802890cea860a673 stayed silent =4
+      (last event 02:11:59); one-off
+      b30ae33b2777629a 02:45:15
+      wall=151.0 SK + escape refusal,
+      closed while observed. 30-s-window
+      same-id detector: at escape-refusal
+      granularity CLEAN (fresh refusals
+      are isolated singles); at coarser
+      SK-line sweep only the historical
+      vet-burst set plus the live
+      858a90bee loop surface, nothing new
+      beyond it - expected pre-restart,
+      NOT post-v3.1. escape refusal 9 ->
+      11 (+2: 85ef4b4730794ea9 02:37:41,
+      b30ae33b2777629a 02:45:15, window=2
+      knob-matched, benign, every fresh
+      escape id single-escape, no
+      re-escape loop beyond the vetted
+      v2-era class). ESCWALL release 573
+      -> 626 (+53), KV-LOOKUP hit 1133 ->
+      1252 (+119). Traceback=0,
+      ImportError/AssertionError=0, real
+      CUDA OOM/GPU watchdog=0, HTTP 5xx =
+      0 whole log, POST 200 OK total 611
+      (+66 since c448, latest in the
+      02:45 tail with APC-HIT flow).
+      Verdict: CYCLE_ALERT (standing,
+      recorded-but-expected) -> the
+      v2-era wedge-wall loop regime
+      persists at watch-grade hb activity
+      while serving held; still NOT the
+      v3.1 per-id one-escape-then-silence
+      fingerprint (claim block never
+      logged) - only the user restart
+      into staged v3.1 can break the
+      loops. ROWLOG_N=891.
+       Cycle 450 dispatch pending (orchestrator).
