@@ -9274,4 +9274,109 @@ the user restart flips the regime;
 zero-delta rest keeps the standing
 verdict, no escalation. Verdict: QUIET
 (clean cycle, boot still pre-v3.1).
-       Cycle 456 dispatch pending (orchestrator).
+       Cycle 456 (epoch II; v2-era boot
+engine-20261001-231328 unchanged, API
+pid 100422, fd-resolved live log
+matches newest file by mtime under
+/mnt/data/shared/models/
+vllm-glm-5.3-flash-nvfp4/logs, knob
+VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+environ-proven again on the running
+pid; no restart, no rebase, no regime
+flip): station pid 60644 ALIVE at both
+probes, HEALTH=200 @04:33:58 and
+HEALTH=200 @04:40:20, one 300 s wait
+between. ROWLOG_N=911 -> 915 (c455 md5
+e34538f6..., 913 bf6f42be..., 915
+1af9c031...; new rows 04:24:41 and
+04:29:50 hb=200, 04:35:10 isolated
+hb=000 rung, healed by 04:40:19
+hb=200, no 2-run window, ALARM not
+touched). Engine pass @04:43:29
+(scripted, fd-resolved): SERVERKILL
+952 -> 1015 (+63 through census) and
+re-census @04:49:06 SK=1025 (+10
+further live serving growth; ledger
+delta +73 exact = corrected in-window
+frames >=04:26 on 10-02; window: 23
+distinct fresh ids, 9 singleton + 4
+diads, no ledger vet moved). Top
+window bursts (v2-era expected
+ESCWALL-chained class):
+963164aa471a2b63 11x (04:35:08 ->
+:38), ba2c157b3d7aac75 8x
+(04:31:57 -> 04:32:18), bd205ad8ce7e
+99c0 7x (04:36:12 -> :30),
+9399e65cbb67f0fe 7x (04:44:06 ->
+:23), 96e734145190642a 5x
+(04:26:37 -> :49), b41c16f
+b4a867335 4x; remainder diads and
+singleton ids. Frozen vets EXACT
+whole-log check re-run: all 20 ids
+unchanged incl baf918c29f8971ac=47,
+a55730aa2436f326=43,
+b85345868b69b2db=41,
+a44edd70f7347af3=39, 82eccb5ddd
+9a76bd=35, abf4c15de42aa3fb=31,
+87cf48eadb6324ea=27, ad87dfae2667
+eaf5=25, acd4af385c026201=21,
+997c5c6e07d21b11=20, bdb1bd99838f
+808b=18, 8e007ca1da212703=13,
+a1cb9c778c6c0671=17;
+midscale ac6b62d8a85ce6f4=17
+unchanged; none of the 20 moved.
+Escape refusal 22 -> 25 (+3 through
+census: b0046a5eeb03cd1b @04:33:58,
+85a14409d356e457 @04:41:12,
+94c51ad5eb962d1a @04:42:10, plus +2
+further one-offs by re-census:
+9399e65cbb67f0fe @04:44:06,
+b7485652de1371fe @04:46:17, every
+line window=2 knob-matched). Per-id
+refusal max = 1 over the whole grown
+log (no re-escape on any id); 30-s
+same-id refusal detector CLEAN at two
+independent checks. One-escape
+microdetail (94c51ad5eb962d1a): hit
+local=0 hit=151552 @04:42:07 ->
+stale-hit fallback + SERVERKILL
+@04:42:09 -> refusal @04:42:10 ->
+ESCWALL release wall=3.7 cold re-arm
+@04:42:11 -> hits resume, no
+re-refusal (silence). ESCWALL release
+767 -> 810 (+43 cold re-arm through
+census; 818 by re-census). KV-LOOKUP
+hit 1733 -> 1871 (+138 through
+census; 1893 by re-census, benign
+serving lookups, local=0).
+Traceback=0, ImportError/
+AssertionError=0, real CUDA OOM/GPU
+watchdog=0 whole log; probe rows
+500=0 oom=0 gpu=0 throughout; POST
+class 200 OK 1170 lines, GET /metrics
+200 OK 4001 in log, live self-metrics
+200 @04:51, last log line metrics
+200. Serving intact: h=200 p=9 both
+probes; SpecDec counters alive
+(drafts 615556, accepted 942463,
+~1.53 accept/draft @04:51). hb ladder
+state (this cycle): 04:24:41 and
+04:29:50 hb=200, 04:35:10 isolated
+rung, 04:40:19 recovery = closed;
+prior 03-rung stayed closed from
+c455; no 2-consecutive window, ALARM
+not touched. No restart happened, so
+no post-restart incident and no
+WEDGE-LOOP-POSTV31 evaluation
+applicable; first post-v3.1
+microdetail stays pending. Standing
+CYCLE_ALERT persists unchanged until
+the user restart flips the regime;
+this cycle stayed inside the standing
+regime with no new trigger, no
+escalation, no rebase. Verdict: QUIET
+(clean cycle, boot still pre-v3.1;
+wedge-burst SK volume higher than
+c455 but vet-frozen, single-refusal,
+wedge-clean, healed hb row).
+       Cycle 457 dispatch pending (orchestrator).
