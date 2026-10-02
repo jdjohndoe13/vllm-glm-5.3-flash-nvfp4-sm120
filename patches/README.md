@@ -9861,4 +9861,73 @@ wedge-clean, healed hb row).
        watch-grade solo rung only; boot still
        pre-v3.1; staged v3.1 claim-blockout still
        post-restart-gated).
-       Cycle 462 dispatch pending (orchestrator).
+       Cycle 462 (epoch II; boot stayed 231328 v2-era
+       through the whole cycle; user did not restart,
+       no rebase): station pid 60644 alive at both
+       probes; probe1 @06:02:30 HEALTH=200; single
+       300 s wait; probe2 @06:07:35 HEALTH=200.
+       ROWLOG_N 930 -> 931 (fresh row [06:02:45]
+       h=200 p=9 500=0 oom=0 shm=0 gpu=0 clean);
+       ROWLOG_MD5 930-end
+       d337a20b79d3258c7975c1eee8a47293 -> 931-end
+       44cffa56414269e2f043c56fa6171321 (append-only,
+       probe authoritative, NEWBOOTLOG never
+       appeared). Regime: newest engine log still
+       engine-20261001-231328.log; LIVELOG fd1/fd2
+       of API PID 100422 both resolve it; boot
+       still v2-era; knob
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2 carried
+       environ-proven on the same pid; no restart.
+       Engine census (scripted, whole log):
+       SERVERKILL 1047 -> 1047 (+0; fresh sweep
+       since 05:46:32 trivially 0; last SK still
+       the ledgered one-off a814c5ca1fdccd03
+       @05:44:00); escape refusal 27 -> 27 (+0,
+       last refusal still b7485652de1371fe
+       @04:46:17); ESCWALL release 833 -> 833 (+0,
+       last release still bb6576aa418c @05:36:46);
+       KV-LOOKUP hit 2010 -> 2015 (+5 benign;
+       fresh ts 06:00:09, 06:02:27, 06:07:34,
+       06:10:09, 06:10:26, all local=0);
+       Traceback=0, ImportError/AssertionError=0,
+       real CUDA OOM / GPU watchdog=0 whole log.
+       Frozen vets EXACT none moved (delta +0):
+       8d3fc8142b88=13, bb6576aa418c=4, one-offs
+       9f243dcb69e0 / ae38dac1aea4 /
+       a2c6487d8c0a / a814c5ca1fdccd03, SK=1 each;
+       long-history SK table re-read unchanged:
+       baf918c29f89=47, a55730aa2436=43,
+       b85345868b69=41, a44edd70f734=39,
+       82eccb5ddd9a=35, abf4c15de42a=31,
+       87cf48eadb63=27, ad87dfae2667=25,
+       acd4af385c02=21, 997c5c6e07d2=20,
+       bdb1bd99838f=18, a1cb9c778c6c=17;
+       midscale and wedge-era ids hold; no new
+       top burst ids.
+       30-s same-id refusal detector (fixed id
+       extraction) CLEAN whole log: all 27
+       refusals are unique-fingerprint
+       singletons (max30s=1 per id); fresh SK
+       sweep trivially clean.
+       Serving intact: POST 200 OK 1505 whole log
+       (+31 vs 1474), GET /metrics 200 OK 4997
+       (+23 vs 4974); BAD400 still the 2 ledgered
+       client-400 lines; probe rows 500=0 oom=0
+       shm=0 gpu=0; last raw lines POST 200 OK at
+       the 06:10 tail (serving and lookups live).
+       hb ladder: no fresh rungs; c461 rung
+       05:47:31 stays healed 05:52:44 hb=200;
+       fresh row 06:02:45 clean; no 2-run
+       window, ALARM untouched.
+       Log lines 20938 -> 21328 (+390; benign
+       probe traffic). Post-restart incident: none
+       (no restart; first post-v3.1 microdetail
+       stays pending; WEDGE-LOOP-POSTV31 not
+       applicable under the v2-era boot).
+       Verdict: QUIET (clean zero-wedge cycle;
+       zero-delta wedges everywhere; KVL +5
+       benign; detector CLEAN; ladder healed
+       watch-grade; boot still pre-v3.1; staged
+       v3.1 claim-blockout still
+       post-restart-gated).
+       Cycle 463 dispatch pending (orchestrator).
