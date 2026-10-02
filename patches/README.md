@@ -9379,4 +9379,108 @@ escalation, no rebase. Verdict: QUIET
 wedge-burst SK volume higher than
 c455 but vet-frozen, single-refusal,
 wedge-clean, healed hb row).
-       Cycle 457 dispatch pending (orchestrator).
+       Cycle 457 (epoch II; v2-era boot
+       engine-20261001-231328 unchanged,
+       API pid 100422, fd-resolved live
+       log = newest file (FDMATCH=yes on
+       both scripted passes), knob
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS
+       =2 environ-proven again; no restart,
+       no rebase, no regime flip): station
+       pid 60644 ALIVE at both probes,
+       HEALTH=200 @04:51:57 and HEALTH=200
+       @04:57:18, one 300 s wait between.
+       ROWLOG_N=915 -> 920 (probe1 917
+       md5 7e83a27c..., probe2 918 md5
+       10f875ce..., end 920 md5 c9c59407
+       across canary5m.log; new rows
+       04:45:39 hb=000 isolated rung,
+       healed by 04:50:40 hb=200;
+       04:55:41 hb=200; 05:01:01 second
+       isolated hb=000 rung, healed by
+       05:06:02 hb=200; no 2-run window,
+       ALARM not touched).
+       Baseline note (discrepancy): the
+       c456 refusal arrow said end=25 but
+       its own named incidents (+3 then
+       +2) imply 27 and the live log
+       agrees: 27 whole log, ZERO fresh
+       after 04:49:06, so true c456 end
+       RF=27; engine log authoritative;
+       handoff cross-check said 25.
+       Engine census @05:00:23 (scripted,
+       fd-resolved, log 18283 lines):
+       SERVERKILL 1025 -> 1026 (+1 through
+       census, +0 by re-census @05:06:49;
+       window 04:49:06 -> 05:06:49 closes
+       exact: one fresh frame 04:59:30 =
+       one-off id a4825dcf5f9794d7 1x; no
+       burst id, no wedge-burst window
+       this cycle, top bursts = none).
+       One-escape microdetail
+       (a4825dcf5f9794d7): KV-LOOKUP hit
+       local=0 hit=1024 @04:59:29 ->
+       stale-hit fallback wall=0.2 ->
+       SERVERKILL @04:59:30 -> escape
+       (0,False) -> NO refusal follows, NO
+       ESCWALL release yet, hits resume
+       (silence); rowlog rung 05:01:01
+       straddles it, healed 05:06:02.
+       Per-id refusal max = 1 over whole
+       log (no re-escape on any id);
+       30-s same-id wedge detector CLEAN
+       at both scripted checks
+       (WEDGE30_COUNT=0 whole log).
+       Frozen vets EXACT whole log:
+       baf918c29f8971ac=47,
+       a55730aa2436f326=43,
+       b85345868b69b2db=41,
+       a44edd70f7347af3=39,
+       82eccb5ddd9a76bd=35,
+       abf4c15de42aa3fb=31,
+       87cf48eadb6324ea=27,
+       ad87dfae2667eaf5=25,
+       acd4af385c026201=21,
+       997c5c6e07d21b11=20,
+       bdb1bd99838f808b=18,
+       a1cb9c778c6c0671=17,
+       8e007ca1da212703=13; midscale
+       ac6b62d8a85ce6f4=17 and wedge-era
+       id 963164aa471a2b63=11 all hold
+       (none of the ledger-frozen moved).
+       Escape refusal 27 -> 27 (+0 fresh;
+       all 27 lines window=2 knob-matched).
+       ESCWALL release 818 -> 818 (+0;
+       last releases b7485652de1371fe
+       @04:46:18 wall=3.6 and @04:46:21
+       wall=3.0, cold re-arm class).
+       KV-LOOKUP hit 1893 -> 1910 (+17
+       benign serving lookups; sample
+       lines local=0 except one
+       local=1024 @05:02:44).
+       Traceback=0, ImportError/
+       AssertionError=0, real CUDA OOM
+       /GPU watchdog=0 whole log.
+       Serving intact: POST 200 OK 1170
+       -> 1253 (+83), GET /metrics 200
+       OK 4001 -> 4209 (+208) in log;
+       probe rows 500=0 oom=0 gpu=0
+       throughout; last log line POST
+       /v1 200 OK; apc counter alive
+       (364 -> 430 by 05:06).
+       No restart happened, so no
+       post-restart incident and no
+       WEDGE-LOOP-POSTV31 evaluation
+       applicable; first post-v3.1
+       microdetail stays pending.
+       Standing CYCLE_ALERT persists
+       unchanged until the user restart
+       flips the regime; this cycle
+       stayed inside the standing
+       regime, no new trigger, no
+       escalation, no rebase. Verdict:
+       QUIET (clean cycle, boot still
+       pre-v3.1; wedge output collapsed
+       to a single one-off frame;
+       detector CLEAN whole log).
+       Cycle 458 dispatch pending (orchestrator).
