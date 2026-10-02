@@ -8060,4 +8060,142 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
    serving continuous, hb ladder
    watch-level only, no loop alerts).
    ROWLOG_N=846.
-     Cycle 443 dispatch pending (orchestrator).
+   Cycle 443, attempt 2 after the
+   infra-timeout attempt 1 (fix-299;
+   no side effects, repo clean):
+   CYCLE_ALERT. Window probes
+   00:15:57 -> 00:22:49, station
+   CANARY_ALIVE_60644 on both, no
+   restart (pid 60644 alive);
+   HEALTH timings 200 @ 00:15:57
+   and 200 @ 00:22:49. ROWLOG_N
+   864 -> 865 -> 868 (md5
+   ca702f3e1bfdaa93a326615c465b622c ->
+   b91125aa63702d45a1c28b07c367c6a6 ->
+   90ee8b82ee011848b9c0cefee722fc33),
+   append-only +22 rows from the
+   c442 tip 846, no mid-window
+   rebase at the rowlog (18 rows
+   landed pre-probe, one true
+   window row [00:18:47], +3 at the
+   00:36:17 evidence read). Epoch
+   event in-span (landed
+   pre-dispatch): old epoch
+   wall-died ~23:11 ([23:11:17]
+   h=000 p=7 ev=?,?,?), restart
+   minted engine-20261001-231328
+   at 23:13:28; rowlog marks
+   [23:16:17] ALERT: NEWBOOTLOG
+   (fb=0 kv=0 ev=?,?,?), [23:21:18]
+   h=000 warm-up, recovery
+   [23:26:38] h=200. Post-restart
+   deltas: counters reset rows
+   853-854 then climb (fb 4->303,
+   kv 16->1354, apc 1->42, ev churn
+   at tier-full 12412); station pid
+   60644 survived the epoch change;
+   the 23:41 baselines were taken
+   on this same boot so none need
+   rebasing (c442-era SK 41 / KVL
+   272 / ESCWALL 1 totals died with
+   the 214203 log). Boot state:
+   API id 100422 alive (lstart Thu
+   Oct 1 23:13:27 = the 23:41-fact
+   boot), EngineCore 100982,
+   refusal knob direct environ
+   proof VLLM_KV_OFFLOAD_ESCAPE_
+   REFUSAL_SECS=2 (scripted pgrep
+   read); newest engine log
+   re-confirmed 231328 (mtime
+   00:36:14, 1159733 B) so patch
+   v3.1 (fee6cbf, both dests md5
+   da376d25, .bak-20261001-claim2)
+   is staged on disk but NOT
+   loaded - the running engine
+   predates it, regime shift pends
+   the user restart. Envelope
+   clean on every h=200 row (500=0
+   oom=0 shm=0 gpu=0 rep=0).
+   Evidence pass (date-aware
+   recount vs 23:41:30; the 23:41
+   manual baseline SK 76 / REF 0 /
+   ESCWALL 64 / KVL 112 reproduces
+   exactly - my first since-23:41
+   crawl mis-grouped post-midnight
+   lines and was corrected):
+   Traceback=0; ImportError|
+   AssertionError=0; OOM raw=0
+   real=0 (no banner hits this
+   boot). SERVERKILL 305 = 76 +
+   229 NEW (23:41:44 -> 00:35:10);
+   KVL 504 = 112 + 392; ESCWALL
+   release 252 = 64 + 188; escape
+   refusal lines 1 (00:15:58
+   window=2 = designed inertness
+   under v2-era code: the 2 s knob
+   expires before the 3 s wall
+   check so the quarantine never
+   engages); 'escape claim
+   blocked' lines 0 (debug-only,
+   not at INFO - the v3.1
+   signature appears only
+   post-restart).
+   WEDGE-LOOP-POSTV31 ALERT FIRED:
+   rapid same-req escapes at
+   few-second intervals:
+   a8f5a2303ab27c9c 3-s cadence
+   run from 23:42:12;
+   abf4c15de42aa3fb 14 escapes
+   exactly 3 s apart
+   00:32:07 -> 00:32:46;
+   b97d21e2a88ed193 escape pair
+   00:35:07/00:35:10 with ESCWALL
+   releases '(no boundary change;
+   cold re-arm)' wall=3.0 x2 - the
+   classic loop under v2-era
+   wall-cycling. Top wedged req
+   ids (whole-log):
+   a55730aa2436f326=43 (all
+   post-baseline, newest hot
+   wedge), a44edd70f7347af3=39
+   (unchanged), abf4c15de42aa3fb=31
+   (all new), ac6b62d8a85ce6f4=17,
+   a8f5a2303ab27c9c=17,
+   a8d54557bd6e244d=16 (unchanged).
+   Ladder over span rows 847-868:
+   2-run [22:50:18]+[22:55:39] =
+   ALARM TOUCH level, closed by
+   [23:00:56] hb=200; restart
+   cluster [23:06:17]-[23:26:38]
+   carries the epoch-fact h=000
+   rows; isolated W rows
+   [23:42:11]/[23:52:35] = watch;
+   then 5-consecutive hb=000 rows
+   [00:08:07][00:13:27][00:18:47]
+   [00:24:08][00:29:28] (SERVE-WEDGE
+   on each) -> 3+ = CYCLE_ALERT per
+   ladder, closed by [00:34:32]
+   hb=200. Serving never dropped
+   post-warm-up: h=200 every
+   h-column row, HEALTH 200 both
+   probes, log tail 00:36 healthy
+   (POST 200 OK x6 from
+   192.168.2.208, Running 1 /
+   Waiting 1, SpecDecoding mean
+   acceptance 2.89-3.11, KV
+   Transfer mirrored 55008-56456
+   keys, MFU 0.6-2.1 TF/s).
+   Verdict: CYCLE_ALERT ->
+   pre-v3.1 wedge-wall loop
+   intensification (same-id 3 s
+   re-escape bursts + 5-run
+   hb=000) while serving held; NOT
+   the v3.1 regime signature (per
+   new fingerprint one SERVERKILL
+   + optional release, then
+   silence) - the user restart
+   must load v3.1 to break the
+   loops; WEDGE-LOOP-POSTV31 stays
+   armed for the 231328 boot.
+   ROWLOG_N=868.
+     Cycle 444 dispatch pending (orchestrator).
