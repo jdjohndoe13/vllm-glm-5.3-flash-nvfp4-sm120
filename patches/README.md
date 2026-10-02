@@ -11646,4 +11646,173 @@ wedge-clean, healed hb row).
        000 rung there completes the 3+ ladder
        into CYCLE_ALERT territory; staged v3.1
        still post-restart-gated).
-       Cycle 481 dispatch pending (orchestrator).
+       Cycle 481 (one-shot): station pid 60644 ALIVE
+       at all three probes (10:20:52 probe1,
+       10:30:27 probe2, 10:39:33 probe3);
+       HEALTH=200 at all closes; no station
+       restart; ROWLOG_N 978 -> 984 (handoff
+       baseline 978; 980 probe1, 982 probe2,
+       984 probe3), ROWLOG_MD5 ffbf3dbf (c480
+       end) -> 3ceb9f88 (probe1) -> e2b676ad
+       (probe2) -> 0691aff5 (probe3);
+       append-only, no NEWBOOTLOG; probe is
+       authoritative.
+       Regime: newest engine log still engine-
+       20261001-231328.log, fd-resolved by API
+       pid 100422 and EngineCore pid 100982
+       (fd1+fd2 each, pgrep-head match too);
+       single boot, pre-v3.1 v2-era whole
+       cycle, NO restart; etime API 11:16:59
+       (lstart 10-01 23:13:27), EngineCore
+       11:16:41 (23:13:46) = boot-age proof;
+       knobs environ-proven at API pid 100422:
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+       + VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3
+       (REFUSAL=2/WALL=3); machine uptime
+       start 2026-10-01 14:28:45 (no reboot);
+       staged v3.1 claim-blockout (commit
+       fee6cbf, md5 da376d25 PARITY_OK) still
+       deployed, post-restart-gated.
+       Engine counters (live through the
+       10:38:11 close, scripted passes, 33215
+       lines growing): SK 1231 -> 1296 (+65
+       across 24 fresh ids, frame 10:13:53 ->
+       10:37:58), RF 27 -> 30 (+3 singletons
+       window=2: 812f09a860a88d14 @10:18:14,
+       a8c9cca3519aa506 @10:36:03,
+       ad481b64f6d1dfa5 @10:37:06; per-id all
+       1/1), SW 929 -> 970 (+41 = one wall=3.0
+       cold re-arm local=0 release per cycle
+       of every repeater; a lone wall=8.0
+       @10:18:16 matches the 812f wall=6.0
+       escape), KVL 2641 -> 2831 (+190
+       running: 2743 local=0 [+148 benign] +
+       exceptions 46 -> 88 [+42 hit-class,
+       observed lines all local=6144: 22
+       steady context-shift lines incl 5
+       same-second re-hit pair-lines
+       ba611122bc667cc3 x2 @10:20:28,
+       b23cb676203eaa18 x2 @10:26:54,
+       96f9ece64f34bfd5 x2 @10:28:40,
+       b3ed9940f16a05ae x2 @10:30:59,
+       bd7f79df8ab97e2a x2 @10:35:12; plus
+       20 wedge-coupled re-lookups 1:1 with
+       the ad48 chain re-arms (local=6144
+       hit=66560; a8c9 chain re-lookups
+       stayed local=0); local=7168 class
+       total 3, +0 this cycle; WATCH stays
+       on the exceptions counter pace]).
+       TB 0, ImportError/AssertionError 0,
+       real CUDA-OOM 0, GPU-watchdog 0,
+       POST 5xx 0.
+       Wedge window: 10:13:53 -> 10:37:58,
+       +65 SERVERKILL across 24 fresh ids
+       (two sustained 3 s re-arm chains +
+       one 6x cluster + one 4x runner +
+       four 2x pairs + sixteen 1x singles):
+       opener 83ab80090720d0c2 @10:13:53
+       hit=105472 wall=0.2, 1 s after the
+       c480 evidence close; runner
+       a86e306e45c0c169 x4 @10:19:52/55/58
+       + 10:20:01 hit=145408 (3 s re-arm,
+       releases @10:19:55/58 + 10:20:01);
+       cluster a6a5828f2d43c6a9 x6
+       @10:29:05-20 hit=156672 (releases
+       interleaved); pairs 812f09a860a88d14
+       x2 @10:18:14/16 hit=3072 (refusal in
+       the opener second, stale-hit
+       fallback budget=8),
+       b6ef3957eaec5969 x2 @10:29:47/50,
+       9a6543c68c05fa82 x2 @10:33:49/52,
+       bd7f79df8ab97e2a x2 @10:35:41/44;
+       chains a8c9cca3519aa506 x12
+       @10:36:03-36 hit=150528 (wall=6.6
+       opener then 3 s 0.1 re-arms, refusal
+       @10:36:03) and ad481b64f6d1dfa5 x19
+       @10:37:04-58 hit=66560 (wall=1.3
+       opener then 3 s 0.1 re-arms, refusal
+       @10:37:06); singles (15 + opener):
+       bcdef6e3a6831a91 @10:15:49,
+       81588c4430248e74 @10:16:38,
+       b51e21f98d045a04 @10:17:30,
+       96e7bd35bc7ba08c @10:18:56,
+       a3d7dddeafe4db27 @10:19:21,
+       ba527d9bc5a80205 @10:20:53,
+       aad3d8485f480628 @10:24:36,
+       bb32093958d5d502 @10:25:31,
+       bc222a53173eca7d @10:25:56,
+       a43fdd245f456334 @10:27:04,
+       8ef8da54b1fb0f05 @10:27:38,
+       964d4e2df47a15ee @10:28:11,
+       b3ed9940f16a05ae @10:30:59,
+       b2d0a4feb4fd31de @10:33:21,
+       836aeaa3ea2fe935 @10:35:13 (all
+       first-appearance; c480 fresh-vets
+       stayed silent, zero new SK from all
+       six); frame live at the 10:38:11
+       close (last SK 10:37:58, 13 s of
+       silence at pull).
+       Rowlog fb 1223 (c480 pair) -> 1229
+       @10:05:31 -> 1277 @10:37:04 (+54;
+       SKs absorb ~1:1 with row-boundary
+       races); kv 5975 -> 6340; every row
+       h=200 p=9 500=0 oom=0 shm=0 gpu=0.
+       Hb ladder: FOUR new 000 rungs this
+       cycle. Rung3 [10:10:51] h=200 p=9
+       500=0 oom=0 shm=0 gpu=0 hb=000 ALERT
+       SERVE-WEDGE (first new rung since
+       the 10:05:31 heal); rung4 [10:16:12]
+       hb=000 ALERT (2-consecutive re-rung
+       mid-burst; the 10:13:53 opener
+       spans the pair); healed [10:21:22]
+       + [10:26:23] hb=200; rung5 [10:31:44]
+       hb=000 ALERT (pairs the
+       10:30:59-10:33:52 frame); rung6
+       [10:37:04] hb=000 ALERT (same
+       second as the ad48 chain opener) -
+       a second fresh 2-consecutive pair;
+       as of probe3 10:39:33 the rung6 row
+       is the last written row (no heal
+       yet). Per the c480 discharge rule
+       the forward-passed ALARM TOUCH
+       completed the 3+ ladder via rungs
+       3+4, and the cycle added a second
+       fresh 2-rung pair: repeat-
+       escalation, detector NOT clean at
+       close.
+       Serving intact: POST /v1/chat/completions
+       200 OK, GET /metrics 200 OK, /health
+       200 OK in tail (APIServer pid=100422);
+       APC-HIT + KVL traffic normal; log
+       growing (33215 lines at 10:38:11,
+       8.11 MB at 10:30:27).
+       WEDGE-LOOP-POSTV31: n/a (boot remains
+       pre-v3.1; the v2-era frame family
+       drifted from short-window bursts to
+       sustained wall=3.0 re-arm chains -
+       6x -> 12x -> 19x same-id chain
+       escalation in one cycle; under v3.1
+       the 12x/19x chains would be instant
+       POSTV31 wedge-loop alerts; no
+       restart, so v2-era frames read as
+       expected behavior).
+       Post-restart incident: none (no
+       restart; first post-v3.1 microdetail
+       stays pending).
+       Verdict: CYCLE_ALERT (hb-ladder
+       repeat-escalation: the ALARM TOUCH
+       watch passed forward by c480
+       completed the 3+ ladder via NEW
+       rungs 10:10:51 + 10:16:12, then
+       re-reached a second fresh 2-rung
+       pair at 10:31:44 + 10:37:04; wedge
+       frame 10:13:53 -> 10:37:58 ran +65
+       SK across 24 fresh ids with
+       sustained 12x/19x 3 s re-arm chains
+       and was live at close; REFUSAL=2/
+       WALL=3 knobs proven; serving
+       intact; ALARM carries to cycle 482
+       - any new rung or continued chain
+       escalation escalates further;
+       staged v3.1 still post-restart-gated).
+       Cycle 482 dispatch pending (orchestrator).
