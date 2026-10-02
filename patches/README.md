@@ -9223,4 +9223,55 @@ CUDA OOM/GPU watchdog=0, HTTP 5xx =
 live GET /metrics 200 through
 census; SpecDec mean accept len
 2.99 @04:13:01. ROWLOG_N=908.
-       Cycle 455 dispatch pending (orchestrator).
+       Cycle 455 (epoch II; v2-era boot
+engine-20261001-231328 unchanged, API
+pid 100422, knob
+VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+environ-proven again, fd-resolved live
+log matches newest; no restart, no
+rebase): station pid 60644 ALIVE at
+both probes, HEALTH=200 @04:18:20 and
+HEALTH=200 @04:24:20, one 300 s wait
+between. ROWLOG_N=910 -> 911
+(MD5 aeae24973ce335968c5c8ada725dfab5 ->
+e34538f60dc14578c2d3edf6b3f9ba3e; the
+new 04:19:39 row is hb=200 and heals
+the 04:14:39 isolated hb=000 run).
+Engine pass (log 16518 lines) is
+v2-era: SERVERKILL 930 -> 952 (+22
+fresh, all one-off class: top in-window
+frames abfc57ff1db69e9e 2x
+(04:17:51 -> :54 ESCWALL-chained),
+86e288aa7bbfbfe6 2x (04:23:28 -> :30),
+a3ba586ec5335993 and a2951fa6f2a71546
+1x, remainder singleton; no new burst
+id, ledger vets frozen EXACT incl
+a1cb9c778c6c0671=17 kept, baf918c29
+f8971ac=47, a55730aa2436f326=43,
+b85345868b69b2db=41, a44edd70f7347
+af3=39). Escape refusal 21 -> 22 (+1
+fresh: abfc57ff1db69e9e @04:17:49
+window=2), every id single-refusal, 30
+-s same-id wedge detector CLEAN whole
+log. ESCWALL release 752 -> 767 (+15,
+cold re-arm, no boundary change,
+local=0). KV-LOOKUP hit 1690 -> 1733
+(+43, benign serving lookups).
+Traceback=0, ImportError/
+AssertionError=0, real CUDA OOM/GPU
+watchdog=0 whole log. Serving intact:
+POST /v1 200 OK plus live
+GET /metrics 200 through 04:26, SpecDec
+mean accept len 2.05 @04:26:21. hb
+ladder state: prior un-healed 3-rung
+(03:53 / 03:58 / 04:04) closed here
+(04:09 recovery audited, 04:19:39
+healed follow-up), the 04:14:39 run
+stayed isolated, no 2-consecutive
+window run, ALARM not touched. Standing
+CYCLE_ALERT persists unchanged until
+the user restart flips the regime;
+zero-delta rest keeps the standing
+verdict, no escalation. Verdict: QUIET
+(clean cycle, boot still pre-v3.1).
+       Cycle 456 dispatch pending (orchestrator).
