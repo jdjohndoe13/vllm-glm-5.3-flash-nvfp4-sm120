@@ -13139,4 +13139,156 @@ wedge-clean, healed hb row).
        any time; post-restart verdict
        still requires zero wedge-loop.
 
-       Cycle 494 dispatch pending (orchestrator).
+       Cycle 494 (one-shot per the standing
+       contract: probe, 300 s wait, probe,
+       evidence pass) ran wholly under the
+       standing v2-era regime: no restart,
+       NEWBOOTLOG none, newest engine log
+       still engine-20261001-231328.log at
+       every read (API fd resolve + dir
+       list), API 100422 and EngineCore
+       100982 up. Active environ reads of
+       100422 and 100982 this cycle show
+       no REFUSAL/WALL knob lines (handoff
+       knob note not reproduced), refusal
+       behavior itself live (see below); no
+       rebase needed, post-restart criteria
+       n/a. Station pid 60644 alive at both
+       probes; HEALTH=200 at 14:18:38 and
+       at 14:24:46.
+
+       Rowlog: ROWLOG_N 1024 (c493 close)
+       -> 1026 (probe 1 14:18:38; rows
+       14:09:02 h=200 wash and 14:14:22
+       wedge row landed between) -> 1028
+       (probe 2 14:24:46; rows 14:19:23
+       h=200 wash and 14:24:43 wedge row
+       landed between); md5s
+       p1 de71241a08da3c40c3247aaa1d7e4777
+       p2 236974aef04bbd8dd7e476b280999e3a
+       (60 s probe values authoritative
+       over handoff per contract). Both
+       wedge rows keep h=200 p=9 with
+       healthy byte flow (14:14:22 fb
+       1629 kv 8076 +74.4k; 14:24:43 fb
+       1653 kv 8193 +57.0k); healing rows
+       show serving fresh.
+
+       Ladder (rung ids derived from
+       c493's rung 16 at 13:58:37): TWO
+       fresh isolated hb=000 rungs, rungs
+       total 16 -> 18. Rung 17 at
+       [14:14:22] ALERT: SERVE-WEDGE,
+       healed [14:19:23] h=200. Rung 18
+       at [14:24:43] ALERT: SERVE-WEDGE,
+       single-row isolated as of the
+       close read (recovery row not yet
+       due by 14:24:46; detector wedge-
+       active at close). No 2-consecutive
+       hb=000 rows in the window, no 3+
+       ladder anywhere.
+
+       Wedge side: SERVERKILL 1613 ->
+       1653 (+40); SK silence
+       14:00:19-14:13:05 (continuity from
+       c493 close) and after 14:24:21 to
+       the 14:34 close reads; whole +40 =
+       six first-ever ids, every one
+       self-silenced:
+
+       Burst 1 (25x, 14:13:06-14:16:23):
+       813333129e08ee9d 16x hit=1024 3 s
+       cadence 14:13:06-14:13:52; then
+       rung 17 rowed 14:14:22; after it
+       93b1ddff3e4a6d2a 4x hit=104448
+       14:14:25-14:14:34, single
+       b34527c7fe156c4b 14:15:21
+       hit=105472 and bf5b0e813df2fe48
+       3x hit=106496 14:15:46-14:15:52.
+       Burst 2 (15x, 14:23:39-14:24:21):
+       814b74d30dc38a6c 15x hit=1024 3 s
+       cadence; rung 18 rowed 22 s later
+       at 14:24:43. Loop shape per id:
+       KV-LOOKUP hit + stale-hit fallback
+       + SERVERKILL -> escape (0, False)
+       until boundary change; seen whole
+       on 9c27e089a2256a55: KVL hit
+       14:16:10 local=0 hit=108544, then
+       fallback + escape 14:16:23
+       wall=13.3 with its refusal (below).
+       c493's seven first-ever ids all
+       zero-new (day counts unchanged:
+       8d4dd24c5b1895b9 12, b9964134112b
+       cbc6 10, b47dc24ecf57ad13 9,
+       b87200c480ee91f4 8, bd96d3a0bb87
+       88b0 2, b0e7819da8032065 1,
+       b4beedaedef5a457 1).
+
+       ESCWALL release 1229 -> 1265
+       (+36): 813333129e08ee9d 15x
+       14:13:09-14:13:51, 814b74d30dc38a6c
+       14x 14:23:42-14:24:21, 93b1ddff
+       3e4a6d2a 4x 14:14:28-14:14:37,
+       bf5b0e813df2fe48 3x 14:15:49
+       -14:15:55 (one per escape except
+       each 3 s loop's burst first,
+       singles none); every one local=0
+       wall=3.0, no boundary change, cold
+       re-arm.
+
+       escape refusal 42 -> 43 (+1):
+       [14:16:23] req=chatcmpl-9c27e089
+       a2256a55-b2571ce8 window=2, same
+       req id as its 14:16:23 escape;
+       benign per standing semantics.
+
+       KVL 3515 -> 3595 (+80): local=0
+       subcounter 3403 -> 3483 (+80);
+       zero exception-class lines in the
+       window; whole-file exceptions
+       3595 - 3483 = 112 unchanged (last
+       non-local0 class line still the
+       known 13:43:28 local=2048 pair);
+       last fresh hit 14:33:46 local=0
+       hit=50176, benign shape.
+
+       Hard-failure scan clean on the
+       whole live log: Traceback=0,
+       ImportError/AssertionError=0,
+       real 'CUDA out of memory'=0, 'GPU
+       watchdog'=0.
+
+       WEDGE-LOOP-POSTV31: n/a (boot
+       still pre-v3.1; the 16x/15x
+       same-id 3 s loops are the standing
+       v2-era wedge-burst shape; the same
+       pattern on a post-restart boot
+       would be the alert; first v3.1
+       microdetail stays pending).
+       Post-restart incident: none (no
+       restart).
+
+       Verdict: WATCH HELD (c493's watch
+       holds; nothing discharges): both
+       new rungs isolated, so two watch
+       re-arms noted per the discharge
+       rules; no 2-consecutive hb=000
+       pair, so no ALARM TOUCH grade; no
+       3+ ladder, so no CYCLE_ALERT;
+       also not a discharge since fresh
+       rungs landed and the detector was
+       wedge-active at close. Hard
+       failures zero, serving intact
+       (HEALTH=200 both probes, h=200
+       p=9 all rows), no known-id
+       recurrence, all six window ids
+       first-ever and self-silenced.
+       Forward: isolated rung = watch
+       re-arm again; a fresh
+       2-consecutive pair re-arms ALARM
+       TOUCH; 3+ lifts to CYCLE_ALERT.
+       Restart may come at any time; a
+       post-restart verdict still
+       requires zero wedge-loop.
+
+       Cycle 495 dispatch pending (orchestrator).
