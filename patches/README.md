@@ -10450,4 +10450,173 @@ wedge-clean, healed hb row).
        serving intact; staged v3.1
        claim-blockout still
        post-restart-gated).
-       Cycle 468 dispatch pending (orchestrator).
+       Cycle 468 (epoch II; boot stayed 231328
+       v2-era through the whole cycle; user did
+       not restart, no rebase): station pid
+       60644 alive at both probes (ALIVE_60644
+       both), no restart needed; probe1
+       @07:07:46 HEALTH=200; single 300 s
+       wait; probe2 @07:13:14 HEALTH=200.
+       ROWLOG_N 943 -> 944 (probe1 held the
+       c467-end 943 anchor): row 944
+       [07:09:02] landed inside the cycle
+       window; h=200 p=9 500=0 oom=0 shm=0
+       gpu=0 hb=200 clean.
+       ROWLOG_MD5 943-end
+       a65720f8edcff35aa549de50bde65a3f
+       (c467 probe2 = c468 probe1 anchor,
+       byte-identical re-read) -> 944-end
+       0c2c96d110dbf528b337700c2a5ef9d2
+       (probe2; row 944 landed between
+       probes; append-only chain intact).
+       Wedge census whole log, scripted
+       evidence pass (3 passes: census,
+       per-id, serving; lens: per-id
+       sk = SERVERKILL-line count,
+       chatcmpl-anchored): SERVERKILL
+       1055 -> 1064 (+9, five fresh runs,
+       every fresh id silent since
+       07:07:46 through the scan);
+       escape refusal 27 -> 27 (+0, none
+       fresh, last refusal still
+       b7485652de1371fe @04:46:17);
+       ESCWALL release 836 -> 840 (+4:
+       b3ccc741 release @07:06:05 and
+       aae331b9 releases @07:07:16/
+       19/22, all local=0 wall=3.0 no
+       boundary change, cold re-arm);
+       KV-LOOKUP hit 2085 -> 2113 (+28
+       benign local=0 loads; running
+       total continues; tail sample:
+       ba26a0cd7750cd58 hit=1024
+       @07:12:31, bc70962064a0c456
+       hit=1024 @07:13:12,
+       ba895349e654fcca hit=162816
+       @07:14:01, b4e6bf809e0f2736
+       hit=9216 @07:14:27,
+       8b21cfd501ea3adb hit=1024
+       @07:14:32, 93160224bf5c98c9
+       hit=20480 @07:14:59).
+       Frozen vet per-id sk counts all
+       EXACT vs the abridged handoff
+       list (every listed id matches);
+       additive day-1 fingerprint
+       ac6b62d8a85ce6f4 (sk=17, not in
+       the abridged list) whole-log
+       stable, zero fresh lines this
+       cycle; c463 five-id burst group
+       re-verified inside the 1055
+       baseline: bb169dd13f243d25,
+       9cb820ab4bcdb6e1,
+       8cd9b74db28048af,
+       9a3150ec795436af sk=1 each,
+       82e1d5343e41c872 sk=4 (run
+       still closed).
+       Fresh SK frames this cycle, all
+       inside 07:06:02-07:07:46, every
+       fresh id silent ever since
+       (through the pass-3 scan):
+       aae331b9fe417b4f sk=4 @07:07:13/
+       16/19/22 hit=113664 fallbacks=1
+       (3 s cadence, local=0 per
+       releases; 4 sk / 3 sw frame
+       shape identical to the c463
+       82e1d5343e41c872 run
+       @06:14:33-42);
+       b3ccc741ef138d2b sk=2 @07:06:02/
+       05 (3 s cadence, hit=1024, 1
+       release @07:06:05);
+       one-offs: 926c00d4519e406e
+       @07:06:30 hit=112640,
+       ae2bb80c0891bc31 @07:06:50
+       hit=138240, ac51e7e455cd37af
+       @07:07:46 hit=113664 (each
+       sk=1, no release logged, no
+       fresh refusal for any fresh
+       id; all closed).
+       30-s same-id detector: refusal
+       side CLEAN whole log (27
+       unique-fingerprint singletons,
+       dup-id-count=0); SK side shows
+       fresh same-id re-escape runs on
+       two ids at 3-4 s cadence with
+       wall=3.0 releases and no
+       boundary change (cold re-arm) =
+       the standard pre-restart v2-era
+       escape/wall micro-frame shape
+       also seen across the frozen
+       vets (e.g. a44edd70f7347af3
+       day-1 23:26 run); pre-restart
+       wedge-burst cycles are expected
+       frames, not serve wedges;
+       WEDGE-LOOP-POSTV31 not
+       applicable under the v2-era
+       boot.
+       Traceback=0, ImportError/
+       AssertionError=0, real CUDA
+       OOM / GPU watchdog=0 whole
+       log; HTTP 5xx=0; HTTP 4xx
+       still the 2 ledgered
+       client-400 lines.
+       Serving intact: POST 200 OK
+       1734 -> 1785 (+51); GET
+       /metrics 200 OK 5642 -> 5833
+       (+191); log lines 23393 ->
+       24175 (pass-3 scan, log still
+       growing); engine log md5
+       prefix 559b8413; last raw
+       lines GET /metrics + POST
+       /v1/chat/completions both
+       200 OK; rowlog apc 701 -> 710,
+       kv 5058 -> 5100, fb 1055 ->
+       1064 (fb +9 = fresh SK +9).
+       hb ladder: no fresh rungs;
+       last rung stays 05:47:31,
+       healed 05:52:44 hb=200; fresh
+       row 07:09:02 hb=200, no 2-run
+       window, ALARM untouched.
+       Post-restart incident: none (no
+       restart; first post-v3.1
+       microdetail stays pending).
+       Regime: newest engine log is
+       still engine-20261001-231328.log
+       (LIVELOG fd of API PID 100422
+       resolves it; newest-mtime too
+       in the logs dir); boot v2-era;
+       knob VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+       environ-proven on pid 100422
+       (ESCAPE_WALL_SECS=3 ambient,
+       environ and ledger agree);
+       no restart; no NEWBOOTLOG in
+       the logs dir; staged v3.1
+       claim-blockout commit fee6cbf
+       stays deployed (PARITY_OK md5
+       da376d25 both dests) but
+       post-restart-gated.
+       Standing pre-restart regime:
+       fresh closed one-off/short
+       frames counted (+9 SK); zero
+       new serve wedges this cycle
+       (no fresh rowlog ALERT,
+       refusal side silent, detector
+       and hb ladder clean, serving
+       200); pre-restart wedge-burst
+       cycles are expected frames;
+       standing QUIET verdict
+       persists; c463 CYCLE_ALERT
+       stays closed.
+       Verdict: QUIET (SK +9, all five
+       fresh frames closed inside the
+       window: aae331b9 x4 run,
+       b3ccc741 x2 run, three
+       one-offs each sk=1; RF +0,
+       SW +4, KVL +28 benign running
+       2113; boot still 231328
+       v2-era, knob=2, API pid
+       100422 alive, station pid
+       60644 alive; wedge detector
+       and hb ladder clean; serving
+       intact; staged v3.1
+       claim-blockout still
+       post-restart-gated).
+       Cycle 469 dispatch pending (orchestrator).
