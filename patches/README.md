@@ -10048,4 +10048,90 @@ wedge-clean, healed hb row).
        hb ladder clean; serving intact;
        staged v3.1 claim-blockout still
        post-restart-gated).
-       Cycle 464 dispatch pending (orchestrator).
+       Cycle 464 (epoch II; boot stayed 231328
+       v2-era through the whole cycle; user did
+       not restart, no rebase): station pid
+       60644 alive at both probes, no restart
+       needed; probe1 @06:28:25 HEALTH=200;
+       single 300 s wait; probe2 @06:34:30
+       HEALTH=200.
+       ROWLOG_N 934 -> 937: row 935
+       [06:23:16] (landed right after c463's
+       06:23:12 last-raw anchor), row 936
+       [06:28:25], row 937 [06:33:36]; all
+       h=200 p=9 500=0 oom=0 shm=0 gpu=0
+       clean. ROWLOG_MD5 934-end
+       516b8f6d8680ed2d5617af6823bf6d1b ->
+       935-end 29b88eff25baaf48455307273da42074
+       -> 937-end bb124a9bc7d67660688364af23a54576
+       (append-only, NEWBOOTLOG never appeared).
+       Wedge census whole log, scripted x3
+       while serving continued: SERVERKILL
+       1055 -> 1055 (+0, no fresh escapes,
+       all five c463 ids silent); escape
+       refusal 27 -> 27 (+0, none fresh);
+       ESCWALL release 836 -> 836 (+0, c463
+       run stays closed); KV-LOOKUP hit
+       2039 -> 2062 (+23 benign serving
+       lookups, local=0; none large-prefix,
+       last fresh 06:35:35).
+       Top burst ids unchanged from c463:
+       82e1d5343e41c872=4 escapes
+       06:14:33-:42 (3 ESCWALL cold re-arms,
+       run closed); one-offs bb169dd13f243d25,
+       9cb820ab4bcdb6e1, 8cd9b74db28048af,
+       9a3150ec795436af closed; frozen vets
+       unmoved.
+       30-s same-id detector: SK side CLEAN
+       this cycle (zero new SK lines whole
+       log); refusal side CLEAN whole log
+       (all 27 unique-fingerprint singletons,
+       RF_MAX30S=1; last refusal still
+       b7485652de1371fe @04:46:17).
+       Traceback=0, ImportError/
+       AssertionError=0, real CUDA OOM /
+       GPU watchdog=0 whole log; HTTP 5xx=0;
+       BAD400 still the 2 ledgered client-400
+       lines (192.168.2.208; whole-log 4xx
+       total=2).
+       Serving intact: POST 200 OK 1631
+       whole log (+76 vs 1555), GET 200 OK
+       5439 (+285 vs 5154); log lines
+       21848 -> 22494; last raw lines
+       EngineCore 06:35:33 APC-HIT +
+       06:35:35 benign KVL then
+       POST 200 OK x2; rowlog apc 590 ->
+       618, kv 5012 -> 5029, fb flat 1055.
+       hb ladder: no fresh rungs; last rung
+       stays 05:47:31, healed 05:52:44
+       hb=200; fresh rows 06:23:16 ->
+       06:33:36 all hb=200, no 2-run
+       window, ALARM untouched.
+       Post-restart incident: none (no
+       restart; first post-v3.1 microdetail
+       stays pending; WEDGE-LOOP-POSTV31 not
+       applicable under the v2-era boot).
+       Regime: newest engine log still
+       engine-20261001-231328.log; LIVELOG
+       fd1/fd2 of API PID 100422 resolve it;
+       boot v2-era; knobs
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+       (+ESCAPE_WALL_SECS=3) environ-proven on
+       pid 100422; no restart; staged v3.1
+       claim-blockout commit fee6cbf stays
+       deployed (PARITY_OK md5 da376d25 both
+       dests) but post-restart-gated.
+       Standing pre-restart regime: zero
+       wedge-delta whole log + clean ladder +
+       clean detector -> QUIET per standing
+       semantics; c463 CYCLE_ALERT stays
+       closed within c463.
+       Verdict: QUIET (SK +0, burst ids
+       silent, RF +0 SW +0 KVL +23 benign;
+       boot still 231328 v2-era, knob=2, API
+       pid 100422 alive, station pid 60644
+       alive; wedge detector and hb ladder
+       clean; serving intact; staged v3.1
+       claim-blockout still
+       post-restart-gated).
+       Cycle 465 dispatch pending (orchestrator).
