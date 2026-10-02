@@ -12036,4 +12036,91 @@ wedge-clean, healed hb row).
        AND detector CLEAN at close;
        staged v3.1 still post-restart-
        gated for cycle 484).
-       Cycle 484 dispatch pending (orchestrator).
+       Cycle 484 (epoch II; regime V2-era pre-v3.1: no
+       restart; live boot fd-resolved engine-
+       20261001-231328 unchanged under the remote
+       /mnt/data logs path; API 100422 + EngineCore
+       100982 appending, 36330 lines 9.0 MB
+       @11:42:17; knobs REFUSAL=2/WALL=3 per c482
+       environ proof carried; NEWBOOTLOG none,
+       staged v3.1 still not booted).
+       Station: pid 60644 alive at both probes,
+       restart not needed: probe1 NOW=11:31:45
+       HEALTH=200 CANARY_ALIVE_60644; probe2
+       NOW=11:38:39 HEALTH=200 (single
+       300 s wait between).
+       ROWLOG (probe authoritative): start N=994
+       md5 b079fa6f44a8ba6856061bcac23d0f40
+       @11:31:45 -> end N=995 md5
+       2572516e2a3d358b2fbaa737669c6228
+       @11:38:39 (+1 row: [11:34:21] hb=200
+       clean, no ALERT; in-row fb 1406 -> 1415
+       = the +9 SK burst closed without a
+       wedge rung).
+       Hb ladder: rung-less window - no new
+       hb=000 rung in the c484 window; last
+       rung stays 10 [11:13:57]; clean rows
+       11:18:57, 11:24:08, 11:29:20,
+       11:34:21 (4 straight hb=200 rows,
+       ~20.5 min past rung 10); detector
+       CLEAN at close (probe2 11:38:39).
+       Wedge side re-lit once: SERVERKILL
+       1406 -> 1415 (+9; last SK 11:30:34):
+       single 62 s burst 11:29:32-11:30:34,
+       two fresh id-transient loops:
+       beaf1f3078dc2dfa 4x (hit=1024,
+       wall 0.1-0.3, 11:29:32/35/38/41) and
+       a2966e99dd481303 5x (hit=200704,
+       11:30:22/25/28/31/34); each escape
+       paired with ESCWALL cold re-arm
+       (local=0, wall=3.0, 'no boundary
+       change'), then silence; id-transient
+       shape held, zero rungs produced, so
+       the v2-era wedge-burst cycle is
+       recorded as expected. Top chains stay
+       frozen: 865b845545bdc117 31x,
+       8f19eaa97a9ed265 16x,
+       b9b9b07796cfbe9d 13x,
+       ae549f74d871fc43 11x (SK-line counts
+       re-verified).
+       escape refusal 36 -> 36 (+0; last
+       b9b9b077 @11:07:01 window=2; all 36
+       window=2 singletons).
+       ESCWALL release 1062 -> 1069 (+7; all
+       local=0 wall=3.0 cold re-arm 'no
+       boundary change'; burst-paired with
+       the +9 SK).
+       KVL 3047 -> 3091 (+44, all local0
+       benign 2941 -> 2985); exceptions 106
+       unchanged: 6144=71, 7168=5, 2048=4,
+       1024=24, 5120=2 held. KVL/APC serving
+       healthy.
+       Hard-failure scan clean: Traceback=0,
+       ImportError/AssertionError=0, real
+       'CUDA out of memory'=0, 'GPU
+       watchdog'=0. Station rows h=200 p=9
+       500=0 across both probes; serving
+       tail intact: /metrics 200 OK
+       @11:42:16.
+       WEDGE-LOOP-POSTV31: n/a (boot still
+       pre-v3.1; no post-restart incident;
+       first v3.1 microdetail still pending;
+       new burst fingerprints
+       beaf1f3078dc2dfa + a2966e99dd481303
+       logged for post-restart silent-once
+       comparison).
+       Verdict: standing CYCLE_ALERT
+       DISCHARGES toward QUIET with the
+       alert noted: rung-less window AND
+       detector CLEAN at close both met - no
+       new hb=000 rung in window, close
+       rows clean, no hard failures; SK +9
+       is a v2-era wedge-burst in expected
+       shape, self-silenced in 62 s, no
+       rung, no escalation. Downstream
+       cycles run QUIET-vigil: re-arm alert
+       only on a fresh rung, a post-v3.1
+       wedge-loop shape, or hard failures;
+       staged v3.1 stays post-restart-
+       gated.
+       Cycle 485 dispatch pending (orchestrator).
