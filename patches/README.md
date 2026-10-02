@@ -11169,4 +11169,99 @@ wedge-clean, healed hb row).
        serving 200 intact; staged v3.1
        claim-blockout still
        post-restart-gated).
-       Cycle 476 dispatch pending (orchestrator).
+       Cycle 476 (one-shot): station pid 60644 ALIVE
+       at both probes (08:59:15 probe1, 09:04:52
+       probe2); HEALTH=200 at both closes; no
+       station restart; ROWLOG_N 965 -> 966
+       across probes (one row grew between the
+       964 handoff baseline and probe1),
+       ROWLOG_MD5 6adf3c98 -> 4bcb925a
+       (append-only, no NEWBOOTLOG).
+       Regime: newest engine log is still
+       engine-20261001-231328.log (LIVELOG
+       fd=1/fd=2 of API pid 100422 resolves
+       it, size 7139403, mtime 09:06:45
+       growing; no restart - boot v2-era
+       whole cycle; API pid 100422 alive
+       (etime 09:53:17), EngineCore pid
+       100982 alive (etime 09:52:59); knob
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+       and VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3
+       environ-proven on pid 100422; staged
+       v3.1 claim-blockout (commit fee6cbf,
+       md5 da376d25 both dests PARITY_OK)
+       still deployed, post-restart-gated.
+       Engine counters: SK 1188 -> 1192 (+4),
+       RF 27 (+0; last b7485652de1371fe
+       @04:46:17 unchanged), SW 914 -> 915
+       (+1 cold re-arm local=0 1/1:
+       91ed506ecbf05aa0 @08:57:40), KVL
+       2387 -> 2416 (+29 running; 1
+       non-local0 exception-class line
+       @08:59:14 local=1024 hit=167936 req
+       96651c2a12adfa3a, exceptions 27 ->
+       28; nearest other exception 08:46:23
+       sits inside c475's historical 27);
+       Traceback 0, ImportError/
+       AssertionError 0, CUDA-OOM 0,
+       GPU-watchdog 0, 5xx 0 (2 historic
+       400 Bad Request 4xx lines from
+       early-hours client traffic, not
+       5xx, benign).
+       Wedge window: 08:57:38 -> 08:59:16,
+       +4 SERVERKILL across 3 fresh ids
+       (91ed506ecbf05aa0=2x @08:57:38/41
+       at the wall=3.0 re-arm cadence,
+       hit=167936; 9cad84777eddaec3=1
+       @08:58:08 hit=168960;
+       9e8dce87546079cc=1 @08:59:16
+       hit=167936); every fresh id silent
+       since 08:59:16 (0 later SK; probe2
+       09:04:52; engine evidence close
+       09:06:45, CLEAN); c475's five fresh
+       ids (a3955fcb3cc87f4b,
+       9196b8c75aa15d2b, 98288abc10849635,
+       a2cdc4dc6bcac9cf, b5d0c9ad98de1b57)
+       stayed silent (0 new SK from them
+       after 08:46:26).
+       Rowlog rows this cycle: [08:57:19]
+       h=200 hb=000 SERVE-WEDGE (single
+       isolated 000 rung), [09:02:29] h=200
+       hb=200 healed; c471 single rung
+       @07:56:10 stays healed @08:01:13;
+       apc 993 -> 998, kv 5715 -> 5738,
+       fb 1188 -> 1192 (fb +4 = SK +4
+       exact); tier-full churn ev 188447 ->
+       197308.
+       Serving intact: POST 200 OK tail
+       current through evidence close
+       (engine log tail 09:06:45 growing;
+       APIServer pid=100422; canary
+       127.0.0.1 POST 200 OK in last
+       lines); rowlog h=200 rows
+       [08:57:19] -> [09:02:29].
+       Post-restart incident: none (no
+       restart; first post-v3.1 microdetail
+       stays pending).
+       Standing pre-restart regime: wedge
+       activity inside the one-off/
+       short-of-window frame allowance -
+       98 s window, 3 fresh ids, max 2x
+       same id 91ed506ecbf05aa0 at the
+       wall=3.0 re-arm cadence, one
+       isolated 000 rung @08:57:19 healed
+       @09:02:29, detector CLEAN at cycle
+       close; ladder trigger (2+
+       consecutive rungs) not reached.
+       Verdict: QUIET (SK 1188 -> 1192 +4,
+       short-window ids all silent since
+       08:59:16; RF +0, SW +1 re-arm, KVL
+       +29 benign with 1 exception-class
+       local=1024 line @08:59:14; boot
+       231328 v2-era whole cycle knob=2/
+       WALL=3, API pid 100422 + EngineCore
+       100982 alive, station pid 60644
+       alive; serving 200 intact; staged
+       v3.1 claim-blockout still
+       post-restart-gated).
+       Cycle 477 dispatch pending (orchestrator).
