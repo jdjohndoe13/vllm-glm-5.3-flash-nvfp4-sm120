@@ -12398,4 +12398,104 @@ wedge-clean, healed hb row).
        further; staged v3.1 stays post-
        restart-gated.
 
-       Cycle 487 dispatch pending (orchestrator).
+       Cycle 487 (epoch II; regime V2-era pre-v3.1:
+       no restart; live boot stays engine-20261001-
+       231328.log fd-resolved under the remote
+       /mnt/data logs path; API 100422 + EngineCore
+       100982 appending (last line 12:48:44), 39598
+       lines; knobs REFUSAL=2/WALL=3 environ-proven
+       (VLLM_KV_OFFLOAD_ESCAPE_*=2/3); NEWBOOTLOG
+       none, staged v3.1 still not booted).
+
+       Station: pid 60644 alive at both probes, no
+       restart needed: probe1 NOW=12:42:37 HEALTH=200
+       CANARY_ALIVE_60644; probe2 NOW=12:47:53
+       HEALTH=200 (single 300 s wait between).
+
+       ROWLOG (probe authoritative): start N=1008
+       md5 b0d9f60c86eea51e2c30395cc1c9bfee
+       @12:41:43 (c486 baseline end N=1005 md5
+       ae376a19f85a956111aac9d8891fb319
+       @12:30:40; rows 12:31:39 + 12:36:40 +
+       12:41:43 pre-probe1) -> end N=1009 md5
+       5fdab577404e1683f437942e0f170eec
+       @12:46:44; window 1005 -> 1009 = +4 rows,
+       every one h=200 p=9 500=0 clean; in-row fb
+       1560 held flat (no engine SK in window).
+
+       Hb ladder: no fresh rung in this cycle.
+       Standing ladder stays the c486 CYCLE_ALERT
+       3+ set: rungs 11 @11:39:41 + 12 @12:05:53
+       (forward-passed from c485) + rung 13
+       @12:16:22; heal rows 12:21:30 + 12:26:37
+       stand, and this cycle adds 4 clean rows
+       (12:31:39 through 12:46:44, all h=200);
+       detector CLEAN at close with zero
+       additions; ladder total stays 13 rungs.
+
+       Wedge side fully silent: SERVERKILL 1560 ->
+       1560 (+0; first 12:10:32, last 12:17:48
+       unchanged; engine SK silent 31 min to the
+       12:48:44 log tail): the 8 c486 id-transient
+       loops stay recorded-frozen:
+       b5905626dc40f40d 19x, 82c750aab6886df7 13x,
+       bce58087a2676c4f 12x, abf3d2da29f6e6a6 7x,
+       a215f803afbe9851 5x + 3 singles (last SK
+       b654e1ab68e3e3ef @12:17:48); no fresh ids,
+       no new kills in window. Frozen chains
+       silent: 865b845545bdc117 31x,
+       8f19eaa97a9ed265 16x, b9b9b07796cfbe9d 13x,
+       ae549f74d871fc43 11x; all 17 c485 burst ids
+       zero new; no known-id recurrence.
+
+       escape refusal 42 -> 42 (+0; last refusal
+       12:14:43, window=2 singleton class of the
+       2 fresh c486 loop starts, unchanged).
+
+       ESCWALL release 1190 -> 1190 (+0; last
+       12:16:19 wall=3.0 local=0 with the cold
+       re-arm shape; lifetime histogram
+       unchanged, wall=3.0 1159x dominant, the
+       wide-wall class stays one-off wall=8.9 +
+       wall=14.5 (wall>10 still 12 lines total,
+       none new).
+
+       KVL 3349 -> 3353 (+4): local0 benign +4
+       (3240 -> 3244); exceptions 109 flat
+       (local=2048 both without SK escape,
+       6144=71, 1024=24, 2048=6, 7168=5, 5120=2,
+       and the FIRST local=4096 req
+       91d406ccb3a7bc68 still 1 line, no
+       recurrence); KVL/APC serving healthy.
+
+       Hard-failure scan clean: Traceback=0,
+       ImportError/AssertionError=0, real
+       'CUDA out of memory'=0, 'GPU watchdog'=0
+       (whole-file). Station rows h=200 p=9 500=0
+       oom=0 shm=0 gpu=0 across both probes;
+       serving tail intact: chat POST 200 OK +
+       GET /metrics 200 OK + APC-HIT flowing
+       through 12:48:44.
+
+       WEDGE-LOOP-POSTV31: n/a (boot still
+       pre-v3.1; no post-restart incident; first
+       v3.1 microdetail stays pending; roster
+       carries: the 8 c486 burst ids + 17 c485
+       ids + frozen chains hold the silent-once
+       comparison snapshot).
+
+       Verdict: standing CYCLE_ALERT DISCHARGES
+       toward QUIET with the alert noted:
+       rung-less window AND detector CLEAN at
+       close both met (per the c484 discharge
+       pattern): no new hb=000 rung, all wedge
+       counters flat at c486 close values, hard
+       failures zero, serving intact, knobs
+       carried REFUSAL=2/WALL=3, HEALTH=200 both
+       probes, no restart. Downstream (cycle
+       488): runs under QUIET-vigil: re-arm
+       alert only on a fresh rung, a post-v3.1
+       wedge-loop shape, or hard failures;
+       staged v3.1 stays post-restart-gated.
+
+       Cycle 488 dispatch pending (orchestrator).
