@@ -8444,4 +8444,66 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
       fingerprint (claim block never logged) -
       only the user restart into staged v3.1
       can break the loops. ROWLOG_N=880.
-       Cycle 447 dispatch pending (orchestrator).
+      Cycle 447 (one-shot, epoch II, no
+      restart): CYCLE_ALERT (standing, expected
+      pre-restart wall-cycling regime). Probes
+      01:49:34 -> 01:58:03 on testcomp2,
+      station CANARY_ALIVE_60644 both, pid
+      60644 alive throughout, no restart
+      needed; HEALTH timings 200 @ 01:49:34 and
+      200 @ 01:58:03. ROWLOG_N 882 -> 883 (md5
+      1b9e8539a50f36b84060f8c9caebba4d ->
+      3e4c71d5e84265ae04ed87af4f9f2264;
+      append-only). Regime: STILL baseline boot
+      engine-20261001-231328.log (v2-era; user
+      did not restart this cycle - API pid
+      100422 unchanged, refusal knob = 2
+      environ-proven
+      VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS,
+      claim blockout count = 0, fd1/2 still on
+      the 231328 file, so the staged v3.1 was
+      never loaded; WEDGE-LOOP-POSTV31 stays
+      armed; no post-v3.1 incident to report).
+      Engine evidence pass ~02:12 census
+      (9616-line 231328 log): SERVERKILL 605 ->
+      677 total, +72 since c446, growth all on
+      fresh distributed small ids (top of the
+      current census: acd4af385c026201=21,
+      997c5c6e07d21b11=20, ac6b62d8a85ce6f4=17,
+      a8f5a2303ab27c9c=16, a8d54557bd6e244d=16;
+      3-s cadence loops seen 02:06:49 -> :55
+      [997c5c6e... hit=71680 fallbacks=1] and
+      02:08:28 -> :34 [8bb2074a... hit=180224]
+      -> escape until boundary change);
+      every tracked top id from c446 froze
+      exact (b85345868b69b2db=41,
+      a7d7ca4522378833=17,
+      b2394986999297bd=14, a55730aa2436f326=43,
+      a44edd70f7347af3=39, abf4c15de42aa3fb=31,
+      ad87dfae2667eaf5=25, baf918c29f8971ac=47,
+      82eccb5ddd9a76bd=35). escape refusal 5 ->
+      7 (+2: 01:49:35, 02:02:40, window=2,
+      benign). ESCWALL release 506 -> 569
+      (+63), KV-LOOKUP hit 933 -> 1063 (+130).
+      Traceback=0, ImportError/AssertionError
+      =0, real CUDA OOM/GPU watchdog=0,
+      0 5xx in error-tail grep. Rowlog ladder:
+      c446's pair closed with hb=200
+      [01:43:07], then fresh 2-consecutive
+      hb=000 rows [01:48:27][01:53:47] landed
+      this cycle = 2nd ALARM TOUCH level of
+      epoch II, watch level, no 3rd strike.
+      h=200, 500=0, oom=0 on every row:
+      serving intact through the engine tail
+      (POST 200 OK total 466, +59 since c446,
+      latest ~02:12; SpecDec accept 2.67, MFU
+      0.6 TF/s). Verdict: CYCLE_ALERT
+      (standing, recorded-but-expected) -> the
+      v2-era wedge-wall loop regime persists
+      and spread to fresh small ids (+72 SK
+      new) while serving held; still NOT the
+      v3.1 per-id one-escape-then-silence
+      fingerprint (claim block never logged) -
+      only the user restart into staged v3.1
+      can break the loops. ROWLOG_N=883.
+       Cycle 448 dispatch pending (orchestrator).
