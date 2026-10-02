@@ -13291,4 +13291,136 @@ wedge-clean, healed hb row).
        post-restart verdict still
        requires zero wedge-loop.
 
-       Cycle 495 dispatch pending (orchestrator).
+       Cycle 495 (one-shot per the standing
+       contract: probe, 300 s wait, probe,
+       evidence pass) ran wholly under the
+       standing v2-era regime: no restart,
+       NEWBOOTLOG none, newest engine log
+       still engine-20261001-231328.log at
+       every read (fd resolve: /proc/
+       100422/fd/1,2 -> /mnt/data/shared/
+       models/vllm-glm-5.3-flash-nvfp4/
+       logs/engine-20261001-231328.log,
+       11231352 bytes, mtime 14:55:44),
+       API 100422 and EngineCore 100982
+       up. Active environ reads this
+       cycle DO show the knobs: 100422
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+       VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3
+       VLLM_KV_OFFLOAD_STALE_HIT_TTL_SECS=3
+       and 100982 REFUSAL_SECS=2 (no
+       WALL/TTL lines there); refusal
+       behavior is live in-log either
+       way (see below); both handled, no
+       rebase needed, post-restart
+       criteria n/a. Station pid 60644
+       alive at both probes; HEALTH=200
+       at 14:48:07 and at 14:53:42.
+
+       Rowlog: ROWLOG_N 1028 (c494 close)
+       -> 1032 (probe 1 14:48:07; rows
+       14:29:46 wash, 14:35:07 wedge,
+       14:40:23 wash and 14:45:34 wash
+       landed between) -> 1033 (probe 2
+       14:53:42; row 14:50:35 wash
+       landed between); md5s
+       p1 72bb8f14998155cd7b9ab03feddfbd72
+       p2 d253ed3582918d22178e8fb580b1cde7
+       (60 s probe values authoritative
+       over handoff per contract). The
+       wedge row keeps h=200 p=9 with
+       healthy byte flow (14:35:07 fb
+       1653 kv 8209 +59.3k); healing row
+       14:40:23 h=200 shows serving
+       fresh.
+
+       Ladder (rung ids continue from
+       c494's rung 18 at 14:24:43): ONE
+       fresh isolated hb=000 rung, total
+       18 -> 19. Rung 19 at [14:35:07]
+       ALERT: SERVE-WEDGE, healed
+       [14:40:23] h=200. No
+       2-consecutive hb=000 rows in the
+       window, no 3+ ladder anywhere;
+       close rows (14:40:23, 14:45:34
+       and 14:50:35, all h=200) show
+       the detector CLEAN at close (no
+       wedge-active rung open, unlike
+       c494's close).
+
+       Wedge side: SERVERKILL 1653 ->
+       1653 (+0); SK silence runs
+       14:24:21-14:55:44 (whole live log
+       re-read at 14:55:44; the SK tail
+       still ends on the 814b74d30dc38a6c
+       burst members at 14:24:21), so
+       zero new SK ids in the window;
+       day counts unchanged:
+       813333129e08ee9d 16,
+       814b74d30dc38a6c 15,
+       93b1ddff3e4a6d2a 4,
+       b34527c7fe156c4b 1,
+       bf5b0e813df2fe48 3,
+       9c27e089a2256a55 1, and c493's
+       seven ids flat
+       (12/10/9/8/2/1/1).
+
+       ESCWALL release 1265 -> 1265
+       (+0); last still 14:24:21
+       local=0 wall=3.0, cold re-arm.
+       escape refusal 43 -> 43 (+0);
+       last still 14:16:23
+       req=chatcmpl-9c27e089a2256a55-b2571ce8
+       window=2, benign per standing
+       semantics.
+
+       KVL 3595 -> 3623 (+28, whole log
+       re-read at 14:55:44): local=0
+       subcounter 3483 -> 3511 (+28);
+       exceptions = 3623 - 3511 = 112
+       unchanged; whole +28 are local=0
+       hits from fresh request ids
+       (first 14:36:40, last 14:54:51
+       hit=140288) with zero SERVERKILL
+       fallout on any of them, benign
+       endogenous shape; last non-local0
+       class lines still the known
+       13:43:28 local=2048 pair.
+
+       Hard-failure scan clean on the
+       whole live log: Traceback=0,
+       ImportError/AssertionError=0,
+       real 'CUDA out of memory'=0, 'GPU
+       watchdog'=0.
+
+       WEDGE-LOOP-POSTV31: n/a (boot
+       still pre-v3.1; first v3.1
+       microdetail stays pending).
+       Post-restart incident: none (no
+       restart).
+
+       Verdict: WATCH HELD (continues
+       from c494; nothing discharges):
+       the fresh isolated hb=000 rung
+       (rung 19, 14:35:07, healed
+       14:40:23) = watch note re-arm per
+       this cycle's discharge rules; no
+       second consecutive rung, no 3+
+       ladder, so no ALARM TOUCH repeat
+       and no CYCLE_ALERT; but no
+       discharge either, since the
+       window carried a fresh rung (no
+       full clean window). Hard
+       failures zero, serving intact
+       (HEALTH=200 both probes, h=200
+       p=9 all rows), no known-id
+       recurrence. Forward rules: an
+       isolated rung repeats watch-note
+       re-arm; a fresh 2-consecutive
+       pair re-arms ALARM TOUCH; 3+
+       lifts to CYCLE_ALERT. Restart
+       may come at any time; a
+       post-restart verdict still
+       requires zero wedge-loop.
+
+       Cycle 496 dispatch pending (orchestrator).
