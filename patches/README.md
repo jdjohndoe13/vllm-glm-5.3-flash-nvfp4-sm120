@@ -11936,4 +11936,104 @@ wedge-clean, healed hb row).
        discharges toward QUIET with the
        alert noted; staged v3.1 still
        post-restart-gated).
-       Cycle 483 dispatch pending (orchestrator).
+       Cycle 483 (epoch II; regime V2-era
+       pre-v3.1: live boot fd-resolved
+       under a separate /mnt/data path,
+       engine-20261001-231328 unchanged;
+       API 100422 + EngineCore 100982
+       appending, 35550 lines 8.8 MB
+       @11:24:42; knobs REFUSAL=2/WALL=3
+       carried from c482 environ proof,
+       no restart, NEWBOOTLOG none).
+       Station: pid 60644 alive at both
+       probes, restart not needed: probe1
+       NOW=11:16:30 HEALTH=200
+       CANARY_ALIVE_60644; probe2
+       NOW=11:21:40 HEALTH=200 (single
+       300 s wait between).
+       ROWLOG (probe authoritative; the
+       handoff N=987/d9d54398 basis was
+       stale by this window): start N=991
+       md5 3075e530478d5664da24db18e668130c
+       @11:16:30 -> end N=992 md5
+       d1b1d6a2d72356d30542f21045d680c9
+       @11:21:40 (+1 row: 11:18:57 hb=200
+       heal of the 11:13:57 rung).
+       Hb ladder: fresh rung pair 9+10 -
+       rung9 [11:03:22] hb=000 ALERT
+       SERVE-WEDGE (fell inside the c482-
+       covered phase-A tail after c482's
+       10:56:24 probe close), rung10
+       [11:13:57] hb=000 ALERT
+       SERVE-WEDGE; heals 10:58:02,
+       11:08:36 hb=200 between; clean row
+       [11:18:57] hb=200 last at probe2;
+       cadence ~10.5 min (11 rungs since
+       09:39:38). Fresh pair bars a
+       clean-window discharge despite the
+       clean close; NO discharge,
+       standing alert carries.
+       Wedge side quieted hard: SERVERKILL
+       1406 -> 1406 (+0; frozen; last SK
+       11:08:22, all c482 phase-B/A fresh
+       ids stayed dead; id-transient shape
+       held, c481 vets ad481b64/a8c9cca3/
+       a6a5828f/a86e306e still silenced;
+       tail -n 6 SK ends with the
+       90e253cc926d2e88 chain 11:08:10-
+       22). Top chains stay c482-frozen:
+       865b845545bdc117 31x (wall=56.9
+       opener class), 8f19eaa97a9ed265
+       16x, b9b9b07796cfbe9d 13x,
+       ae549f74d871fc43 11x; zero SK ids
+       in window t>=11:10:22.
+       escape refusal 36 -> 36 (+0; last
+       b9b9b077 @11:07:01 window=2 stays
+       last refusal; all 36 window=2).
+       ESCWALL release 1062 -> 1062 (+0 in
+       window; c482 shape held: every
+       one a cold re-arm local=0 'no
+       boundary change').
+       KVL 3041 -> 3047 (+6): local0 2936
+       -> 2941 (+5 benign), exceptions
+       105 -> 106 (+1): local=2048 3 -> 4
+       @11:16:27 req=chatcmpl-
+       9abc793a063ab1e1 hit=195584, first
+       local=2048 growth since c481 held
+       it at 3; 1024/5120 held 24/2,
+       6144/7168 held 71/5. KVL/APC
+       serving healthy.
+       Wide-wall wall>10 s survey: zero
+       fresh openers in window (sweep
+       empty); all-time openers end at
+       the 56.9 x2 class @11:03:00 plus
+       historical 71.6 x2, 69.9 x2,
+       54.9 x2 - no wall>10 instance this
+       cycle.
+       Hard-failure scan clean:
+       Traceback=0, ImportError/
+       AssertionError=0, real 'CUDA out
+       of memory'=0, 'GPU watchdog'=0 (no
+       banner either). Station rows h=200
+       p=9 500=0 across both probes;
+       serving tail intact: /metrics 200
+       OK @11:24:35, gen 117.9 tok/s,
+       Running 1 req.
+       WEDGE-LOOP-POSTV31: n/a (boot
+       still pre-v3.1; no post-restart
+       incident; first v3.1 microdetail
+       still pending).
+       Verdict: CYCLE_ALERT (standing
+       alert continues with repeat-
+       escalation and NO discharge: fresh
+       rung pair 9+10 [11:03:22 +
+       11:13:57] landed in the window;
+       the wedge-burst side quieted to
+       +0 SK while the ladder still
+       barred a rung-less window; clean
+       close row [11:18:57 hb=200] but
+       discharge needs rung-less window
+       AND detector CLEAN at close;
+       staged v3.1 still post-restart-
+       gated for cycle 484).
+       Cycle 484 dispatch pending (orchestrator).
