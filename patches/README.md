@@ -12250,4 +12250,152 @@ wedge-clean, healed hb row).
        re-discharge toward QUIET; staged v3.1
        stays post-restart-gated.
 
-       Cycle 486 dispatch pending (orchestrator).
+       Cycle 486 (epoch II; regime V2-era pre-v3.1
+       standing: live boot fd-resolved engine-
+       20261001-231328.log unchanged under
+       /mnt/data/shared/models/vllm-glm-5.3-flash-
+       nvfp4/logs (fds 1+2 of API pid 100422 =
+       "vllm serve" head-match; EngineCore 100982;
+       both lstart 10-01 23:13, no restart); 38991
+       lines 9.7 MB @12:31:42 read, 39263 by the
+       12:38 pass, find-newest agrees; knobs
+       REFUSAL=2/WALL=3 carried; NEWBOOTLOG
+       none; staged v3.1 not booted).
+
+       Station: pid 60644 alive at both probes,
+       restart not needed: probe1 NOW=12:19:38
+       HEALTH=200 CANARY_ALIVE_60644; probe2
+       NOW=12:30:40 HEALTH=200 (single 300 s
+       wait between).
+
+       ROWLOG (probe authoritative): start N=1003
+       md5 109e01e268033f7c173af47b22d4c3b6
+       @12:19:38 (rows 1002-1003 pre-probe1:
+       12:11:01 h=200 fb=1508 and 12:16:22
+       hb=000 fb=1553 ALERT: SERVE-WEDGE; c485
+       baseline end N=1001 md5
+       8354a9dcd7d53acc5d08c1b748f1ff86) -> end
+       N=1005 md5 ae376a19f85a956111aac9d889-
+       1fb319 @12:30:40; window 1001 -> 1005 =
+       +4 rows: 12:21:30 h=200 fb=1560 and
+       12:26:37 h=200 fb=1560 (detector CLEAN
+       at close); in-row fb 1501 -> 1560 =
+       engine SK +59 exactly at close.
+
+       Hb ladder: fresh rung 13 @12:16:22 =
+       fresh rung No.3 of the post-c484-
+       discharge sequence, arriving on the
+       12:11-12:16 wedge burst (fb 1508 -> 1553
+       mid-burst). Standing into this window
+       was the c485 forward-passed ALARM TOUCH
+       pair (rung 11 @11:39:41 re-armed the
+       discharged QUIET-watch; rung 12 @12:05:53
+       completed the pair = ALARM TOUCH tier),
+       so the gradation branches map 1:1
+       (branch 1 watch-note re-arm consumed by
+       rung 11, branch 2 ALARM TOUCH by rung
+       12); per the c480 -> c481 precedent and
+       c485's own downstream clause ("fresh
+       rung No.3 converts to CYCLE_ALERT"), one
+       more rung completes the 3+ ladder.
+       Healed at 12:21:30 + 12:26:37 (2
+       straight post-rung hb=200 rows);
+       detector CLEAN at close; no 4th rung;
+       no hard-failure branch.
+
+       Wedge side in expected v2-era id-
+       transient shape: SERVERKILL 1501 -> 1560
+       (+59; first 12:10:32, last 12:17:48;
+       engine SK silent 21 min to evidence
+       close and still 1560 @12:38:44): 8 fresh
+       id-transient loops, every one life=win
+       (no known-id recurrence):
+       b5905626dc40f40d 19x (hit=68608,
+       12:15:25-12:16:19, runs across the
+       rung), 82c750aab6886df7 13x (68608,
+       12:13:41-12:14:17), bce58087a2676c4f
+       12x (60416, 12:11:42-12:12:15),
+       abf3d2da29f6e6a6 7x (56320,
+       12:10:32-12:10:50), a215f803afbe9851 5x
+       (185344, 12:14:43-12:14:54); singles:
+       9075ebc3a50fb657 1x (61440),
+       95d831fedfa482b6 1x (59392),
+       b654e1ab68e3e3ef 1x (74752; last SK
+       @12:17:48). All 21 known ids stayed
+       silent on fresh SK: frozen chains held
+       865b845545bdc117 31x, 8f19eaa97a9ed265
+       16x, b9b9b07796cfbe9d 13x,
+       ae549f74d871fc43 11x; all 17 c485 burst
+       ids zero new.
+
+       escape refusal 40 -> 42 (+2): both
+       window=2 singletons at their loop
+       starts: bce58087a2676c4f @12:11:42 and
+       a215f803afbe9851 @12:14:43; last refusal
+       12:14:43.
+
+       ESCWALL release 1139 -> 1190 (+51): 49x
+       wall=3.0 local=0 cold re-arm + 2 wide
+       retunes, both burst-paired and local=0:
+       wall=8.9 bce58087a2676c4f @12:11:44 and
+       wall=14.5 a215f803afbe9851 @12:14:45 -
+       the 14.5 is a fresh wall>10 retune
+       (c485's window had none, wall<=10 only;
+       lifetime wall>10 ESCWALL lines now 12);
+       no boundary-change lines, no local!=0
+       releases in window.
+
+       KVL 3242 -> 3349 (+107 as of the
+       12:37:34 recheck; +102 at the 12:31:45
+       counters snapshot): local0 benign
+       +105; exceptions 107 -> 109 (+2, both
+       local=2048 class, no SK escape for
+       either): 12:30:39 chatcmpl-87453f60b818-
+       8a93-aea59dbd hit=106496 and 12:32:09
+       chatcmpl-a8814d94d0a00dff-892f515d
+       hit=110592; classes now 6144=71,
+       1024=24, 2048=6, 7168=5, 5120=2,
+       4096=1; the FIRST local=4096 req
+       91d406ccb3a7bc68 still 1 line total
+       (no recurrence). KVL/APC serving
+       healthy.
+
+       Hard-failure scan clean: Traceback=0,
+       ImportError/AssertionError=0, real CUDA
+       out of memory=0, GPU watchdog=0 (whole-
+       file). Station rows h=200 p=9 500=0
+       across both probes (oom=0 shm=0 gpu=0);
+       serving tail intact: 165x "200 OK" in
+       the last 400 lines (chat POST 200 OK +
+       GET /metrics 200 OK, APC-HIT flowing
+       through 12:31:39).
+
+       WEDGE-LOOP-POSTV31: n/a (boot still
+       pre-v3.1; the 8 fresh loops each ran
+       one burst and self-silenced; all 21
+       known ids stayed silent to close -
+       roster carries for the post-restart
+       silent-once comparison). Post-restart
+       incident: NONE (no restart; first v3.1
+       microdetail stays pending).
+
+       Verdict: CYCLE_ALERT (ladder tier: fresh
+       rung 13 @12:16:22, mid-burst, completes
+       the 3+ ladder over the c485 forward-
+       passed ALARM TOUCH pair; wedge frames
+       all v2-era id-transient class,
+       self-silenced by 12:17:48 with zero
+       known-id recurrence; hard failures
+       zero; serving intact; knobs carried
+       REFUSAL=2/WALL=3; HEALTH=200 both
+       probes; no restart). Downstream
+       (cycle 487): runs under standing
+       CYCLE_ALERT - per the c484 pattern a
+       rung-less window with detector CLEAN
+       at close can discharge toward QUIET
+       with the alert noted; any new rung or
+       continued chain escalation escalates
+       further; staged v3.1 stays post-
+       restart-gated.
+
+       Cycle 487 dispatch pending (orchestrator).
