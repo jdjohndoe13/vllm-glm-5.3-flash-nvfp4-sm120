@@ -8283,4 +8283,98 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
     logged) - only the user restart
     into staged v3.1 can break the
     loops. ROWLOG_N=872.
-      Cycle 445 dispatch pending (orchestrator).
+     Cycle 445 (one-shot, epoch II, no
+     restart): CYCLE_ALERT (standing,
+     expected pre-restart wall-cycling
+     regime). Probes 01:09:49 ->
+     01:16:26 on testcomp2, station
+     CANARY_ALIVE_60644 both, pid
+     60644 alive throughout, no
+     restart; HEALTH timings 200 @
+     01:09:49 and 200 @ 01:16:26.
+     ROWLOG_N 874 -> 875 (md5
+     1d8de84b9bf74ab0546dbeb28afd962b
+     -> 303d00af81cc7dd4eb0e27d2cc524429;
+     append-only). Regime: STILL
+     baseline boot engine-20261001-231328.
+     log (v2-era; user did not restart
+     this cycle - API pid 100422 lstart
+     Thu Oct 1 23:13:27, refusal knob
+     = 2 environ-proven,
+     VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS,
+     claim blockout count = 0 so the
+     staged v3.1 was never loaded;
+     WEDGE-LOOP-POSTV31 stays armed;
+     no post-v3.1 incident to report).
+     Engine evidence pass ~01:26
+     census: SERVERKILL 432 -> 518
+     total, +86 new in the 01:00 ->
+     01:26:31 window, while the c444
+     top wedge ids stayed frozen exact
+     (a55730aa2436f326=43,
+     a44edd70f7347af3=39,
+     abf4c15de42aa3fb=31,
+     ad87dfae2667eaf5=25; 0 new each)
+     and baf918c29f8971ac=47 closed
+     out 00:50-01:00; post-census load
+     moved to fresh ids led by NEW top
+     wedge chatcmpl-82eccb5ddd9a76bd
+     =35 (35 SK all >=01:00 plus one
+     benign escape refusal at
+     01:04:56 window=2), then
+     chatcmpl-a4929a2bb818a4c8=10,
+     chatcmpl-a99f2a15f6a0f05d=9 with
+     the classic 3-s cadence escape
+     run 01:20:07 -> 01:20:22
+     (hit=192512 fallbacks=1 wall=0.1
+     -> escape; ESCWALL release
+     wall=3.0 'no boundary change;
+     cold re-arm' pairs), then
+     chatcmpl-9820eab3f3db553a 3-s run
+     01:21:30 -> 01:21:38 (last SK
+     01:21:38; its first escape hit
+     the refusal window=2 at 01:21:30
+     with the long-held ESCWALL
+     release wall=37.8; no refused-id
+     same-id re-escape). escape
+     refusal 2 -> 5 (+3 isolated
+     benign lines: 01:01:02
+     chatcmpl-80f4147d65c1e510,
+     01:04:56 chatcmpl-82eccb5ddd9a76bd,
+     01:21:30 chatcmpl-9820eab3f3db553a;
+     exactly one refusal line per id
+     - no same-id refusal pairs).
+     ESCWALL release 361 -> 427
+     (+66), KV-LOOKUP hit 674 -> 800
+     (+126). Traceback=0,
+     ImportError/AssertionError=0,
+     real CUDA OOM/GPU watchdog=0
+     (OOM_RAW=0, claim blockout=0).
+     Rowlog ladder: after the c444
+     standing 3-run [00:39:53]
+     [00:45:13][00:50:33] the hb=000
+     rows continued with NO recovery
+     - 6-consecutive hb=000 rows
+     00:39:53 -> 01:06:34, each
+     ALERT: SERVE-WEDGE, finally
+     closed by [01:11:37] hb=200 ->
+     3+ = CYCLE_ALERT per the ladder.
+     h=200, 500=0, oom=0 on every
+     row: serving intact through the
+     engine tail (POST 200 OK total
+     356, latest 01:23; SpecDec
+     accept 2.24-2.80, MFU 0.6-5.9
+     TF/s, healthy KV-LOOKUP hits
+     through 01:23:28). Verdict:
+     CYCLE_ALERT (standing,
+     recorded-but-expected) -> the
+     v2-era wedge-wall loop regime
+     persists (3-s re-escape bursts
+     + 6-run hb=000) while serving
+     held; still NOT the v3.1 per-id
+     one-escape-then-silence
+     fingerprint (claim block never
+     logged) - only the user restart
+     into staged v3.1 can break the
+     loops. ROWLOG_N=875.
+      Cycle 446 dispatch pending (orchestrator).
