@@ -8803,4 +8803,121 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
       logged) - only the user restart
       into staged v3.1 can break the
       loops. ROWLOG_N=896.
-       Cycle 451 dispatch pending (orchestrator).
+      Cycle 451 (one-shot, epoch II, no
+      restart): CYCLE_ALERT (standing,
+      expected pre-restart wall-cycling
+      regime; no new escalation, rowlog
+      ladder single-rung watch). Probes
+      03:10:41 -> 03:16:00 on testcomp2,
+      station CANARY_ALIVE_60644 both,
+      pid 60644 alive throughout, no
+      restart needed; HEALTH 200 @
+      03:10:41 and 200 @ 03:16:00.
+      ROWLOG_N 897 -> 898 (md5
+      64c7348921cad840568e918f9cf5cad6
+      -> ec5231efa08e6649b7396ad72fe558
+      37; c450-end baseline 896, md5
+      6ac8fb3495c1cd8b21f886c93cb99
+      9e9; append-only, NEWBOOTLOG
+      never appeared). Fresh rows:
+      [03:06:38] clean h=200 closing
+      c450, then [03:11:58] hb=000
+      solo isolated watch rung
+      tracking the engine's fresh
+      wedge cycle (prior rungs
+      03:01:34/03:06:38 clean;
+      recovery rung not yet posted at
+      the 03:16:00 probe); h=200,
+      500=0, oom=0, shm=0, gpu=0 on
+      every row: serving intact
+      through the engine tail (POST
+      200 OK total 752, +42 since
+      c450, live GET /metrics 200
+      tail 03:20:10; SpecDec accept
+      2.10). Regime: STILL baseline
+      boot engine-20261001-231328.log
+      (v2-era; user did not restart
+      this cycle - API pid 100422
+      unchanged, refusal knob = 2
+      environ-proven
+      VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_S
+      ECS=2; claim blockout count = 0
+      whole log, so the staged v3.1
+      was never loaded;
+      WEDGE-LOOP-POSTV31 stays armed;
+      no post-v3.1 incident to
+      report). Engine evidence pass
+      ~03:20 census (log 13117
+      lines): SERVERKILL 774 -> 797
+      total, +23, every pre-existing
+      id EXACT-frozen again, 16/16
+      vet match incl. burst ids
+      (baf918c29f8971ac=47,
+      a55730aa2436f326=43,
+      b85345868b69b2db=41,
+      a44edd70f7347af3=39,
+      82eccb5ddd9a76bd=35,
+      abf4c15de42aa3fb=31,
+      ad87dfae2667eaf5=25,
+      acd4af385c026201=21,
+      997c5c6e07d21b11=20,
+      a7d7ca4522378833=17,
+      b2394986999297bd=14,
+      a4929a2bb818a4c8=10,
+      a99f2a15f6a0f05d=9;
+      802890cea860a673 silent =4;
+      858a90beec8840c1 healed =8;
+      c450 loops 8a08cf7bbe4b9e37=6,
+      ac080e587a1e6e56=6 stay
+      closed). Fresh live v2-era
+      wedge-bursts, EXPECTED class,
+      all 03:16:52 -> 03:19:44
+      post-c450 tail, new ids:
+      a7a50b84974f629a 4x SK
+      03:16:52 -> :01 refusal-free
+      (ESCWALL cold re-arm releases
+      16:55-17:01),
+      b2a12fc9c31fa513 single SK
+      03:18:34 wall=8.7 hit=192512
+      (refusal 03:18:34 window=2),
+      af177fd6260e0c5f 5x SK
+      03:17:52 -> 03:18:04, first
+      wall=30.1 then 0.1-cadence,
+      hit=120832 local=0, refusal
+      03:17:53 window=2, releases
+      17:54-18:03, and new TOP burst
+      8e007ca1da212703 13x SK
+      03:19:08 -> :44 within 36 s,
+      hit=121856, refusal-free,
+      ESCWALL chain every 3 s -
+      total +23. Escape refusal 14 ->
+      16 (+2), both new lines
+      window=2 knob-matched, every
+      fresh escape id single-escape,
+      no re-escape loop on any id.
+      30-s-window same-id detector:
+      at escape-refusal granularity
+      CLEAN (0 wedge windows whole
+      log); SK-line sweep shows
+      8e007ca1da212703 13x and
+      af177fd6260e0c5f 5x fresh, plus
+      the historical vet-burst set -
+      expected pre-restart, NOT
+      post-v3.1. ESCWALL release 639
+      -> 658 (+19), KV-LOOKUP hit
+      1333 -> 1381 (+48). Traceback=0,
+      ImportError/AssertionError=0,
+      real CUDA OOM/GPU watchdog=0,
+      HTTP 5xx = 0 whole log.
+      Verdict: CYCLE_ALERT (standing,
+      recorded-but-expected) -> the
+      v2-era wedge-wall loop regime
+      persists at watch-grade hb
+      activity while serving held;
+      still NOT the v3.1 per-id
+      one-escape-then-silence
+      fingerprint (claim block never
+      logged) - only the user restart
+      into staged v3.1 can break the
+      loops. ROWLOG_N=898.
+       Cycle 452 dispatch pending (orchestrator).
