@@ -12896,4 +12896,120 @@ wedge-clean, healed hb row).
        any time; post-restart verdict still
        requires zero wedge-loop.
 
-       Cycle 492 dispatch pending (orchestrator).
+       Cycle 492 (epoch II, standing pre-restart):
+       station pid 60644 alive on all three
+       probes (13:40:43 / 13:46:31 / 13:52:21),
+       HEALTH=200 at each probe; no restart run
+       or observed; fd-proven boot API 100422
+       (started Oct 1 23:13:27), EngineCore
+       100982; NEWBOOTLOG none, newest engine
+       log still engine-20261001-231328.log;
+       knob read back REFUSAL=2/WALL=3; the
+       whole cycle ran under the standing
+       v2-era regime; whole-file read 42344
+       lines (c491 read 41506).
+
+       Rowlog: ROWLOG_N 1019 (first probe
+       13:40:43) -> 1021 (close 13:52:21);
+       c491 close baseline 1017 (rows 13:32:31
+       + 13:37:51 landed before my first
+       probe); md5
+       772e6b530fe36b54942aa1e5f1f23708
+       -> 9118f6da4f2683d9753e785c1bb02480
+       (mid 1020 = a668589f01bfe3d77f70e301829
+       99b3a at 13:46:31); HEALTH=200 every
+       probe; h=200 on every row; station
+       serving fresh through close (kv 7760 ->
+       7817, apc 1553 -> 1572, bytes +55..66k
+       per row).
+
+       Ladder: DISCHARGED-clean broke; two NEW
+       hb=000 rungs back to back ([13:37:51] +
+       [13:43:12] ALERT: SERVE-WEDGE, both
+       rows still h=200 with serving bytes
+       rising), then clean hb=200 row
+       [13:48:12]; no third rung at close.
+       Ladder state: ALARM TOUCH (re-armed,
+       healed at close); rungs total 13 -> 15.
+
+       Wedge side: SERVERKILL 1561 -> 1570
+       (+9), all inside 13:44:37-13:47:06,
+       zero SK after (silence 6.5+ min to the
+       13:53 recheck). Five fresh one-escape
+       ids, each one SERVERKILL -> escape,
+       then silent, no refusal, no release
+       attached: 81f942de705d19d6 13:44:37
+       hit=62464, a41f80571d27f98d 13:44:48
+       hit=160768, 90d6cbd2924b7b3d 13:45:16
+       hit=63488, aeccfa1c70b6e5f5 13:45:28
+       hit=160768, 9e761e283e7a2678 13:45:55
+       hit=63488. Then a NEW-id 9-s loop, req
+       chatcmpl-999ea6a5c6ec5ecf-b3b8611c:
+       4 escapes in 9 s (13:46:57 / 13:47:00
+       / 13:47:03 / 13:47:06), local=0
+       hit=64512, shape = KV-LOOKUP hit +
+       stale-hit fallback (budget=8
+       fallbacks=1 wall 0.3 -> 0.1) +
+       SERVERKILL -> escape (0, False) each
+       round. Station fb 1561 -> 1570 (row
+       [13:48:12]) tracks the same +9.
+
+       ESCWALL release 1190 -> 1193 (+3): all
+       three attached to the loop (13:47:00 /
+       13:47:03 / 13:47:06, wall=3.0 local=0,
+       no boundary change; cold re-arm each).
+
+       escape refusal 42 -> 42 (+0; last
+       refusal 12:14:43 window=2, unchanged).
+
+       Known-id hist exact vs c491 (no
+       recurrence): b5905626dc40f40d 19x,
+       82c750aab6886df7 13x, bce58087a2676c4f
+       12x, abf3d2da29f6e6a6 7x,
+       a215f803afbe9851 5x, chains
+       865b845545bdc117 31x, 8f19eaa97a9ed265
+       16x, b9b9b07796cfbe9d 13x,
+       ae549f74d871fc43 11x; c491 one-off
+       8998f90faa5c1dd3 stays 1x.
+
+       KVL 3403 -> 3443 (+40): local=0
+       subcounter 3293 -> 3331 (+38, benign
+       hits flowing throughout, last seen
+       13:49:33); exceptions 110 -> 112 (+2):
+       doubled pair 13:43:28 req
+       chatcmpl-89efc6ab592732d4-8bcc994d
+       local=2048 hit=153600 (2048-class
+       pair, 16 s after the second hb=000
+       rung, no follow-up).
+
+       Hard-failure scan clean: Traceback=0,
+       ImportError/AssertionError=0, real
+       'CUDA out of memory'=0, 'GPU watchdog'
+       =0 (whole-file, 42344 lines).
+
+       WEDGE-LOOP-POSTV31: n/a (boot still
+       pre-v3.1; under the standing v2-era
+       regime wedge-burst cycles such as the
+       9-s same-id 4-escape loop are the
+       expected shape; the same pattern on a
+       post-restart boot would be the alert;
+       first v3.1 microdetail stays pending).
+
+       Verdict: ALARM TOUCH (not CYCLE_ALERT):
+       two consecutive new hb=000 rungs
+       (13:37:51 + 13:43:12) re-armed the
+       discharged ladder to ALARM TOUCH and
+       a same-id 4-escape wedge loop landed
+       between them; ladder then healed
+       (row 13:48:12 hb=200) with no third
+       rung at close, so no 3+ ladder. Hard
+       failures zero, serving intact, no
+       known-id recurrence; the burst is the
+       standing pre-restart wedge-burst
+       shape. Escalation note: next new
+       hb=000 rung = 3+ ladder = CYCLE_ALERT.
+       Restart may come at any time;
+       post-restart verdict still requires
+       zero wedge-loop.
+
+       Cycle 493 dispatch pending (orchestrator).
