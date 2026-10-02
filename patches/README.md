@@ -12123,4 +12123,131 @@ wedge-clean, healed hb row).
        wedge-loop shape, or hard failures;
        staged v3.1 stays post-restart-
        gated.
-       Cycle 485 dispatch pending (orchestrator).
+       Cycle 485 (epoch II; regime V2-era pre-v3.1:
+       restart; live boot fd-resolved engine-
+       20261001-231328.log unchanged under the
+       remote /mnt/data logs path; API 100422 +
+       EngineCore 100982 appending, 37763 lines
+       9.4 MB @12:09:14; knobs REFUSAL=2/WALL=3
+       per c482 environ proof carried; NEWBOOTLOG
+       none, staged v3.1 still not booted).
+
+       Station: pid 60644 alive at both probes,
+       restart not needed: probe1 NOW=11:59:41
+       HEALTH=200 CANARY_ALIVE_60644; probe2
+       NOW=12:05:55 HEALTH=200 (single 300 s
+       wait between).
+
+       ROWLOG (probe authoritative): start N=999
+       md5 d5f2e109741ec80ee36fa7c73f09a3f0
+       @11:59:41 (4 rows 996-999 pre-probe1: rows
+       11:39:41, 11:44:59, 11:50:17, 11:55:31;
+       c484 baseline N=995 md5 2572516e per
+       handoff) -> end N=1001 md5
+       8354a9dcd7d53acc5d08c1b748f1ff86 @12:05:55;
+       full window 995 -> 1001 = +6 rows; in-row
+       fb 1415 -> 1501 = engine SK +86 exactly at
+       close.
+
+       Hb ladder: two fresh rungs since the c484
+       discharge - rung 11 @11:39:41 (fb held
+       1415: wedged without a fresh SK) and rung
+       12 @12:05:53 (after the 12:04-12:05 burst);
+       between them 4 straight hb=200 rows
+       (11:44:59, 11:50:17, 11:55:31, 12:00:33)
+       absorbed 62 SK kills with NO rung; window
+       closes ON rung 12 (no post-rung clean row
+       yet).
+
+       Wedge side re-lit in v2-era wedge-burst
+       cadence: SERVERKILL 1415 -> 1501 (+86; first
+       SK 11:46:26, last 12:05:13): 17 fresh
+       id-transient loops, each self-silencing
+       (top-id cum=win spot-verified: born and
+       silenced in-window), no id recurring:
+       aec3101f29703225 18x (hit=61440,
+       12:01:34-12:02:28, ~3 s spacing, largest
+       loop since the discharge),
+       8f740f617fec5c6f 13x (hit=1024,
+       11:46:26-11:47:02),
+       b53e9ecf0b4d58a8 12x (hit=54272,
+       11:47:34-11:48:07), 9cbf9f03d45b1797 10x
+       (hit=198656, 11:50:17-11:50:44);
+       3-5x class: bcc37a560c5dd9ca 5x (60416),
+       b639b5acaa5c23b4 5x (197632),
+       ac64bc75c8b89f1a 5x (61440),
+       a5fc2dc1f8277f2a 3x (63488),
+       9ab25cdd7c65083c 3x (57344),
+       8d3942b2bec81322 3x (1024),
+       a25d8a45d978e8bf 2x (56320),
+       9880b488a1a49a62 2x (56320); singles:
+       bca0c364c7722a20 1x (199680, wall=114.3
+       @11:53:27 - widest wall kill of the window,
+       refused window=2 then silent),
+       a7673fd08d002303 1x (195584, wall=5.0),
+       99cbec914c4710fe 1x (64512),
+       b6473756cf76911f 1x (68608),
+       af277f4994b11db3 1x (70656; last SK
+       @12:05:13).
+       Frozen chains silent (0 new):
+       865b845545bdc117 31x, 8f19eaa97a9ed265 16x,
+       b9b9b07796cfbe9d 13x, ae549f74d871fc43 11x;
+       c484 burst ids beaf1f3078dc2dfa 4x and
+       a2966e99dd481303 5x also stayed silent
+       (id-transient shape held).
+
+       escape refusal 36 -> 40 (+4): all window=2
+       distinct singletons - a7673fd08d002303
+       @11:48:22 (wall 5.0), b639b5acaa5c23b4
+       @11:49:16 (wall 6.5), bca0c364c7722a20
+       @11:53:27 (wall 114.3), 8d3942b2bec81322
+       @11:54:29 (wall 5.8); last refusal 11:54:29.
+
+       ESCWALL release 1069 -> 1139 (+70): 68x
+       wall=3.0 local=0 cold re-arm (no boundary
+       change) burst-paired with the SK loop; +2
+       wide retunes wall=8.5 and wall=7.8, both
+       under the wall>10 line - no fresh wall>10
+       opener in window (all-time opener classes
+       unchanged per c484).
+
+       KVL 3091 -> 3242 (+151): local0 benign
+       2985 -> 3135 (+150); exceptions 106 -> 107
+       (+1): FIRST local=4096 exception @11:58:21
+       req=chatcmpl-91d406ccb3a7bc68-83a57215
+       hit=67584 (new exception class; no SK
+       escape for this req); held: 6144=71, 7168=5,
+       2048=4, 1024=24, 5120=2. KVL/APC serving
+       healthy.
+
+       Hard-failure scan clean: Traceback=0,
+       ImportError/AssertionError=0, real CUDA
+       out of memory=0, GPU watchdog=0. Station
+       rows h=200 p=9 500=0 across both probes;
+       serving tail intact: /metrics 200 OK
+       @12:09:14, chat 200 OK lines flowing.
+
+       WEDGE-LOOP-POSTV31: n/a (boot still
+       pre-v3.1; no post-restart incident; first
+       v3.1 microdetail still pending; the
+       aec3101f29703225 18x loop is the largest
+       pre-restart shape seen since the discharge;
+       all 17 loop ids logged for the post-restart
+       silent-once comparison).
+
+       Verdict: ALARM TOUCH (rung pair 11+12 after
+       the c484 discharge: rung 11 @11:39:41
+       re-armed the discharged QUIET-watch; rung
+       12 @12:05:53 made it two consecutive ladder
+       rungs = ALARM TOUCH tier; CYCLE_ALERT
+       needs a 3rd rung and stays untripped; SK
+       +86 is the v2-era wedge-burst cycle in
+       expected id-transient shape; no hard
+       failures; HEALTH=200 both probes; boot
+       unchanged. Downstream: fresh rung No.3
+       converts to CYCLE_ALERT; a rung-less window
+       with detector CLEAN at close can
+       re-discharge toward QUIET; staged v3.1
+       stays post-restart-gated.
+
+       Cycle 486 dispatch pending (orchestrator).
