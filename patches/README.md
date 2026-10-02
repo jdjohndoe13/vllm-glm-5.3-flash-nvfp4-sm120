@@ -11815,4 +11815,125 @@ wedge-clean, healed hb row).
        - any new rung or continued chain
        escalation escalates further;
        staged v3.1 still post-restart-gated).
-       Cycle 482 dispatch pending (orchestrator).
+       Cycle 482 (epoch II): pre-restart v2-era
+       regime held the whole cycle; no restart.
+       Newest engine log still
+       engine-20261001-231328: fd-proven live
+       (fds 1+2 of API pid 100422, etime
+       11:55:27 at the 11:08:56 read) and
+       find-newest agree; no NEWBOOTLOG. Env
+       knob read from /proc/100422/environ:
+       VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3 +
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2 -
+       knobs unchanged; v2-era semantics for
+       all interpretation below.
+       Station pid 60644 alive at both probes
+       (no restart needed). Probe1 NOW=10:49:49:
+       CANARY_ALIVE_60644, HEALTH=200,
+       ROWLOG_N=986 (handoff baseline 984
+       superseded; probe authoritative), MD5
+       b59d6c15e1ad81688f98be1b53479991; 300 s
+       wait; probe2 NOW=10:56:24:
+       CANARY_ALIVE_60644, HEALTH=200,
+       ROWLOG_N=987, MD5
+       d9d54398f19284bed67d7301acb84d99; one
+       new row only (10:52:49 hb=200, heal of
+       the 10:47:45 rung).
+       Hb ladder: two fresh 000 rungs -
+       rung7 [10:42:25] and rung8 [10:47:45],
+       both hb=000 ALERT SERVE-WEDGE (fresh
+       2-consecutive pair spanning the
+       10:41-10:54 wedge phase; healed
+       [10:52:49] hb=200 as the last written
+       row at probe2). Last row clean but the
+       fresh pair bars a clean-window
+       discharge; rung cadence tightened to
+       ~5-15 min (handoff projected ~8-20;
+       9 rungs since 09:39:38).
+       SERVERKILL 1296 -> 1406 (+110; frozen
+       read 11:10:22, log still appending).
+       Window t>10:37:58 (frozen): +110
+       escapes across 19 fresh ids, two
+       phases: A 10:38:32 -> 11:04:30 (82
+       rows) and B 11:05:32 -> 11:08:22 (28
+       rows). Top same-id chains (window):
+       865b845545bdc117-924ab976 31x 11:03:00
+       - 11:04:30 (record chain: opener
+       wall=56.9 hit=1024 + refusal window=2
+       @11:03:00, then ~3 s wall=0.1 re-arms,
+       ESCWALL releases local=0 wall=3.0
+       cold per escape),
+       8f19eaa97a9ed265-a0b6918f 16x 10:38:45
+       -> 10:39:30 (refusal @10:38:47),
+       b9b9b07796cfbe9d-ae45bef5 13x phase B
+       (refusal @11:07:01), ae549f74d871fc43
+       - 8a98a4ba 11x 10:55:18 -> 10:55:48,
+       9bfd08e97322c7fc-b429349f 6x,
+       90e253cc926d2e88-a306d714 5x @11:08:19
+       -22, b490a44ba5b47d1c-98634c6e 4x
+       (refusal @10:46:20),
+       a73b25c52d24dd98-b7b82e8a 4x (refusal
+       @10:48:52), 91163ad3d0275db9 4x,
+       af39b0785b80ecfc 3x (refusal
+       @11:06:21), 2x + 2x, 8 one-offs (19
+       distinct window ids).
+       Vet check: c481 burst ids all stayed
+       silenced after their last frames -
+       ad481b64f6d1dfa5 (19x) last @10:37:58,
+       a8c9cca3519aa506 last @10:36:36,
+       a6a5828f2d43c6a9 last @10:29:20,
+       a86e306e45c0c169 last @10:20:01; the
+       id-transient shape held (a chain dies
+       with its request; a NEW id re-lights
+       the next wedge).
+       escape refusal 30 -> 36 (+6, one per
+       chain id above; last b9b9b077 @11:07:01
+       window=2). ESCWALL release 970 -> 1062
+       (+92, every one 'no boundary change;
+       cold re-arm' local=0). KVL 2831 ->
+       3041 (+210): local0 2743 -> 2936
+       (benign window 195), exception-class
+       88 -> 105 (+17: local=6144 +15 ->
+       71, local=7168 +2 -> 5, first growth
+       since c481 held it at 3; 1024/2048/
+       5120 held at 24/3/2 silent). Skew: 2
+       benign local0 rows fell between
+       10:37:58 and c481's 10:38:11 close
+       read - delta +193 vs window 195
+       reconciles.
+       Hard-failure scan clean: Traceback=0,
+       ImportError/AssertionError=0, real
+       'CUDA out of memory'=0, 'GPU watchdog'
+       =0 (no banner either). Station rows
+       h=200 p=9 500=0 oom=0 shm=0 gpu=0
+       all rows; serving intact: POST 200 OK
+       + GET /metrics 200 OK + healthy KVL/
+       APC into the 11:08 tail (34202 lines
+       8.4 MB @10:57; EngineCore pid=100982
+       appending through 11:08:22).
+       WEDGE-LOOP-POSTV31: n/a - boot remains
+       pre-v3.1; under v3.1 the 31x/16x/13x/
+       11x 3 s re-arm chains would be instant
+       POSTV31 wedge-loop alerts. Chain-length
+       drift worsened again: 6x -> 12x -> 19x
+       -> 31x with four >= 10x chains (31/16/
+       13/11) in one window. Post-restart
+       incident: none (no restart; no new
+       boot; first v3.1 microdetail still
+       pending).
+       Verdict: CYCLE_ALERT (standing alert
+       continues with repeat-escalation and
+       NO discharge: fresh rung pair 7+8
+       [10:42:25 + 10:47:45] landed inside
+       the window; +110 SK with a record
+       31x same-id chain 11:03:00 - 11:04:30
+       plus a second 28-row phase 11:05:32
+       -> 11:08:22; knobs WALL=3 / REFUSAL=2
+       proven; serving h=200/200 intact;
+       ALARM carries to cycle 483 - a
+       rung-less window closing on a clean
+       row (hb=200) AND detector CLEAN
+       discharges toward QUIET with the
+       alert noted; staged v3.1 still
+       post-restart-gated).
+       Cycle 483 dispatch pending (orchestrator).
