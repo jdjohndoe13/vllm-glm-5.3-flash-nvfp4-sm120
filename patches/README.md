@@ -11264,4 +11264,99 @@ wedge-clean, healed hb row).
        alive; serving 200 intact; staged
        v3.1 claim-blockout still
        post-restart-gated).
-       Cycle 477 dispatch pending (orchestrator).
+       Cycle 477 (one-shot): station pid 60644 ALIVE
+       at both probes (09:10:54 probe1, 09:17:03
+       probe2); HEALTH=200 at both closes; no
+       station restart; ROWLOG_N 967 -> 968
+       across probes (handoff n=966 superseded:
+       row [09:07:49] grew between the c476
+       close and probe1), ROWLOG_MD5 d971875a
+       -> d212de06 (append-only, no
+       NEWBOOTLOG).
+       Regime: newest engine log is still
+       engine-20261001-231328.log under
+       /mnt/data/shared/models/vllm-glm-5.3-
+       flash-nvfp4/logs (dir listing; log
+       size 7248216, mtime 09:19:04 growing;
+       no restart - boot v2-era whole cycle;
+       API pid 100422 alive (pgrep -f 'vllm
+       serve' matches, etime 10:05:37),
+       EngineCore pid 100982 alive (etime
+       10:05:18); knob
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+       and VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3
+       environ-proven from
+       /proc/100422/environ).
+       Engine counts vs c476: SK 1192 -> 1197
+       (+5); refusal 27 (+0; all singletons,
+       per-id top max 1; last
+       b7485652de1371fe @04:46:17); ESCWALL
+       915 -> 918 (+3, all local=0 cold
+       re-arm); KVL 2416 -> 2435 (+19 benign
+       local=0); exception-class counter
+       28 -> 28 held (KVL-nonlocal0,
+       reconciled: 2412 local=0 + 28
+       nonlocal0 = 22 local=1024 + 3
+       local=6144 + 2 local=2048 + 1
+       local=5120; last nonlocal0 line
+       @08:59:14, none new); Traceback=0,
+       ImportError=0, AssertionError=0,
+       real CUDA OOM=0, GPU watchdog=0 (no
+       matched lines).
+       Rowlog rows this cycle: [09:13:00]
+       h=200 p=9 500=0 oom=0 shm=0 gpu=0
+       hb=200 fb=1197 kv=5768 apc=1015
+       healthy (vs [09:07:49]: kv 5743 ->
+       5768, fb 1192 -> 1197 = SK +5 exact,
+       apc 1004 -> 1015, ev 199900 ->
+       203820). Zero new 000 rungs; c476
+       single isolated 000 rung @08:57:19
+       stays healed @09:02:29.
+       Wedge window: 09:10:13 -> 09:11:22,
+       69 s, +5 SERVERKILL across 3 fresh
+       ids (a3e5234f21aa05ad=1 @09:10:13
+       hit=173056; a196c1206b7572a4=3x
+       @09:10:42/45/48 hit=176128 at the
+       wall=3.0 re-arm cadence, releases
+       @09:10:45/48/51 local=0 cold;
+       a6b0fde76850c489=1 @09:11:22
+       hit=176128). a196 released cleanly
+       each re-arm; the two singleton ids
+       re-entered silent (no wall release
+       line through close, no repeat
+       escape, no refusal); every fresh id
+       silent since 09:11:22 (0 SK in the
+       final 8 min to evidence close
+       09:19:04; engine tail normal KVL hit
+       traffic through 09:18:59). c476 burst
+       ids (91ed506ecbf05aa0,
+       9cad84777eddaec3, 9e8dce87546079cc)
+       and c475 burst ids stayed silent
+       (0 new SK).
+       Serving intact: probes HEALTH=200
+       both closes; rowlog h=200 rows; no
+       reset, engine tail normal (log
+       growing).
+       Post-restart incident: none (no
+       restart; first post-v3.1 microdetail
+       stays pending).
+       Standing pre-restart regime: wedge
+       activity inside the one-off/
+       short-of-window frame allowance -
+       69 s window, 3 fresh ids, max 3x
+       same id a196c1206b7572a4 at the
+       wall=3.0 re-arm cadence, zero new
+       000 rungs, detector CLEAN at cycle
+       close; ladder trigger (2+
+       consecutive rungs) not reached.
+       Verdict: QUIET (SK 1192 -> 1197 +5,
+       short-window ids all silent since
+       09:11:22; RF +0, SW +3 re-arm, KVL
+       +19 benign, exception-class counter
+       28 held; boot 231328 v2-era whole
+       cycle knob=2/WALL=3, API pid 100422
+       + EngineCore 100982 alive, station
+       pid 60644 alive; serving 200 intact;
+       staged v3.1 claim-blockout still
+       post-restart-gated).
+       Cycle 478 dispatch pending (orchestrator).
