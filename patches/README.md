@@ -9117,4 +9117,110 @@ TTL=150 unchanged; the "fail-2-strikes" signature is pinned as diagnostic-only
       logged) - only the user restart
       into staged v3.1 can break the
       loops. ROWLOG_N=905.
-       Cycle 454 dispatch pending (orchestrator).
+Cycle 454 (one-shot, epoch II, no
+restart): CYCLE_ALERT (standing,
+recorded-but-expected; same standing
+grade - no new escalation) -> a
+fresh 3-rung hb=000 ladder
+(03:53:33 + 03:58:53 + 04:04:14)
+re-reached the ladder CYCLE_ALERT
+grade and was still un-healed at
+probe end (heal watch next cycle);
+v2-era wedge-wall loop regime
+persists while serving held; still
+NOT the v3.1 per-id
+one-escape-then-silence fingerprint
+(claim blockout count = 0 whole
+log) - only the user restart into
+staged v3.1 can break the loops.
+Probes 03:56:46 -> 04:04:37 on
+testcomp2, station
+CANARY_ALIVE_60644 both, pid 60644
+alive throughout, no restart
+needed; HEALTH 200 @ 03:56:46 and
+200 @ 04:04:37. ROWLOG_N 906 -> 908
+(md5 5a6b4aa71908c6b149ec7087e94d4280
+-> efb907549c0d3caee919b6e28a4aaffc;
+probe md5s authoritative start/end;
+handoff's N=905 predates rows; row
+906 = [03:53:33] hb=000 rung came
+before my probe1 census). Rows: h=
+200, 500=0, oom=0, shm=0, gpu=0
+every row; fresh rungs [03:58:53]
+(907) + [04:04:14] (908); c452
+3-rung ladder stayed healed through
+03:48:13, new 000s start 03:53:33;
+SERVE-WEDGE tag on 000 rows as
+before (v2-era pattern). Regime:
+STILL baseline boot
+engine-20261001-231328.log (v2-era;
+API pid 100422 unchanged, refusal
+knob = 2 environ-proven
+VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS
+=2; claim blockout count = 0 whole
+log so the staged v3.1 was never
+loaded; no post-restart incident,
+first post-v3.1 microdetail stays
+pending; WEDGE-LOOP-POSTV31 stays
+armed). Path note: engine logs live
+at /mnt/data/shared/models/
+vllm-glm-5.3-flash-nvfp4/logs
+(sm120-logs dir = canary station
+files only). Engine evidence census
+@04:13:02 (log 15906 lines, +1266):
+SERVERKILL 861 -> 930 (+69 fresh,
+wedge-burst window 04:02 - 04:12,
+every fresh event on a NEW window
+id, every vetted pre-existing id
+frozen EXACT with counts unchanged
+incl baf918c29f8971ac=47,
+a55730aa2436f326=43,
+b85345868b69b2db=41,
+a44edd70f7347af3=39,
+82eccb5ddd9a76bd=35,
+abf4c15de42aa3fb=31,
+87cf48eadb6324ea=27,
+ad87dfae2667eaf5=25,
+acd4af385c026201=21,
+997c5c6e07d21b11=20,
+bdb1bd99838f808b=18,
+8e007ca1da212703=13,
+858a90beec8840c1=8; window burst id
+tally closes exact: 17 ids = 69).
+Top window bursts (v2-era expected
+class): a1cb9c778c6c0671 17x
+(04:11:05 -> :53, ~3s ladder,
+ESCWALL-chained loop), baea315
+b3e82f190 13x (04:10:08 -> :44, 3s),
+b156fc9e9a21b886 8x (04:03:25 ->
+:46), bd66140596ac36c5 6x (04:06:42
+-> :56), b4c4c064624d3035 4x,
+af9b32cf71a29611 3x,
+a6dd8f47b3043c47 3x, b34c9b
+639593716e 3x, plus 2x id fills
+(993d0e8c0a5a4144, aa5c90
+c692158b7a, ae500239c8d066a7) and 6
+singleton ids; same-id SK loops
+recorded expected pre-restart.
+Escape refusal 19 -> 21 (+2 fresh:
+bd66140596ac36c5 04:06:42,
+af9b32cf71a29611 04:08:58, both
+window=2 knob-matched), every
+escape id single-refusal, no
+re-escape refusal on any id,
+30-s-window same-id refusal
+detector CLEAN (0 wedge windows
+whole log). ESCWALL release 700 ->
+752 (+52, all cold re-arm class, no
+boundary change, local=0).
+KV-LOOKUP hit 1533 -> 1690 (+157
+benign serving lookups through
+census, local=0). Traceback=0,
+ImportError/AssertionError=0, real
+CUDA OOM/GPU watchdog=0, HTTP 5xx =
+0 whole log. Serving intact: POST
+200 OK total 984 (+115 since c453),
+live GET /metrics 200 through
+census; SpecDec mean accept len
+2.99 @04:13:01. ROWLOG_N=908.
+       Cycle 455 dispatch pending (orchestrator).
