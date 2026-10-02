@@ -9483,4 +9483,92 @@ wedge-clean, healed hb row).
        pre-v3.1; wedge output collapsed
        to a single one-off frame;
        detector CLEAN whole log).
-       Cycle 458 dispatch pending (orchestrator).
+       Cycle 458 (epoch II; pre-restart
+       regime held through the whole
+       cycle; user did not restart):
+       station pid 60644 alive at both
+       probes, no restart needed;
+       probe1 @05:09:52 HEALTH=200;
+       single 300 s wait; probe2
+       @05:14:56 HEALTH=200.
+       ROWLOG_N 920 -> 921 (+1 row
+       05:11:03 h=200 p=9 500=0);
+       ROWLOG_MD5 920-end
+       c9c59407377a94d95cb924dcaf41cc0b
+       -> 921-end
+       5d609e41710997ad5cd926c56bf5512e.
+       Regime: newest engine log still
+       engine-20261001-231328.log;
+       LIVELOG fd of API PID 100422
+       resolves /mnt/data/shared/
+       models/vllm-glm-5.3-flash-nvfp4/
+       logs/engine-20261001-231328.log
+       (19042 lines @05:16:25 census);
+       boot still v2-era; refusal-knob
+       environ re-read N/A (no new
+       boot appeared through 05:16).
+       Frozen-census deltas whole log:
+       SERVERKILL 1026 -> 1026 (+0);
+       escape refusal 27 -> 27 (+0);
+       ESCWALL release 818 -> 818 (+0);
+       KV-LOOKUP hit 1910 -> 1923 (+13
+       benign serving hits, samples
+       local=0 @05:17:44, @05:18:20);
+       Traceback=0, ImportError/
+       AssertionError=0, real CUDA OOM
+       /GPU watchdog=0 whole log.
+       Last escape line in log remains
+       the ledgered one-off
+       a4825dcf5f9794d7 @04:59:30; zero
+       escape events after it -> cycle
+       window 05:06 -> 05:18 incident-
+       clean (no burst ids this cycle).
+       Frozen vets EXACT (SK-only
+       counts; 82eccb... = 35 SK + 1
+       refusal explains raw-36):
+       baf918c29f8971ac=47,
+       a55730aa2436f326=43,
+       b85345868b69b2db=41,
+       a44edd70f7347af3=39,
+       abf4c15de42aa3fb=31,
+       87cf48eadb6324ea=27,
+       ad87dfae2667eaf5=25,
+       acd4af385c026201=21,
+       997c5c6e07d21b11=20,
+       bdb1bd99838f808b=18,
+       a1cb9c778c6c0671=17,
+       8e007ca1da212703=13,
+       ac6b62d8a85ce6f4=17,
+       963164aa471a2b63=11: none moved.
+       Scripted 30-s same-id detector:
+       all FLAG30 windows predate 05:06
+       (burst frames 23:26-23:42,
+       00:27-02:40, 04:03-04:46 =
+       ledgered wedge-burst cycles,
+       expected pre-restart; top
+       repeats 12-hex:
+       baf918c29f89=47, a55730aa2436=43,
+       b85345868b69=41, a44edd70f734=39,
+       abf4c15de42a=31); zero new flags
+       after 04:59:30 (c457
+       WEDGE30_COUNT=0 frame stands).
+       hb ladder unchanged: two isolated
+       rungs (04:45:39, 05:01:01) both
+       healed by next row; 05:11:03
+       row clean; ALARM untouched;
+       TB/OOM/GPU-watchdog/5xx=0 whole
+       way; serving intact (POST /v1
+       200 OK; APC counter 430 -> 444).
+       Post-restart incident: none (no
+       restart; first post-v3.1
+       microdetail stays pending;
+       WEDGE-LOOP-POSTV31 not
+       applicable under v2-era boot).
+       Zero-delta quiet cycle ->
+       standing regime verdict
+       persists: QUIET (no new wedges;
+       frozen vets EXACT; ladder rungs
+       isolated and healed; staged
+       v3.1 claim-block still
+       post-restart-gated).
+       Cycle 459 dispatch pending (orchestrator).
