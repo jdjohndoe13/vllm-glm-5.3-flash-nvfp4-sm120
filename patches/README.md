@@ -9930,4 +9930,122 @@ wedge-clean, healed hb row).
        watch-grade; boot still pre-v3.1; staged
        v3.1 claim-blockout still
        post-restart-gated).
-       Cycle 463 dispatch pending (orchestrator).
+       Cycle 463 (epoch II; boot stayed 231328
+       v2-era through the whole cycle; user did
+       not restart, no rebase): station pid
+       60644 alive at both probes, no restart
+       needed; probe1 @06:15:45 HEALTH=200;
+       single 300 s wait; probe2 @06:22:32
+       HEALTH=200.
+       ROWLOG_N 933 -> 934 (c462 ledger 931
+       superseded by two later aprows
+       [06:07:45], [06:12:46], probe
+       authoritative); fresh row [06:18:05]
+       h=200 p=9 500=0 oom=0 shm=0 gpu=0
+       clean; ROWLOG_MD5 933-end
+       c5b3429c93fc4c8dfcc441e88022d049 ->
+       934-end 516b8f6d8680ed2d5617af6823bf6d1b
+       (append-only, NEWBOOTLOG never
+       appeared).
+       Regime: newest engine log still
+       engine-20261001-231328.log; LIVELOG
+       fd1/fd2 of API PID 100422 both resolve
+       it; boot still v2-era; knobs
+       VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+       (+ESCAPE_WALL_SECS=3) environ-proven on
+       pid 100422; no restart.
+       Fresh wedge burst RESUMED (scripted
+       whole-log + fresh-window census; window
+       t>=06:10:27 after c462's last raw
+       line): new top burst id
+       82e1d5343e41c872 = 4 SERVERKILLs
+       06:14:33 -> 06:14:42 (4 same-id escapes
+       inside 9 s; hit=112640 local=0
+       fallbacks=1; escape (0, False) every
+       cycle; ESCWALL release wall=3.0 cold
+       re-arm x3 @06:14:35/38/41 between runs;
+       last escape @06:14:42 then silence).
+       4 trailing one-off brand-new ids:
+       bb169dd13f243d25 @06:13:33 (hit=3072),
+       9cb820ab4bcdb6e1 @06:13:53 (hit=112640),
+       8cd9b74db28048af @06:14:13 (hit=118784),
+       9a3150ec795436af @06:15:25 (hit=113664);
+       112-s wave 06:13:33 -> 06:15:25, all
+       large-prefix stale-hit re-escapes
+       (local=0), the exact v2 loop shape the
+       staged v3.1 claim-blockout targets.
+       Counter deltas whole log: SERVERKILL
+       1047 -> 1055 (+8 = 4 + 1x4, exactly
+       the 5 new ids); ESCWALL release
+       833 -> 836 (+3, all 82e1d cold
+       re-arms); escape refusal 27 -> 27
+       (+0 whole log, none fresh, none
+       inside the loop); KV-LOOKUP hit
+       2015 -> 2039 (+24 benign serving
+       lookups, doubled-line events as
+       ever, fresh local=0 all, first
+       06:12:27, last 06:22:33); log lines
+       21328 -> 21848 (+520). Rowlog fb
+       counter corroborates: 1047 -> 1055 on
+       the 06:18:05 row (whole-log +8 closes
+       exact).
+       Frozen vets EXACT none moved: fresh +8
+       fully attributed to the 5 new ids;
+       long-history table re-read unchanged:
+       baf918c29f89=47, a55730aa2436=43,
+       b85345868b69=41, a44edd70f734=39,
+       82eccb5ddd9a=35, abf4c15de42a=31,
+       87cf48eadb63=27, ad87dfae2667=25,
+       acd4af385c02=21, 997c5c6e07d2=20,
+       bdb1bd99838f=18, a1cb9c778c6c=17;
+       c460 burst ids stay closed/silent:
+       8d3fc8142b88=13, bb6576aa418c=4,
+       one-offs 9f243dcb69e0 / ae38dac1aea4 /
+       a2c6487d8c0a / a814c5ca1fdccd03;
+       midscale and wedge-era ids hold; no
+       veteran moved (fresh SK lines are all
+       on the 5 new ids).
+       30-s same-id detector: SK side NOT
+       clean this cycle (SK_FRESH_MAX30S=4
+       within the fresh window:
+       82e1d5343e41c872 escapes at
+       06:14:33/35/39/42); refusal side CLEAN
+       whole log (all 27 refusals
+       unique-fingerprint singletons,
+       RF_MAX30S=1; last refusal still
+       b7485652de1371fe @04:46:17).
+       Traceback=0, ImportError/
+       AssertionError=0, real CUDA OOM /
+       GPU watchdog=0 whole log; HTTP 5xx=0;
+       BAD400 still the 2 ledgered client-400
+       lines (192.168.2.208).
+       Serving intact: POST 200 OK 1555 whole
+       log (+50 vs 1505), GET /metrics 200 OK
+       5154 (+157 vs 4997); last raw log
+       lines POST 200 OK + GET 200 OK
+       @06:23:12; probe rows 500=0 oom=0
+       shm=0 gpu=0; apc 573 -> 581.
+       hb ladder: no fresh rungs; last rung
+       stays 05:47:31, healed 05:52:44
+       hb=200; fresh rows 05:52:44 ->
+       06:18:05 all hb=200, no 2-run window,
+       ALARM untouched.
+       Post-restart incident: none (no
+       restart; first post-v3.1 microdetail
+       stays pending; WEDGE-LOOP-POSTV31 not
+       applicable under the v2-era boot).
+       Standing pre-restart regime: the
+       same-id SK detector is NOT clean this
+       cycle: 4 escapes of
+       82e1d5343e41c872 inside 9 s = burst
+       trigger, so the c461/c462 zero-delta
+       QUIET chain breaks.
+       Verdict: CYCLE_ALERT (fresh wedge
+       burst 82e1d5343e41c872x4 + four
+       one-offs; SK +8 RF +0 SW +3 KVL +24;
+       boot still 231328 v2-era, knob=2, API
+       pid 100422 alive; wedge detector and
+       hb ladder clean; serving intact;
+       staged v3.1 claim-blockout still
+       post-restart-gated).
+       Cycle 464 dispatch pending (orchestrator).
