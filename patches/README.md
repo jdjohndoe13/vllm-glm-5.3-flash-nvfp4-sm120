@@ -13605,4 +13605,90 @@ wedge-clean, healed hb row).
         boot verdict still requires zero
         wedge-loop.
 
-       Cycle 498 dispatch pending (orchestrator).
+        Cycle 498 (2026-10-06, one-shot). Last record
+        was 497 this evening (e7f415c, close 21:30:37
+        with standing CYCLE_ALERT but wedge CLOSED
+        at its close), so this window = 21:30:37 ->
+        21:41:38 (probe1 21:36:15, one ping-wait,
+        probe2 21:41:38).
+
+        Station: pid 60644 alive on both probes, no
+        restart; API pid 100422 + EngineCore 100982
+        unchanged.
+
+        Probes: HEALTH=200 at 21:36:15 and
+        21:41:38. ROWLOG_N 2234 (c497 close) ->
+        2235 -> 2236; md5 9848d0b4241337b4 ->
+        9cc058cf6420bab5. Gap row [21:34:06]
+        (post-c497-close, pre-probe1) and
+        in-window row [21:39:07] are BOTH h=200
+        hb=200, 500=0 oom=0 shm=0 gpu=0. ZERO new
+        hb=000 rungs in the window: the newest
+        ladder rung is still the frozen 21:23:38
+        rung (healed 21:28:46, cumulative 338
+        unchanged). Detector CLEAN at close.
+
+        Regime: boot fd-verified at
+        /mnt/data/shared/models/vllm-glm-5.3-flash-
+        nvfp4/logs/engine-20261001-231328.log with
+        environ REFUSAL=2/WALL=3: v2-era standing
+        regime all through the window; staged
+        v3.1 still NOT booted (NEWBOOTLOG=0); no
+        MTP/knob shift; counters sampled 21:43:17.
+
+        Hard-failure scan over the whole log:
+        Traceback=0, Import/Assertion=0, real CUDA
+        OOM=0, GPU watchdog=0; no HEALTH=000.
+
+        In-window census (v2 standing wedge-burst
+        semantics; SW1EM false-claim shapes with
+        escape (0, False) -> release + cold
+        re-arm; frozen chains not re-enumerated):
+        SK 9377 -> 9389 (+12, all post-c497-close,
+        first 21:34:17, last in-window 21:40:50):
+        8c9bbab38eceadc0 = 9x 21:34:17..34:41
+        (hit=1024; 8 releases 21:34:23..34:41),
+        84843eba18ec77d9 = 2x 21:35:50/53
+        (hit=164864; 2 releases 21:35:53/56),
+        a86d4024c118ba3e = 1x 21:40:50 (hit=1024,
+        no release line yet). Refusal 149 ->
+        149 (0 new; last 14:05:26, benign).
+        ESCWALL 6368 -> 6378 (release lag
+        visible; shape intact).
+
+        POST-CLOSE tail at the 21:45:58 recheck:
+        new SK burst 9x id a79e276842d53183
+        (21:45:20..21:45:44) + 8 releases; not in
+        the gated window - cycle-499 carry-over,
+        log now ~SK 9398; v2 SW1EM cold re-arm
+        shape again.
+
+        KVL 20836 -> 20893 (+57; local0 subcounter
+        19957 -> 20013; exceptions 879 -> 880),
+        sampled 21:45:58; tail hits healthy
+        (local=0/1024, SW1EM-capped), benign.
+
+        WEDGE-LOOP-POSTV31: n/a (no post-v3.1
+        boot; same-id repeats are v2 standing
+        wedge-burst semantics, not v3.1 loops).
+        Post-restart incident: none (no
+        restart).
+
+        Verdict: CYCLE_DISCHARGE under the
+        standing rules: a FULL clean window
+        (zero new hb=000 rungs across the whole
+        21:30:37 -> 21:41:38 span, detector CLEAN
+        at close, no hard-failure class) releases
+        the standing CYCLE_ALERT toward QUIET,
+        alert noted here; wedge stays CLOSED at
+        close, in-window SK bursts are expected
+        v2-era noise and do not open a rung.
+        Forward: fresh isolated rung re-arms
+        CYCLE_ALERT; 2 consecutive = ALARM TOUCH;
+        Tracebacks/real OOM/GPU wd/HEALTH=000
+        stay instant CYCLE_ALERT; any post-v3.1
+        boot verdict still requires zero
+        wedge-loop.
+
+       Cycle 499 dispatch pending (orchestrator).
+
