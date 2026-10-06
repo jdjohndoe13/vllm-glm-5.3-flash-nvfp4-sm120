@@ -14387,4 +14387,38 @@ Verdict: CYCLE_HOLD - hard signals all zero, single
 benign local0 KVL singleton, ladder QUIET; NOT
 CYCLE_ALERT. Standing rules carry unchanged for
 cycle 508.
-       Cycle 508 dispatch pending (orchestrator).
+Cycle 508 record (epoch II; standing pre-restart regime):
+Station pid 60644 alive both probes; no restart.
+ROWLOG_N 2260 -> 2262; probe1 23:50:09 N=2261 md5
+6cf4aa1323dfa9fb8cf3cb9d937fae74; probe2 23:55:35
+N=2262 md5 d5e10a13942e158693053bbb0b7a5f7b.
+HEALTH: 23:50:09 = 200, 23:55:35 = 200.
+Regime: v2-era boot 231328 still live (newest
+engine log engine-20261001-231328.log, mtime
+23:56:06; no NEWBOOTLOG, no restart; API pid
+100422 + EngineCore 100982; knobs from environ
+REFUSAL=2 / WALL=3 verified).
+Evidence: SK 9559 (+0, 8th straight; window SK=0
+/ id list EMPTY; frozen tail a681 last 22:24:15),
+refusal lines 151 (+0, last 22:16:30, none
+in-window), ESCWALL release 6505 (+0, last
+22:24:15). KVL 21226 -> 21228 (+2 benign local0
+singletons: 23:50:07 hit=1024 9581dde8ad, 23:50:28
+hit=6144 87f330d3c8, distinct ids, one-shot);
+local0 20337 -> 20339; exceptions 889 (+0);
+partition exact 20339 + 889 = 21228. Tracebacks
+0, Import/Assertion 0, real OOM/GPU watchdog 0.
+Per-id check: SK tops are the frozen historical
+wedge-burst chains (max 85x, all pre-22:24);
+no same-id re-escape in-window.
+Ladder: wedge CLOSED; c505 rung 23:22:46 still
+discharged; fresh rows 23:47:51 + 23:52:52 both
+hb=200; clean-row streak 6 (23:27:47 ... 23:52:52);
+no fresh hb=000 rung -> QUIET-hold holds.
+No post-restart incident (no restart; standing
+regime). Post-v3.1 expectations untestable until
+the user reboots into the staged patch.
+Verdict: CYCLE_HOLD - 8th straight quiet window,
+hard signals all zero; standing rules carry
+unchanged for cycle 509.
+       Cycle 509 dispatch pending (orchestrator).
