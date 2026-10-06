@@ -14350,4 +14350,41 @@ wedge-clean, healed hb row).
         clean rows, ladder QUIET; NOT ALARM
         TOUCH, NOT CYCLE_ALERT. Standing rules
         carry unchanged for cycle 507.
-       Cycle 507 dispatch pending (orchestrator).
+Cycle 507 epoch II v2-era pre-restart regime: CYCLE_HOLD
+QUIET-hold continues; clean-row window. Station pid
+60644 alive on both probes (23:42:13 / 23:47:22); no
+restart needed; HEALTH=200 both. ROWLOG_N 2259 -> 2260
+(+1 row: 23:42:50 hb=200 clean, no ALERT); ROWLOG_MD5
+start 312b0e7ca49a0c81d49545e0bf9c90af end
+70f74a273f44d6e9fe248bad70343204. Regime: LIVELOG fd =
+engine-20261001-231328.log; API pid 100422 + EngineCore
+100982 unchanged; no restart; NEWBOOTLOG none -> NOT
+post-v3.1; REFUSAL=2/WALL=3 environ unchanged
+(inherit from c506 lineage boot/pids).
+SK total 9559 (+0; 7th straight clean window); window
+since 23:38 SK=0, id list EMPTY; last SK anywhere
+22:24:15 = a681 frozen tail (68 lines, silent).
+Top burst ids: none in window.
+Refusal lines 151 (+0; last 22:16:30; window 0).
+ESCWALL release 6505 (+0; last 22:24:15; window 0).
+KVL 21226 (+1): partition exact local0 20337 (+1) /
+exception-class 889 (+0); singleton 23:42:11
+chatcmpl-8ad949416fcbb82c-8197c959 local=0 hit=1024,
+benign local0 class; no exception-class hits, no
+same-id repeat (one-shot).
+Hard signals: Traceback 0; ImportError/AssertionError 0;
+real CUDA-OOM/GPU-watchdog 0 (boot-life zero).
+Ladder: wedge CLOSED; c505 rung 23:22:46 stays
+discharged; clean row streak now 4 (23:27:47,
+23:32:48, 23:37:49, 23:42:50 all hb=200) ->
+QUIET-hold holds; no new rung, no RE-ARM, no
+ALARM TOUCH.
+WEDGE-LOOP-POSTV31: n/a (no post-v3.1 boot).
+Post-restart incident: none (tail only benign
+SpecDec/KV-offload metrics, MFU rows, APC-HIT,
+200-OK POSTs).
+Verdict: CYCLE_HOLD - hard signals all zero, single
+benign local0 KVL singleton, ladder QUIET; NOT
+CYCLE_ALERT. Standing rules carry unchanged for
+cycle 508.
+       Cycle 508 dispatch pending (orchestrator).
