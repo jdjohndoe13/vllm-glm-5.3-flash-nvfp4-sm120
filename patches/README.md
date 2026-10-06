@@ -13512,4 +13512,97 @@ wedge-clean, healed hb row).
         Post-v3.1 boot verdict still requires zero
         wedge-loop.
 
-       Cycle 497 dispatch pending (orchestrator).
+        Cycle 497 (2026-10-06, one-shot). Last record
+        was 496 earlier today (04c3d55, close ~21:19
+        with standing CYCLE_ALERT and wedge open at
+        its close), so my window = 21:20 ->
+        21:30:37 (probe1 21:25:15, one ping-wait,
+        probe2 21:30:37).
+
+        Station: pid 60644 alive on both probes; no
+        restart; API pid 100422 + EngineCore 100982
+        unchanged.
+
+        Probes: HEALTH=200 at 21:25:15 and 21:30:37.
+        ROWLOG_N 2232 (c496 close) -> 2233 -> 2234;
+        md5 9a1d41566e6de9b7 -> d802fd24ace03a13.
+        All rows h=200 p=9, 500=0 oom=0 shm=0
+        gpu=0. One new in-window hb=000 rung at
+        [21:23:38] = 4th consecutive rowlog rung
+        incl. c496's 21:07:36/21:12:57/21:18:18
+        (cumulative 337 -> 338); the wedge then
+        healed: row [21:28:46] hb=200, so the
+        wedge-active rung is CLOSED at close
+        (c496 left it open).
+
+        Regime: boot fd-verified at
+        /mnt/data/shared/models/vllm-glm-5.3-flash-
+        nvfp4/logs/engine-20261001-231328.log with
+        environ REFUSAL=2/WALL=3: v2-era standing
+        regime all through the window; staged v3.1
+        still NOT booted; no MTP/knob shift;
+        NEWBOOTLOG none.
+
+        Wedge side (whole engine log, evidence read
+        21:31): SERVERKILL 9360 -> 9377 (+17, all
+        after c496 close: 2 pre-window at
+        21:21:35/21:21:44, 15 in-window
+        21:22:08 -> 21:30:19). In-window census,
+        v2 standing wedge-burst semantics: SK x3
+        id 8c8b0eb393ebea1a (21:23:25/28/31 with
+        releases 21:23:28/31) and SK x3 id
+        9bcbad662b30214e (21:30:13/16/19 with
+        releases 21:30:16/19); plus 11 singles
+        (81a4445301bd7406, 9133c9eaf0679d70,
+        ad12bc756caef765, 8cd7408ea9ac26a9,
+        ab48607698b34996, 8c39ae55ffd04197,
+        8c62364a9558fa52, abcabb83d3a21882,
+        83f2599774f2f0d5, 876fa9af56491358,
+        8ca6e1490de9266c). All escapes keep the
+        standing shape: SW1EM false-claim family
+        hit, wall=0.2/0.1 -> escape (0,False)
+        until boundary change, release + cold
+        re-arm. Frozen 17 chains still silent
+        (not re-enumerated).
+
+        Refusal 149 -> 149 (0 new; last was
+        14:05:26, benign per standing semantics).
+        ESCWALL 6363 -> 6368 (+5: 21:21:37,
+        21:23:28, 21:23:31, 21:30:16, 21:30:19;
+        cold re-arm shape intact). KVL 20769 ->
+        20836 (+67; local0 subcounter 19895 ->
+        19957; exceptions 874 -> 879).
+
+        Hard-failure scan over the whole log:
+        Traceback=0, Import/Assertion=0, real CUDA
+        OOM=0, GPU watchdog=0; no in-window class
+        beyond the benign wedge/KVL patterns above.
+
+        WEDGE-LOOP-POSTV31: n/a (no post-v3.1
+        boot; same-id repeats are v2 standing
+        wedge-burst semantics, not v3.1 loops).
+        Post-restart incident: none (no restart).
+
+        Verdict: CYCLE_HOLD under the standing
+        discharge rules: the window carried ONE
+        isolated new hb=000 rung (21:23:38) before
+        the wedge healed (21:28:46, hb=200); an
+        isolated fresh rung re-arms/continues the
+        c496 standing CYCLE_ALERT (no full clean
+        window, so no discharge), while the healed
+        close bars escalation: no fresh in-window
+        2-consecutive pair, so no ALARM TOUCH, and
+        the 3+ arm is already standing from c496.
+        No hard failure anywhere; serving intact
+        (HEALTH=200 x2, h=200 all rows). Forward:
+        a full clean window (no new rung +
+        detector clean at close) discharges the
+        standing alert toward QUIET with the
+        alert noted; fresh 2-consecutive = ALARM
+        TOUCH; 3+ re-confirms CYCLE_ALERT;
+        Tracebacks/real OOM/GPU wd/HEALTH=000
+        remain instant CYCLE_ALERT; a post-v3.1
+        boot verdict still requires zero
+        wedge-loop.
+
+       Cycle 498 dispatch pending (orchestrator).
