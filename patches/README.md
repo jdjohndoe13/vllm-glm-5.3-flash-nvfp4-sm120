@@ -14141,4 +14141,83 @@ wedge-clean, healed hb row).
         wd / HEALTH=000 = instant CYCLE_ALERT; any
         post-v3.1 boot verdict still requires zero
         wedge-loop.
-       Cycle 504 dispatch pending (orchestrator).
+        Cycle 504 (2026-10-06, one-shot). Last record
+        was 503 tonight (022968c), so this window =
+        23:08:53 -> 23:18:54 (probe1 23:12:41, one 301 s
+        ping-wait, probe2 23:17:50; evidence read
+        23:18:54). Station: CANARY_ALIVE at both probes
+        (no restart; station pid 60644 bash lstart Oct 1
+        20:10:33 alive at read, etime 5d03h08) -> healthy
+        rows h=200 hb=200 both. HEALTH=200 at 23:12:41
+        and 23:17:50; h=200 every row; 500=0 oom=0
+        shm=0 gpu=0.
+        ROWLOG_N 2254 (probe1 read; md5
+        86b65864da93c800891abb873b44e721) -> 2255
+        (probe2; row 23:17:25; md5
+        43817fb43833eadc4dda0606bbbcdae8).
+        Regime: NO boot shift - engine log still
+        engine-20261001-231328.log (fd 1/2 of API
+        100422 = /mnt/data/shared/models/vllm-glm-
+        5.3-flash-nvfp4/logs/engine-20261001-
+        231328.log, 66.5 MB, mtime live 23:18:54);
+        NEWBOOTLOG none (24h scan: only 231328
+        fresh); API 100422 + EngineCore 100982
+        lstarts Oct 1 23:13:27 / :46, etime 5d00h05
+        (read 23:18:54); the user MTP probe work again
+        did NOT bounce the engine -> standing v2-era
+        pre-v3.1 regime (v3.1 staged, not rebooted);
+        knobs fresh from /proc/100422/environ 23:18:
+        VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2 /
+        VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3 (same
+        REFUSAL=2/WALL=3 stance as c501-c503).
+        Evidence: ZERO SK of any kind since the c503
+        close (in-window SK=0; total SERVERKILL 9559
+        unchanged boot-life, four straight cycles
+        at +0; window id list EMPTY again = no new
+        ids or chains at all; frozen top chains stay
+        pre-window: last SK anywhere in-boot 22:24:15
+        (a681 burst tail), last refusal 22:16:30, last
+        ESCWALL release 22:24:15 (cold re-arm, wedge-
+        close tail); no burst id in this window).
+        Refusal 151 unchanged (0 in-window); ESCWALL
+        6505 unchanged (0 in-window; no releases, no
+        cold re-arms after 22:24:15). KVL 21221 ->
+        21222 (+1 benign hit telemetry, KVL_WIN=1;
+        final read 23:18:54): local0 (local=0 metric)
+        20332 -> 20333 (+1), exceptions (= KVL hits
+        not local=0) 889 -> 889 (+0), partition
+        exact 20333+889=21222; the +1 is one local=0
+        hit 23:11:45
+        chatcmpl-a824ee59981b3f0c-8259e05c local=0
+        hit=58368, single occurrence; no refusal /
+        no SK / no ESCWALL / no wedge signature;
+        ZERO non-local0 hits in-window (frozen top
+        nonlocal0 hit-telemetry ids ad481b64f6d1dfa5
+        20x / ab8e8319ffad427e 18x / 8128b8f678f77672
+        13x stay pre-window context).
+        Traceback = 0, ImportError/AssertionError =
+        0, CUDA-OOM/GPU-watchdog = 0 boot-life; no
+        new error class anywhere in the recent tail.
+        Ladder: wedge CLOSED since 22:26:54; window
+        added 2 consecutive clean rows (23:12:24 and
+        23:17:25 both hb=200) -> 10 clean rows since
+        close on c503's count; NO fresh hb=000 rung;
+        the ladder stays fully decayed; detector
+        CLEAN at close, QUIET holds.
+        WEDGE-LOOP-POSTV31: n/a (still no post-v3.1
+        boot; not a single escape this window).
+        Post-restart incident: none (no restart,
+        no new boot log).
+        Verdict: CYCLE_HOLD holding the discharge:
+        another FULL clean window (zero in-window
+        SK, zero hard signals, two more clean rows,
+        detector CLEAN at close), so QUIET stands
+        with no alert active - fourth straight
+        hold. Standing rules for next cycle: fresh
+        isolated hb=000 rung = watch note (re-arm),
+        2 consecutive = ALARM TOUCH, 3+ =
+        CYCLE_ALERT; Tracebacks / real OOM / GPU wd
+        / HEALTH=000 = instant CYCLE_ALERT; any
+        post-v3.1 boot verdict still requires zero
+        wedge-loop.
+       Cycle 505 dispatch pending (orchestrator).
