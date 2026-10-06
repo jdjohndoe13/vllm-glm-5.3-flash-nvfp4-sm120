@@ -14220,4 +14220,72 @@ wedge-clean, healed hb row).
         / HEALTH=000 = instant CYCLE_ALERT; any
         post-v3.1 boot verdict still requires zero
         wedge-loop.
-       Cycle 505 dispatch pending (orchestrator).
+        Cycle 505 (2026-10-06, one-shot). Last record was
+        504 tonight (4c3a934), so this window =
+        23:18:54 -> 23:31:15 (probe1 23:25:41, one 301 s
+        ping-wait, probe2 23:31:08; evidence read
+        23:31:15). Station: CANARY_ALIVE at both probes
+        (no restart; station pid 60644 alive both);
+        gates HEALTH=200 at 23:25:41 and 23:31:08;
+        h=200 every row; 500=0 oom=0 shm=0 gpu=0.
+        ROWLOG_N 2255 (c504 final) -> 2256 (probe1
+        read; md5 417deb09ad0ca0e042260e9b9d899848)
+        -> 2257 (probe2; row 23:27:47; md5
+        c943431ebb40af3ce91aa45ee785c3fd).
+        Regime: NO boot shift - engine log still
+        engine-20261001-231328.log (fd-proven
+        /mnt/data/shared/models/vllm-glm-5.3-flash-
+        nvfp4/logs/, 66.6 MB at final read
+        23:31:15); NEWBOOTLOG none; API 100422
+        lstart Oct 1 23:13:27 + EngineCore 100982
+        unchanged -> the user MTP probe work again
+        did NOT bounce the engine -> standing
+        v2-era pre-v3.1 regime (v3.1 staged, still
+        not rebooted). Knobs fresh from /proc/
+        100422/environ at the evidence pass:
+        VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3 /
+        VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2
+        (same REFUSAL=2/WALL=3 stance as
+        c501-c504).
+        Evidence: today-window (10-06 after
+        23:19:00) SK=0, so SERVERKILL total 9559 +0
+        (FIFTH straight cycle at zero; window id
+        list EMPTY: no new ids, no burst ids; last
+        SK anywhere in-boot 22:24:15 = a681 burst
+        tail, frozen context). Refusal 151 +0
+        (last 22:16:30); ESCWALL release 6505 +0
+        (last 22:24:15; no releases, no cold
+        re-arms this window). KVL 21222 -> 21225
+        (+3 benign): all three local=0 hit
+        singletons, each once: 23:19:21 9cdf9080
+        hit=1024 / 23:22:20 ba900663 hit=4096 /
+        23:25:02 975ffc29 hit=113664; local0
+        20333 -> 20336 (+3); exceptions 889 +0;
+        partition exact 20336+889=21225; zero
+        same-id repeats, zero non-local0 hits in-
+        window (no wedge signature anywhere).
+        Traceback = 0, ImportError/AssertionError
+        = 0, CUDA-OOM/GPU-watchdog = 0 boot-life;
+        no new error class in the recent tail.
+        Ladder: wedge CLOSED since 22:26:54 with
+        10 clean rows (22:31:59 -> 23:17:25 all
+        hb=200), then ONE fresh hb=000 rung 23:22:
+        46 (row 2256, ALERT: SERVE-WEDGE) ->
+        isolated single rung, rung 1 of 3, RE-
+        ARMED. Next row 23:27:47 clean (hb=200
+        rmax=0 rep=0). Engine side of the 23:22
+        rung was SILENT: 0 SK / 0 refusal / 0
+        ESCWALL in-window, only the benign
+        local=0 KVL telemetry above.
+        WEDGE-LOOP-POSTV31: n/a (no post-v3.1
+        boot; not a single escape this window).
+        Post-restart incident: none (no restart,
+        no new boot log).
+        Verdict: CYCLE_REARM - the QUIET-hold
+        streak ends; a fresh isolated hb=000 rung
+        (1 of 3) re-arms the ladder: watch note
+        armed, NOT ALARM TOUCH (needs 2
+        consecutive rungs), NOT CYCLE_ALERT (3+);
+        hard signals all zero at close. Standing
+        rules carry unchanged for cycle 506.
+       Cycle 506 dispatch pending (orchestrator).
