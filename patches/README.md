@@ -13689,4 +13689,136 @@ wedge-clean, healed hb row).
         stay instant CYCLE_ALERT; any post-v3.1
         boot verdict still requires zero
         wedge-loop.
-       Cycle 499 dispatch pending (orchestrator).
+        Cycle 499 (2026-10-06, one-shot). Last record
+        was 498 this evening (6f95b4e + hygiene
+        d89d661, close/recheck 21:45:58 with
+        CYCLE_DISCHARGE, last counted row 21:39:07),
+        so this window = 21:45:58 -> 22:06:09
+        (probe1 21:57:48, one 301 s ping-wait,
+        probe2 22:06:09).
+
+        Station: pid 60644 alive on both probes, no
+        restart needed; API pid 100422 + EngineCore
+        100982 unchanged.
+
+        Probes: HEALTH=200 at 21:57:48 and
+        22:06:09. ROWLOG_N 2236 (c498 close) ->
+        2239 (probe1) -> 2241 (probe2); md5
+        5ce03b087d3e30a0 -> 44d2f3e04b5bc80d. The
+        three probe1-visible rows [21:44:28],
+        [21:49:49], [21:55:09] are post-c498-close
+        gap rows ALL hb=000 SERVE-WEDGE; the 2
+        in-window rows [22:00:30] and [22:05:51]
+        are hb=000 too. Fresh wedge ladder since
+        the last clean row 21:39:07 stands at 5
+        rungs: 21:44:28, 21:49:49, 21:55:09,
+        22:00:30, 22:05:51 with no hb=200 row in
+        between; wedge OPEN, rung cumulative 338
+        -> 343 (+5), burst-side census follows.
+
+        Regime: boot fd-verified at
+        /mnt/data/shared/models/vllm-glm-5.3-flash-
+        nvfp4/logs/engine-20261001-231328.log with
+        environ REFUSAL=2/WALL=3: v2-era standing
+        regime all through the window; staged
+        v3.1 still NOT booted (NEWBOOTLOG=0); no
+        MTP/knob shift; counters sampled 22:07:10.
+
+        Hard-failure scan over the whole log:
+        Traceback=0, Import/Assertion=0, real CUDA
+        OOM=0, GPU watchdog=0; no HEALTH=000.
+
+        In-window census (v2 standing wedge-burst
+        semantics; SW1EM false-claim shapes with
+        escape (0, False) -> release + cold
+        re-arm; frozen chains not re-enumerated):
+        SK 9389 -> 9464. Delta +75 splits as the
+        c498-noted 9x carry-over plus +66 fresh
+        in-window (first 21:48:11, last in-window
+        22:05:52):
+        a72aa6b9c3d43fb1 = 1x 21:48:11 (hit=79872),
+        bfdcb13653f7f5ca = 2x 21:49:26/29
+        (hit=81920), 981b03a1c2e3eca5 = 1x
+        21:49:42 (hit=171008), 865ca96db0363819
+        = 1x 21:50:10 (hit=195584), b530d61b
+        9068e0f9 = 1x 21:50:45 (hit=165888,
+        wall=1.2 the longest hold sighted
+        in-window), 81991af073da7cb4 = 1x
+        21:51:12 (hit=196608), bc10099e2de3e52a
+        = 3x 21:51:44..50 (hit=172032),
+        b9457dcb80e01f01 = 1x 21:52:19
+        (hit=196608), 85a3aefd23884c62 = 3x
+        21:52:50..56 (hit=172032), 8c6c08368757d
+        1b4 = 1x 21:53:23 (hit=198656),
+        948f79d8a5c1be9c = 1x 21:53:56
+        (hit=172032), 85752f182c3b25e9 = 8x
+        21:54:26..46 (hit=199680), 84f9512ea69e
+        1736 = 1x 21:55:32 (hit=199680),
+        b4a73741d29c7b11 = 2x 21:56:05/07
+        (hit=176128), 83a0fe3e85063b93 = 1x
+        21:56:38 (hit=10240), 948566bd9d61b68c
+        = 5x 21:56:51..21:57:03 (hit=176128),
+        ae4e04993d5d150f = 1x 21:57:32
+        (hit=82944), ac2cd92161f09d25 = 27x
+        21:58:04..21:59:22 (hit=176128; 3 s
+        cadence with paired ESCWALL releases;
+        shape = escape (0, False) + cold re-arm
+        wall=3.0), ad992caf4404b8c9 = 1x
+        22:00:41 (hit=177152), 991ddca974d3fbec
+        = 1x 22:01:12 (hit=82944), b0b9e3487b6e
+        99fe = 1x 22:01:25 (hit=177152),
+        82e272fa8cff81f7 = 1x 22:01:54
+        (hit=1024), a6d4ff3e68cc30a8 = 1x
+        22:05:52 (hit=1024) = 66 SK over 23
+        chains; post-snapshot tail bbd0afb
+        cdf633171 = 6x 22:08:05..20 (hit=1024;
+        log trending ~SK 9470), still the same
+        standing v2 burst shape.
+
+        Refusal 149 -> 149 (0 new; last 14:05:26,
+        benign). ESCWALL 6378 -> 6429 (+51;
+        release lag vs 66 escapes; cadence
+        tracks the burst intervals, cold re-arm
+        intact). KVL 20893 -> 21012 (+119; local
+        =0 class 20013 -> 20126 (+113);
+        exceptions 880 -> 886 (+6); a later
+        22:08+ pass showed local=0 class at
+        20139, live growth).
+
+        Carry-over fate (mandated check): id
+        a79e276842d53183 = exactly 9x SK at
+        21:45:20..21:45:44 then SILENCE: zero
+        re-hits and zero releases after
+        21:45:44, so the burst burned out cold
+        (expected v2 decay, no loop).
+
+        WEDGE-LOOP-POSTV31: n/a (no post-v3.1
+        boot; same-id repeats are v2 standing
+        wedge-burst semantics, not v3.1 loops).
+        Post-restart incident: none (no
+        restart).
+
+        Verdict: CYCLE_ALERT under the standing
+        rules: the c498 QUIET discharge does not
+        hold - voided when the detector re-armed
+        in the post-close gap (rows 21:44:28,
+        21:49:49, 21:55:09 all hb=000) and the
+        in-window rungs 22:00:30 + 22:05:51 make
+        a 5-rung uninterrupted ladder off the
+        last clean row 21:39:07 -> 3+ ladder =
+        CYCLE_ALERT, wedge OPEN at close. The
+        alert is purely the hb-ladder re-arm:
+        all hard signals stay negative
+        (Traceback 0, real OOM 0, GPU wd 0,
+        HEALTH=200 x2, h=200 every row) and the
+        SK bursts are expected v2-era noise.
+        Forward: next full clean window (no new
+        rung + detector clean at close)
+        discharges again; fresh isolated rung
+        re-arms toward ALARM TOUCH; fresh 2
+        consecutive = ALARM TOUCH; 3+ re-confirms
+        CYCLE_ALERT; Tracebacks/real OOM/GPU wd/
+        HEALTH=000 stay instant CYCLE_ALERT; any
+        post-v3.1 boot verdict still requires
+        zero wedge-loop.
+       Cycle 500 dispatch pending (orchestrator).
