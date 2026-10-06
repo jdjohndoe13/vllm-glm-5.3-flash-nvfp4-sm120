@@ -13423,4 +13423,93 @@ wedge-clean, healed hb row).
        post-restart verdict still
        requires zero wedge-loop.
 
-       Cycle 496 dispatch pending (orchestrator).
+        Cycle 496 (2026-10-06, one-shot). Last record
+        was 495 on 2026-10-02 (git e12f200), so Oct 2
+        15:05 -> Oct 6 21:04 ran as an unguarded span;
+        counters-as-is cover it; my window =
+        21:04:35 -> 21:19:09.
+
+        Station: pid 60644 alive across all probes; no
+        restart; API pid 100422 + EngineCore 100982
+        unchanged. Boot fd-verified at
+        /mnt/data/shared/models/vllm-glm-5.3-flash-
+        nvfp4/logs/engine-20261001-231328.log with
+        environ REFUSAL=2/WALL=3: v2-era regime stands;
+        staged v3.1 NOT booted; no MTP/knob shift;
+        NEWBOOTLOG none.
+
+        Probes (HEALTH=200 each): 21:04:35, 21:14:10,
+        21:19:09. ROWLOG_N 1033 (c495 close) -> 2229 ->
+        2231 -> 2232; md5 949b3a90/58e35485/7b9d94b7.
+        All rows h=200 p=9, 500=0 oom=0 shm=0 gpu=0;
+        but [21:07:36], [21:12:57] and [21:18:18] are
+        consecutive hb=000 rows (ALERT: SERVE-WEDGE)
+        = 3 fresh in-window rungs; the wedge-active
+        rung is still open at close; detector NOT
+        clean.
+
+        Ladder: c495 standing rung 19 (14:35:07 Oct 2);
+        post-c495-anchor hb=000 row count in rowlog =
+        318 over the unguarded span incl. these 3
+        (row-rung convention; cumulative 19+318=337;
+        per-day attribution impossible in time-only
+        rows).
+
+        Wedge side (whole engine log, evidence read
+        21:16-21:20): SERVERKILL 1653 -> 9360 (+7707
+        unguarded; in-window +1 at 21:07:13 id
+        a50ebb8e2835a46e hit=15360 stale-fallback
+        escape (0,False), matching the wedge row
+        onset 21:07:36; SK gap 17:50:34 -> 21:07:13;
+        after 21:07:13 zero new SK/ESCWALL/refusal
+        lines inside the window, benign KVL hits
+        only). Per-day SK census Oct1-6:
+        108/2149/1565/1177/2382/1979 (to 21:16).
+        Frozen chains flat: all 17 sk-class counts
+        exact vs c495 (16/15/4/1/3/1 | 12/10/9/8/2/
+        1/1 | 31/16/13/11), last stamps <= Oct 2
+        14:24, zero recurrence in the span. Fresh
+        unguarded-span burst chains (sk-class and
+        esc-class pairs, v2 standing semantics, none
+        of them frozen-list members):
+        8090fa9673804954 85 (esc 84),
+        a6fa57be999b2fd4 82 (81), 8e312f2e8093e595
+        69 (68), bf68f8d554480107 66 (65).
+
+        Refusal 43 -> 149 (per day Oct2-6: 43/7/1/24/
+        74; none in-window; last 14:05:26 window=2,
+        benign per standing semantics). ESCWALL
+        1265 -> 6363 (+5098 across span; last
+        17:46:41 chatcmpl-ab2b3d607b10aee3, cold
+        re-arm shape intact). KVL 3623 -> 20769
+        (local0 subcounter 3511 -> 19895; exceptions
+        112 -> 874).
+
+        Hard-failure scan over the whole log:
+        Traceback=0, Import/Assertion=0, real CUDA
+        OOM=0, GPU watchdog=0; in-window class
+        census shows benign KVL hits and two
+        local=7168-class exceptions hits and no
+        SK/ESCWALL/refusal after 21:07:13.
+
+        WEDGE-LOOP-POSTV31: n/a (no post-v3.1 boot).
+        Post-restart incident: none (no restart).
+
+        Verdict: CYCLE_ALERT by this cycle's
+        discharge rules: the window carried a fresh
+        3-consecutive hb=000 ladder (21:07:36/
+        21:12:57/21:18:18) with the rung open at
+        close, triggering the 3+ arm (jumps the
+        WATCH HELD chain). No hard failure anywhere
+        and serving intact (HEALTH=200 x3, h=200 on
+        all rows, 500/oom/shm/gpu=0), so the alert
+        is ladder-only. Forward: a healed window
+        with no new consecutive pair and detector
+        clean reloads standard discharge
+        accounting; any further 3+ re-confirms
+        CYCLE_ALERT; Tracebacks/real OOM/GPU wd/
+        HEALTH=000 remain instant CYCLE_ALERT.
+        Post-v3.1 boot verdict still requires zero
+        wedge-loop.
+
+       Cycle 497 dispatch pending (orchestrator).
