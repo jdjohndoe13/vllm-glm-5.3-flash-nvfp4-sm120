@@ -13821,4 +13821,90 @@ wedge-clean, healed hb row).
         HEALTH=000 stay instant CYCLE_ALERT; any
         post-v3.1 boot verdict still requires
         zero wedge-loop.
-       Cycle 500 dispatch pending (orchestrator).
+        Cycle 500 (2026-10-06, one-shot). Last record
+        was 499 this evening (89b0e0f, close/recheck
+        22:06:09 with CYCLE_ALERT, wedge OPEN, snapshot
+        SK 9464 at 22:05:52), so this window =
+        22:06:09 -> 22:30:23 (probe1 22:24:58, one
+        301 s ping-wait, probe2 22:30:23).
+        Station: pid 60644 alive on both probes, no
+        restart needed; API pid 100422 (lstart Oct 1
+        23:13:27) + EngineCore 100982 unchanged; live
+        log fd-proven = engine-20261001-231328.log
+        (66 MB, mtime live), NEWBOOTLOG none -> regime
+        = standing v2-era pre-v3.1 (v3.1 staged, not
+        rebooted); knobs fresh from /proc/100422/
+        environ: ESCAPE_REFUSAL=2 / ESCAPE_WALL=3.
+        HEALTH=200 at 22:24:58 and 22:30:23; h=200
+        every row; 500=0 oom=0 shm=0 gpu=0. ROWLOG_N
+        2241 -> 2244 (probe1) -> 2245 (probe2);
+        ROWLOG_MD5 ed12caa87a7f4a58f083dda966553c55
+        (probe1) -> dadc6c2f5e6bed11560f991711fec436
+        (probe2). Hard signals all clean: Traceback 0,
+        ImportError/AssertionError 0, real CUDA
+        OOM/GPU watchdog 0 (raw grep 0, banner-benign
+        moot); log tail shows healthy APC-HIT +
+        200 OK traffic at 22:32:18..22:32:22.
+        Counters: SK 9464 -> 9559 (+95; +6 of it =
+        c499's own flagged post-snapshot tail
+        bbd0afbcdf633171 6x 22:08:05..20, so +89 net
+        new); all 95 landed 22:08:05..22:24:15, ZERO
+        SK in-window 22:24:58..22:30:23 and ZERO
+        post-window through 22:34:28. Top gap chains
+        (v2 wedge-burst shape, same-id repeats
+        expected pre-restart): a927964c02c5cef2 20x
+        22:10:20..22:11:17, a68190325ffedd26 17x
+        22:23:27..22:24:15 (3 s-cadence cold re-arms,
+        hit=87040), 8e0a81563d231df9 17x
+        22:21:42..22:22:30, a15c063bc4491664 14x
+        22:19:46..22:20:25, 8ed4b3ae7fb7ffac 4x,
+        a3f38d0151ca5533 3x, b3d0652591c13e64 and
+        82c934de8a3d9d68 2x each, 10 singles
+        22:14:30..22:20:43 = 19 chains.
+        Refusal 149 -> 151 (+2 benign: 22:14:47 and
+        22:16:30, window=2; both are the
+        82c934de8a3d9d68 / 8a39d7d37a018a94
+        requests). ESCWALL 6429 -> 6505 (+76 paired
+        releases, lag versus escapes intact, cold
+        re-arm sampled 22:24:09..15 on
+        a68190325ffedd26). KVL 21012 -> 21158
+        (+146; local0 20126 -> 20271 (+145),
+        exceptions 886 -> 887 (+1); split partitions
+        exactly; live growth 21157@22:32 ->
+        21158@22:34).
+        Ladder: wedge OPEN entering the window;
+        c499's rung pattern extended with gap rows
+        22:11:11, 22:16:32, 22:21:53 (all hb=000) ->
+        8-rung ladder 21:44:28..22:21:53 off the
+        last clean row 21:39:07; the sole in-window
+        row 22:26:54 = hb=200 CLEAN -> ladder
+        broken, wedge CLOSED at close (first clean
+        row since 21:39:07); detector CLEAN at
+        close. Rows landing after probe2 (22:32+
+        cadence) unjudged = next cycle's gap.
+        WEDGE-LOOP-POSTV31: n/a (no post-v3.1 boot;
+        the multi-escape same-id chains are standing
+        v2 wedge-burst semantics as expected).
+        Post-restart incident: none (no restart, no
+        new boot log).
+        Verdict: CYCLE_DISCHARGE under the standing
+        rules: this window is a FULL clean window
+        (no new hb=000 rung - the sole in-window row
+        22:26:54 is clean - plus ZERO in-window SK)
+        with the detector CLEAN at close (HEALTH=200,
+        h=200), so c499's standing CYCLE_ALERT
+        discharges toward QUIET with the alert
+        noted. Qualified: the wedge ran ~42 min
+        (8 rungs) before the window opened, the
+        89 gap SK and gap rows remain frozen
+        context, and post-probe2 rows are pending -
+        if a fresh hb=000 rung re-arms post-close,
+        the next cycle voids this discharge per
+        c498/c499 precedent; a fresh isolated rung
+        re-arms the standing alert, fresh 2
+        consecutive = ALARM TOUCH, fresh 3+
+        re-confirms CYCLE_ALERT; Tracebacks / real
+        OOM / GPU wd / HEALTH=000 stay instant
+        CYCLE_ALERT; any post-v3.1 boot verdict
+        still requires zero wedge-loop.
+       Cycle 501 dispatch pending (orchestrator).
