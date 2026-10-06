@@ -13971,4 +13971,80 @@ wedge-clean, healed hb row).
         / HEALTH=000 = instant CYCLE_ALERT; any
         post-v3.1 boot verdict still requires zero
         wedge-loop.
-       Cycle 502 dispatch pending (orchestrator).
+        Cycle 502 (2026-10-06, one-shot). Last record was
+        501 tonight (f9f7dde, snapshot SK 9559 @22:51),
+        so this window = 22:47:04 -> 22:58:58 (probe1
+        22:51:08, one 301 s ping-wait, probe2 22:56:15;
+        engine-log CUT first-match at 22:47:04).
+        Station: pid 60644 alive on both probes, no
+        restart needed. HEALTH=200 at 22:51:08 and
+        22:56:15; h=200 every row; 500=0 oom=0 shm=0
+        gpu=0. ROWLOG_N 2248 (c501 close) -> 2249
+        (probe1; row 22:47:06 landed post-close as c501
+        predicted; void discharge semantics carried,
+        md5 e4137d78571fb8e2f826b94b3864e163) -> 2250
+        (probe2; row 22:52:07; md5
+        8f78168a51fd82cb4d871a2198d16f6c).
+        Regime: NO boot shift - engine log still
+        engine-20261001-231328.log (fd of API 100422 =
+        /mnt/data/shared/models/vllm-glm-5.3-flash-
+        nvfp4/logs/engine-20261001-231328.log, 66.3 MB,
+        mtime live 22:58:14); NEWBOOTLOG none (24h
+        scan: only 231328 fresh); API 100422 +
+        EngineCore 100982 lstarts Oct 1 23:13:27 / :46,
+        etime 4d23h44m (read 22:58); single vllm-serve
+        API process; the user MTP probe work again did
+        NOT bounce the engine -> standing v2-era
+        pre-v3.1 regime (v3.1 staged, not rebooted);
+        knobs fresh from /proc/100422/environ 22:58:
+        VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2 /
+        VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3 (same
+        REFUSAL=2/WALL=3 stance as c501).
+        Evidence: ZERO SK of any kind since the c501
+        close (in-window SK_WIN=0 including the
+        close->probe1 gap; total SERVERKILL 9559
+        unchanged boot-life; window id list for
+        SK/refusal/ESCWALL EMPTY = no new ids or chains
+        at all; frozen top chains SK-scoped
+        a927964c02c5cef2 20x, a68190325ffedd26 17x,
+        8e0a81563d231df9 17x, a15c063bc4491664 14x,
+        exactly match c501 and stay pre-window: last
+        SK anywhere in-boot 22:24:15 (a681 burst tail),
+        last refusal 22:16:30, last ESCWALL release
+        22:24:15 (cold re-arm, wedge-close tail);
+        ac2cd92161f09d25 chain silent since 21:59:22,
+        context only). Refusal 151 unchanged (0
+        in-window); ESCWALL 6505 unchanged (0
+        in-window; no releases, no cold re-arms after
+        22:24:15); KVL 21189 -> 21209 (+20 benign hit
+        telemetry, KVL_WIN=20; final read 22:58:58
+        after interim 21207 at 22:58:11; local0
+        (local=0 metric) 20301 -> 20321 (+20),
+        exceptions 888 -> 888 (+0), partition exact
+        20321+888=21209; all 20 in-window hits local=0
+        single-occurrence chatcmpl ids, no repeats).
+        Traceback = 0, ImportError/AssertionError = 0,
+        CUDA-OOM/GPU-watchdog = 0 boot-life; no new
+        error class anywhere in the recent tail.
+        Ladder: wedge CLOSED since 22:26:54; window
+        added 2 consecutive clean rows (22:47:06 and
+        22:52:07 both hb=200) -> 5 clean rows since
+        close; NO fresh hb=000 rung; the c499 ladder
+        stays fully decayed; detector CLEAN at close,
+        QUIET holds.
+        WEDGE-LOOP-POSTV31: n/a (still no post-v3.1
+        boot; not a single escape this window).
+        Post-restart incident: none (no restart, no
+        new boot log).
+        Verdict: CYCLE_HOLD holding the discharge:
+        another FULL clean window (zero in-window SK,
+        zero hard signals, two more clean rows,
+        detector CLEAN at close), so QUIET stands with
+        no alert active. Standing rules for next
+        cycle: fresh isolated hb=000 rung = watch note
+        (re-arm), 2 consecutive = ALARM TOUCH, 3+ =
+        CYCLE_ALERT; Tracebacks / real OOM / GPU wd /
+        HEALTH=000 = instant CYCLE_ALERT; any
+        post-v3.1 boot verdict still requires zero
+        wedge-loop.
+       Cycle 503 dispatch pending (orchestrator).
