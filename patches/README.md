@@ -13907,4 +13907,68 @@ wedge-clean, healed hb row).
         OOM / GPU wd / HEALTH=000 stay instant
         CYCLE_ALERT; any post-v3.1 boot verdict
         still requires zero wedge-loop.
-       Cycle 501 dispatch pending (orchestrator).
+        Cycle 501 (2026-10-06, one-shot). Last record
+        was 500 this evening (6d2f94e, close 22:30:23
+        with CYCLE_DISCHARGE, wedge CLOSED at close,
+        snapshot SK 9559 @22:34), so this window =
+        22:30:23 -> 22:46:03 (probe1 22:38:57, one
+        301 s ping-wait, probe2 22:46:03).
+        Station: pid 60644 alive on both probes, no
+        restart needed; API 100422 + EngineCore
+        100982 unchanged (lstarts Oct 1 23:13:27 /
+        :46, etime 4d23h33m); live log fd-proven =
+        engine-20261001-231328.log (66 MB, mtime
+        live 22:46:33), NEWBOOTLOG none, single
+        vllm-serve API process (the user MTP probe
+        work did NOT bounce the engine) -> regime =
+        standing v2-era pre-v3.1 (v3.1 staged, not
+        rebooted); knobs fresh from /proc/100422/
+        environ 22:41: ESCAPE_REFUSAL=2 / WALL=3.
+        HEALTH=200 at 22:38:57 and 22:46:03; h=200
+        every row; 500=0 oom=0 shm=0 gpu=0. ROWLOG_N
+        2245 (c500 close) -> 2247 (probe1; rows
+        22:31:59 + 22:37:00 landed post-close as c500
+        predicted; md5 368808ec6b35e185d42af5dd8801
+        afc7) -> 2248 (probe2; row 22:42:05; md5
+        f9710fca200a936d8e929dc0831c907f; row 22:47
+        pending post-close = next-cycle void
+        material).
+        Evidence: ZERO SK of any kind since the c500
+        close (in-window SK_WIN=0 including the
+        close->probe1 gap; total SERVERKILL 9559
+        unchanged boot-life; no new ids or chains at
+        all, so the frozen top chains a927964c02c5cef2
+        20x, a68190325ffedd26 17x, 8e0a81563d231df9
+        17x, a15c063bc4491664 14x remain pre-window
+        context only). Refusal 151 unchanged (0
+        in-window); ESCWALL 6505 unchanged (0
+        in-window; no releases, no cold re-arms);
+        KVL 21158 -> 21189 (+31 pure benign hit
+        telemetry, KVL_WIN=34; local0 20271 ->
+        20301 (+30), exceptions 887 -> 888 (+1),
+        partition exact).
+        Traceback = 0, ImportError/AssertionError =
+        0, CUDA-OOM/GPU-watchdog = 0 boot-life; no
+        new error class anywhere in the recent tail.
+        Ladder: wedge CLOSED since 22:26:54; the
+        window added 3 consecutive clean rows
+        (22:31:59, 22:37:00, 22:42:05 all hb=200) ->
+        NO fresh hb=000 rung; the c499 8-rung ladder
+        stays fully decayed; detector CLEAN at close.
+        WEDGE-LOOP-POSTV31: n/a (still no post-v3.1
+        boot; not a single escape this window).
+        Post-restart incident: none (no restart, no
+        new boot log).
+        Verdict: CYCLE_HOLD holding the discharge:
+        c500 discharged c499 alert to QUIET and this
+        window is another FULL clean window (zero
+        in-window SK + 3 clean rows + detector CLEAN
+        at close), so QUIET stands with no alert
+        active. Standing rules for next cycle:
+        fresh isolated hb=000 rung = watch note
+        (re-arm), 2 consecutive = ALARM TOUCH, 3+ =
+        CYCLE_ALERT; Tracebacks / real OOM / GPU wd
+        / HEALTH=000 = instant CYCLE_ALERT; any
+        post-v3.1 boot verdict still requires zero
+        wedge-loop.
+       Cycle 502 dispatch pending (orchestrator).
