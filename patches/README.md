@@ -14421,4 +14421,41 @@ the user reboots into the staged patch.
 Verdict: CYCLE_HOLD - 8th straight quiet window,
 hard signals all zero; standing rules carry
 unchanged for cycle 509.
-       Cycle 509 dispatch pending (orchestrator).
+Cycle 509 record (epoch II; standing pre-restart regime):
+Station pid 60644 alive both probes; no restart.
+ROWLOG_N 2262 -> 2264; probe1 23:57:37 N=2262 md5
+d5e10a13942e158693053bbb0b7a5f7b; probe2 00:03:16
+N=2264 md5 2dac92e67469f4af9ea8dde67f82d943.
+HEALTH: 23:57:37 = 200, 00:03:16 = 200.
+Regime: v2-era boot 231328 still live (newest
+engine log engine-20261001-231328.log,
+mtime 00:03:59; no NEWBOOTLOG, no restart;
+API pid 100422 + EngineCore 100982; knobs
+from environ REFUSAL=2 / WALL=3 verified).
+Evidence: SK 9559 (+0, 9th straight; in-cycle
+SK=0 / id list EMPTY; frozen tail a681 last
+22:24:15; tops frozen pre-22:24, probe top
+extraction max 86x paired-id chain, no new
+ids, no same-id re-escape), refusal lines 151
+(+0, last 22:16:30, none in-cycle), ESCWALL
+release 6505 (+0, last 22:24:15). KVL 21228
+-> 21232 (+4 benign local0 one-shots, distinct
+ids; sampled 23:57:34 hit=3072 af8c47d5d909356a,
+23:57:57 hit=6144 9b9155d360ce26c0, 00:03:15
+hit=4096 8aa869af2222dfc1); local0 20339 ->
+20343; exceptions 889 (+0); partition exact
+20343 + 889 = 21232. Tracebacks 0,
+Import/Assertion 0, real OOM/GPU watchdog 0;
+tail-6 only 200-OK POSTs + APC-HIT.
+Ladder: wedge CLOSED; c505 rung 23:22:46 still
+last rung (discharged); fresh rows 23:57:57 +
+00:02:58 both hb=200; clean-row streak 8
+(23:27:47 ... 00:02:58); no fresh hb=000 rung
+-> QUIET-hold holds.
+No post-restart incident (no restart; standing
+regime). Post-v3.1 expectations untestable until
+the user reboots into the staged patch.
+Verdict: CYCLE_HOLD - 9th straight quiet window,
+hard signals all zero; standing rules carry
+unchanged for cycle 510.
+       Cycle 510 dispatch pending (orchestrator).
