@@ -14787,4 +14787,103 @@ TOUCH (needs 2 consecutive rungs), NOT CYCLE_ALERT
 (3+); wedge-burst SK/ESCWALL counted as expected
 v2-era, hard signals all zero at close. Standing
 rules carry unchanged for cycle 516.
-       Cycle 516 dispatch pending (orchestrator).
+Cycle 516 (epoch II): probes 01:21:39 + 01:28:20 (one
+301 s ping-wait; evidence frozen at pass-2 01:34:36,
+live passes all 2026-10-07 UTC). Station
+CANARY_ALIVE_60644 both probes, no restart needed;
+HEALTH=200 at 01:21:39 and 01:28:20.
+ROWS: ROWLOG_N 2276 (c515 final) -> 2279 (probe1; md5
+9add8d78a643b54abf445e621326e033; new rows 01:08:48
+and 01:14:06 hb=200 then 01:19:26 hb=000 ALERT:
+SERVE-WEDGE) -> 2280 (probe2; row 01:24:34 hb=200
+fb=9652 rmax=1 rep=0 apc=9529; md5
+c4ab38232336a51884ab83c4166e9b64). Wedge row
+01:19:26 side counters: fb 9596 -> 9632 (+36), kv
+47238 -> 47393 (+155); rmax=1; oom=0 shm=0 gpu=0
+500=0 p=9 on every new row.
+Regime: NO boot shift; v2-era boot 231328 still live
+and newest in logdir (peers 214203/212211/205734);
+fd-proven on fd of BOTH API 100422 and EngineCore
+100982; NEWBOOTLOG none. No restart; user load-gen
+traffic continues as light steady blocking, not a
+boot event.
+Knobs re-read from /proc/100422/environ:
+VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2,
+VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3; MNBT stays
+max_num_batched_tokens=1024;
+enable_logging_iteration_details NOT in the boot
+log (staged bafe163; activates only after a user
+restart). Standing pre-v3.1.
+Evidence (window = c515 final 01:08:38 -> freeze
+01:34:36): SK total 9602 -> 9664 (+62, all dated
+10-07; v2-era wedge-burst class continuing; first
+new SK 01:16:26). 14 NEW chatcmpl ids beyond the 13
+frozen c515 ids (10-07 distinct total 27), all in
+the 3 s SK -> escape -> wall=3.0 cold re-arm ->
+re-kill cadence: 94c4385a05344148 x23 01:16:26 ->
+01:17:32 (x23 in 66 s, longest chain, hit=74752
+each); bc6ce7ca2be7e7f8 x1 01:17:46;
+81dd332cce76c14f x11 01:18:16->01:18:46;
+a71c72a87a763dae x1 01:18:58; baa95fc9b4453b01 x1
+01:19:30 (4 s after the 01:19:26 rung row);
+8a813b72883bd7dc x13 01:19:54->01:20:30 (hit=194560
+each); 863c3be630369338 x5 01:21:01->:13
+(hit=10240); singletons 946913c43a5916f6 01:24:20
+(88064), 9fb8245da1e0d1ba 01:25:18 (92160),
+8748458ab71aff86 01:25:32 (138240),
+aba6be10b17d5a33 01:30:04 (1024), bf10900618104a9c
+01:33:14 (107520), 98be3057e8da161d 01:34:12
+(84992), and b6f9fabde835e0b4 01:33:48 (139264,
+wall=17.5 variant, paired escape refusal same
+second). Per-minute SK spread 01:16-01:20 =
+12/12/12/3/11. (Pass-1 awk window filter mis-matched
+across the 10-06/10-07 day boundary; date-token
+filter in passes 2-3 gave the split above;
+methodology defect noted, verdict unaffected.)
+Live after freeze: b547976890c762a8 01:37:57
+(107520), 9e57be9e75ec59ca 01:38:18 (108544), same
+one-off class outside the frozen census.
+Refusal lines 152 (+1): first 10-07 refusal,
+01:33:48 chatcmpl-b6f9fabde835e0b4 window=2, paired
+with that id's wall=17.5 SK escape same second;
+benign refusal class.
+ESCWALL release 6535 -> 6583 (+48, all dated 10-07,
+every one wall=3.0 no-boundary cold re-arm, span
+01:16:xx -> 01:21:13; last 01:21:13 same id; no
+releases after 01:21:13 despite singleton SKs,
+silent-release pattern like c515).
+KVL 21321 -> 21454 (+133): local0 20430 -> 20561
+(+131); exceptions 891 -> 893 (+2: 01:19:53
+b437660dd9592b9e local=7168 hit=69632 x2, 27 s
+after the rung); partition exact 20561 + 893 =
+21454.
+Hard signals: Traceback 0; ImportError/Assertion 0;
+real CUDA-OOM / GPU-watchdog non-banner 0
+(boot-life zero).
+Ladder: c515's RE-ARM (isolated rung 00:58:29) did
+NOT carry consecutive: clean rows 01:03:29, 01:08:48
+and 01:14:06 (streak 3) reset the rung ladder; row
+01:19:26 (rung row 2279, ALERT: SERVE-WEDGE) is ONE
+fresh isolated hb=000 rung -> rung 1 of 3,
+RE-ARMED again; recovered hb=200 at 01:24:34 (row
+2280), clean streak reset to 1. NOT ALARM TOUCH
+(needs 2 consecutive fresh rungs), NOT CYCLE_ALERT
+(3+). Engine side of the 01:19 rung NOT silent:
+the 50-SK burst 01:16-01:20 straddles it (same
+v2-era wedge-burst class as c515, not ALERT
+evidence).
+WEDGE-LOOP-POSTV31: n/a (no post-v3.1 boot; the new
+SKs are 14 distinct ids via 3 s-cadence cold
+re-arms then singletons with silent releases; NOT
+the rapid same-id re-escape signature).
+Post-restart incident: none (no restart, no new
+boot log).
+Verdict: CYCLE_REARM - second fresh isolated hb=000
+rung in two cycles but NON-consecutive (3 clean
+rows between), so the ladder holds at rung 1-of-3
+watch note, recovered within one window;
+wedge-burst SK/ESCWALL/KVL counted as expected
+v2-era; hard signals all zero at close. Standing
+rules carry unchanged for cycle 517; post-v3.1
+regime flip still pending user restart.
+       Cycle 517 dispatch pending (orchestrator).
