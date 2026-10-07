@@ -791,6 +791,7 @@ setsid "$ENGINE_CMD" serve "$MODEL_ID" \
   --enable-mfu-metrics \
   --enable-prompt-tokens-details \
   --enable-per-request-metrics \
+  --enable-logging-iteration-details \
   --enable-chunked-prefill \
   --optimization-level 3 \
   --async-scheduling \
