@@ -14496,4 +14496,55 @@ the user reboots into the staged patch.
 Verdict: CYCLE_HOLD - 10th straight quiet
 window, hard signals all zero; standing rules
 carry unchanged for cycle 511.
-       Cycle 511 dispatch pending (orchestrator).
+Cycle 511 (epoch II): probes 00:14:41 + 00:23:20 (one
+301 s ping-wait; evidence pass 00:23:23, follow-up
+00:24:04, all 2026-10-07). Station CANARY_ALIVE_60644
+both probes, no restart needed; HEALTH=200 at
+00:14:41 and 00:23:20.
+ROWS: ROWLOG_N 2265 (c510 final) -> 2266 (probe1; md5
+7b9aae25537b6dbc543d9feaab0ddced) -> 2268 (probe2; md5
+4fe41fa93d3fb64fa9d33952b56a6478). Fresh rows 00:13:00
+/ 00:18:01 / 00:23:02 all hb=200, 500=0, oom=0,
+shm=0, gpu=0.
+Regime: NO boot shift; v2-era boot 231328 still live
+(fd-proven live log engine-20261001-231328.log,
+/mnt/data/shared/models/vllm-glm-5.3-flash-nvfp4/logs/
+, 66908620 bytes at 00:23:25; NEWBOOTLOG none; NEWEST
+= same log). API 100422 (lstart Oct 1 23:13:27) +
+EngineCore 100982 (lstart Oct 1 23:13:46) unchanged.
+Knobs from /proc/100422/environ: ESCAPE_REFUSAL_SECS
+=2, ESCAPE_WALL_SECS=3, TTL trio =3 (STALE_HIT /
+PROMOTION / PROMOTION_FAIL). Standing pre-v3.1
+regime; post-v3.1 expectations untestable.
+Evidence (window = c510 final 00:12:54 -> 00:24:04):
+SK total 9559 (+0; 11th straight zero; SK dated
+10-07 = 0; last SK anywhere 10-06 22:24:15 a681
+frozen tail verbatim-verified; no new ids, no
+same-id re-escape), refusal lines 151 (+0; dated
+10-07 = 0; last 10-06 22:16:30 b5c9cd0b verified),
+ESCWALL release 6505 (+0; dated 10-07 = 0; last
+10-06 22:24:15 a681 cold re-arm verified).
+KVL 21234 -> 21238 (+4): all local=0, 4 distinct
+ids, each exactly one line then silence: 00:14:02
+bd125e8dce8ad25c hit=1024; 00:14:38 bb262ae548a2e6c5
+hit=4096; 00:14:38 a7c448cc34c42a50 hit=1024;
+00:15:02 94627c60791d246f hit=6144 (only line after
+probe1). local0 20345 -> 20349 (+4); exceptions 889
+(+0); partition exact 20349 + 889 = 21238; zero
+same-id repeats. Non-hit KV-LOOKUP family on 10-07:
+none. Log spans 10-01..10-07 wedge-era days; frozen
+chains (max ~86x paired-id) pre-dated 10-06 22:24.
+Hard signals: Traceback 0; ImportError/Assertion 0;
+real CUDA-OOM / GPU-watchdog 0 (OOM_GPUWD_RAW=0,
+boot-life zero). Tail-6 benign: 200-OK POST,
+throughput / SpecDec / KV-transfer metrics, MFU.
+Ladder: wedge CLOSED; c505 rung 23:22:46 stays
+discharged; clean-row streak 12 (23:27:47 ...
+00:23:02, all hb=200); no fresh hb=000 rung ->
+QUIET-hold holds (no re-arm, no alarm touch).
+WEDGE-LOOP-POSTV31: n/a (no post-v3.1 boot; zero
+escapes in-window). Post-restart incident: none.
+Verdict: CYCLE_HOLD - 11th straight quiet window,
+hard signals all zero; standing rules carry
+unchanged for cycle 512.
+       Cycle 512 dispatch pending (orchestrator).
