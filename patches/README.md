@@ -14654,4 +14654,51 @@ escapes in-window). Post-restart incident: none.
 Verdict: CYCLE_HOLD - 13th straight quiet window,
 hard signals all zero; standing rules carry
 unchanged for cycle 514.
-       Cycle 514 dispatch pending (orchestrator).
+Cycle 514 (epoch II): probes 00:44:31 + 00:49:37 (one
+301 s ping-wait; evidence pass complete by 00:50:12,
+all 2026-10-07 UTC). Station CANARY_ALIVE_60644 both
+probes, no restart needed; HEALTH=200 at 00:44:31 and
+00:49:37.
+ROWS: ROWLOG_N 2271 (c513 final) -> 2272 (probe1; md5
+d8c88459e535c895ecfd49e0ab34141f) -> 2273 (probe2;
+md5 f3a516f2b883a48d13e763859ed278e4). Fresh rows
+00:43:06 and 00:48:07, both hb=200, 500=0, oom=0,
+shm=0, gpu=0.
+Regime: NO boot shift; v2-era boot 231328 still live
+(fd-proven live log engine-20261001-231328.log on
+fd of API 100422 and EngineCore 100982; NEWBOOTLOG
+none; NEWEST = same log by mtime and fd). API 100422
++ EngineCore 100982 unchanged; no restart; station
+pid 60644. Knobs re-read from /proc/100422/environ:
+VLLM_KV_OFFLOAD_ESCAPE_REFUSAL_SECS=2,
+VLLM_KV_OFFLOAD_ESCAPE_WALL_SECS=3. Standing pre-v3.1
+regime; post-v3.1 expectations untestable.
+Evidence (window = c513 final 00:41:43 -> 00:50:12):
+SK total 9559 (+0; 14th straight zero; SK dated
+10-07 = 0; last SK anywhere 10-06 22:24:15 a681
+frozen tail verbatim-verified; no new ids), refusal
+lines 151 (+0; last 10-06 22:16:30 b5c9cd0b
+verbatim-verified), ESCWALL release 6505 (+0; last
+10-06 22:24:15 a681 cold re-arm verbatim-verified).
+KVL 21244 (+0): local0 20355 (+0, recount via
+local=0 pattern); exceptions 889 (+0, local!=0);
+partition exact 20355 + 889 = 21244. Last hit
+anywhere 10-07 00:32:01 99c1aa63b3f8a2d5 (c512
+terminal id); zero hits strictly after it, so no
+new in-window ids and no repeat-id chain; KV family
+non-hit dated 10-07 = 0. Log spans 10-01..10-07;
+all chains frozen pre-10-06 22:24 per tail scans.
+Hard signals: Traceback 0; ImportError/Assertion 0;
+real CUDA-OOM / GPU-watchdog non-banner 0
+(boot-life zero). Tail-6 benign: 200-OK POST,
+APC-HIT, metrics/MFU lines.
+Ladder: wedge CLOSED; rows 00:43:06 and 00:48:07
+extend clean-row streak 15 -> 17 through 00:48:07
+(all hb=200); no fresh hb=000 rung -> 14th straight
+QUIET-hold (no re-arm, no alarm touch).
+WEDGE-LOOP-POSTV31: n/a (no post-v3.1 boot; zero
+escapes in-window). Post-restart incident: none.
+Verdict: CYCLE_HOLD - 14th straight quiet window,
+hard signals all zero; standing rules carry
+unchanged for cycle 515.
+       Cycle 515 dispatch pending (orchestrator).
