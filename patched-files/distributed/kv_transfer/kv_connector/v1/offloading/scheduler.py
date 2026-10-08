@@ -1405,6 +1405,42 @@ class OffloadingConnectorScheduler:
                             num_computed_tokens,
                         )
                         return 0, False
+                    if req_status.escape_claim_active:
+                        # V4 HOLD 2026-10-08: an escape claim persists
+                        # across wall releases (it is only cleared by a
+                        # genuine boundary change). Releasing escape while
+                        # the claim persists detaches the scheduler-core
+                        # relax hook (is_stale_hit_escape) from a request
+                        # that keeps answering (0, False) -- the chunked
+                        # recompute admission path then has no door to
+                        # open and the request wedges forever on GPU-pool
+                        # starvation (the silent post-v3.1 wedge).
+                        # Re-anchor the wall and STAY in escape mode: the
+                        # claim-blockout keeps answering (0, False) and
+                        # the relax hook keeps the chunked-admit door
+                        # armed. Progress or a genuinely different claim
+                        # clears the claim and flows through.
+                        _cla_now = time.monotonic()
+                        req_status.stale_hit_wall_start = _cla_now
+                        req_status.escape_refusal_until = (
+                            _cla_now + self._escape_wall_secs
+                        )
+                        if not req_status.escape_refusal_notified:
+                            logger.info(
+                                "KV-LOOKUP ESCWALL hold req=%s local=%d "
+                                "wall=%.1f (claim persists; staying in "
+                                "escape; chunked admit stays armed)",
+                                request.request_id,
+                                num_computed_tokens,
+                                _esc_hold,
+                            )
+                            req_status.escape_refusal_notified = True
+                        logger.debug(
+                            "KV-LOOKUP escape req=%s local=%d (claim hold)",
+                            request.request_id,
+                            num_computed_tokens,
+                        )
+                        return 0, False
                     logger.info(
                         "KV-LOOKUP ESCWALL release req=%s local=%d "
                         "wall=%.1f (no boundary change; cold re-arm)",
@@ -1486,6 +1522,15 @@ class OffloadingConnectorScheduler:
             and num_hit_tokens == req_status.escape_claim_hit_tokens
             and num_computed_tokens == req_status.escape_claim_num_computed
         ):
+            # V4 HOLD 2026-10-08: guarantee escape mode stays armed while
+            # a claim-blockout answers (0, False), so is_stale_hit_escape()
+            # remains True for the scheduler core and the chunked
+            # recompute admission path stays reachable no matter which
+            # path released escape earlier.
+            if not req_status.stale_hit_escape:
+                req_status.stale_hit_escape = True
+                if req_status.stale_hit_wall_start <= 0.0:
+                    req_status.stale_hit_wall_start = time.monotonic()
             logger.debug(
                 "KV-LOOKUP escape claim blocked req=%s hit=%d local=%d",
                 request.request_id,
