@@ -14886,4 +14886,77 @@ wedge-burst SK/ESCWALL/KVL counted as expected
 v2-era; hard signals all zero at close. Standing
 rules carry unchanged for cycle 517; post-v3.1
 regime flip still pending user restart.
-       Cycle 517 dispatch pending (orchestrator).
+=== cycle 517 (2026-10-08) - CYCLE_ALERT ===
+Baseline: tip df2b787. Two prior cycle-517 lanes stopped
+(ses_eebf5a550ffe, ses_ee623eb29ffe) before any ledger
+write; tree verified clean each; orchestrator executed
+this cycle directly.
+Probe1 04:55:13, probe2 04:57:09 (61 s watch; gap
+accounting via rowlog below).
+BOOT FLIP - user restarted the engine twice tonight:
+- Boot 1 pre-v3.1 engine-20261001-231328.log frozen
+  03:49:06 (user SIGTERM mid same-id wedge loop:
+  chatcmpl-a1c238a826160183 hit=196608 cov=0/194; ESCWALL
+  release -> hit -> fallback -> SERVERKILL, 3 s cadence,
+  03:48:53-03:49:02; the reported spam). The final
+  dead-log sweep supersedes the c516 01:41 pass (SK
+  9664 / refusal 152 / ESCWALL 6583 / KVL 21454 with
+  local0 20561 exc 893): SK 11786, refusal 213,
+  ESCWALL 7898, KVL 26531, local0 25517.
+  Delta 01:41->03:49: SK +2122, refusal +61,
+  ESCWALL +1315, KVL +5077 (user load burst 03:39+
+  was uncounted).
+- Boot 2 v3.1 engine-20261008-035524.log booted
+  03:55:24, user SIGTERM 04:34:42. Final: SK 32 ALL
+  distinct ids (same-id loop check: ZERO loops; v3.1
+  blockout works), refusal 3, ESCWALL 8, KVL 86063,
+  FALLBACK 32. Requests still park silently at
+  (0,False) - wedge rows persist.
+- Boot 3 LIVE engine-20261008-043716.log booted
+  04:37:16, API pid 1389153; scheduler md5
+  da376d25... parity, all 9 knobs,
+  enable_logging_iteration_details=True verified in
+  boot args (launcher bafe163 flag ACTIVE). NEW
+  baselines (live log starts near zero): SK 0,
+  refusal 0, ESCWALL 0, KVL 2 (false hits resolved
+  w/o fallback), FALLBACK 0, POST-200 21, iteration
+  lines 33602 @04:56:07 (13.0 ms/iter batch=1 MTP
+  decode), GPU KV 85.5% -> 14.1%.
+STATION pid 60644 alive both probes; ROWLOG_N 2600 md5
+c95f5d6a... both probes; HEALTH 200 both.
+ROWLOG gap 01:45->04:55: wedge rows 03:38:07/03:43:28/
+03:48:49 (old boot burst); h=000 swap rows 03:53/03:58
+(NEWBOOTLOG); boot2 CLEAN rows 04:08:52 + 04:14:07;
+then FRESH 3-RUNG hb=000 cluster 04:19:27/04:24:48/
+04:30:08 (fb 13->28, kv 2257->3649; boot2 stalled
+queue = the user restart trigger); h=000 rows
+04:35/04:40(NEWBOOTLOG)/04:45; live CLEAN rows
+04:50:10 + 04:55:13 (fb 0, kv 1->2).
+VERDICT: CYCLE_ALERT - wedge rows reproduced post-v3.1
+(3-rung cluster on boot 2). NOT same-id loops
+(WEDGE-LOOP-POSTV31 clean) but PERSISTENT false-claim
+parking: the ESCWALL release disarms the escape/relax
+hook while the ESC-CLAIM blockout keeps answering
+(0,False) forever; the GPU-starved waiting queue is
+never admitted -> silent wedge until restart. Root
+cause localized in scheduler.py get_num_new_matched_
+tokens ESCWALL release path.
+V4 HOLD FIX DEPLOYED (repo commit cdbdac0, +45 lines,
+scheduler.py only): ESCWALL branch stays in escape
+mode when escape_claim_active (re-anchor wall;
+throttled single "ESCWALL hold" info line) and the
+claim-blockout interception re-arms stale_hit_escape
+so is_stale_hit_escape() stays True for the core
+relax hook (chunked recompute admission stays
+reachable). Deployed BOTH destinations (patched-files
++ vllm-bin site-packages) md5
+dbcb7e33bce7df899b18ea8b66c5613f parity; backups
+.bak-20261008-v4; venv AST parse OK.
+Hard signals: zero (no Tracebacks / OOM / GPU watch---
+dog / HEALTH=000 anywhere).
+ENGINE RESTART REQUIRED to load v4; next boot =
+POST-V4. Next cycles verify: ESCWALL hold instead of
+cold re-arm loops; parked requests drain via chunked
+admit; SK/refusal/ESCWALL stay flat on the new boot;
+then the MTP burst A/B resumes.
+       Cycle 518 dispatch pending (orchestrator).
