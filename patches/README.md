@@ -14959,4 +14959,62 @@ POST-V4. Next cycles verify: ESCWALL hold instead of
 cold re-arm loops; parked requests drain via chunked
 admit; SK/refusal/ESCWALL stay flat on the new boot;
 then the MTP burst A/B resumes.
-       Cycle 518 dispatch pending (orchestrator).
+=== cycle 518 (2026-10-08) - CYCLE_REARM (V4 LANDED) ===
+Baseline: tip 5d94226. Direct verify pass: probe1 05:17:36
+(HEALTH 200), decode sweep ~05:18:10, probe2 05:18:51 (pair
+only 75 s apart; the 301 s wait was user-aborted). Rowlog
+closed 2604 rows / md5 b8d44af8 at both probes (no new rows
+between probes).
+BOOT 4 POST-V4 STAGED - user restart landed the fix:
+- engine-20261008-050733.log booted 05:07:33 (deploy ended
+  ~05:03; site-packages import at boot = V4 process).
+  Deployed md5 parity re-verified at sweep (dbcb7e33...
+  both destinations; backups .bak-20261008-v4 untouched).
+- enable_logging_iteration_details present (2 loose
+  matches); iteration lines flowing: 3446 by 05:18:10
+  (13.0-13.4 ms/iter batch=1 MTP, 1 gen request, 4 gen
+  tokens, GPU KV 40.7% -> 0.0% across served POSTs).
+- KNOB ECHO DECODE: FALLBACK=1 on BOTH boots is the benign
+  boot warning 'Unknown vLLM environment variable detected:
+  VLLM_KV_OFFLOAD_STALE_HIT_FALLBACK_LIMIT' (envs.py:2187);
+  grep FALLBACK counts it though it is NOT an event. TRUE
+  fallback events: boot 4 = 0; boot 3 = 0. Prior boot-2
+  sweep value 'FALLBACK 32' included this echo (true <= 31)
+  - noted for future count reclassification only.
+- Boot 3 finals frozen 05:06:45: SK 0, refusal 0, ESCWALL
+  release 0, ESCWALL hold 0 (v4-only string: expected 0,
+  boot 3 ran v3.1), Traceback 0; 4 KVL false-hit claims
+  dated 04:48:59 (81ea hit=115712), 04:53:03 (af19
+  hit=30720), 05:01:12 (868a hit=3072), 05:02:45 (89b7
+  hit=2048), all cov=0, none escalated. Death = graceful
+  USER shutdown (clean MPClient/FastAPI stop 05:04:55;
+  mmap removed 05:06:25; benign resource_tracker note).
+- Boot 4 standing baselines @05:18:51: SK 0, refusal 0,
+  ESCWALL release 0, ESCWALL hold 0, KVL hits 0, fallback
+  events 0, Traceback 0, POST-200 27 (loose 'HTTP/1.1" 200'
+  grep; prior strict-quote pattern returned 0 by quoting
+  artifact - use loose for future passes), unknown-env
+  warnings 9 (benign set). MNBT still 1024 in boot args
+  (no env override applied yet).
+- Rowlog gap 04:55->05:15: 05:00:14 clean; 05:05:14 h=000
+  (boot 3 shutdown moment, kv=4 apc=30); 05:10:15
+  NEWBOOTLOG; 05:15:15 h=000 shm=3 (boot 4 warming). First
+  clean post-V4 rowlog row NOT yet appended at probe2 - it
+  lands ~05:20 and next cycle confirms it.
+VERDICT: CYCLE_REARM - V4 LOADED AND SERVING (epoch III).
+Fix is deployed AND imported by the running process, boot
+healthy, zero wedge signals. NOT YET EXERCISED: no wedge-
+claim event has occurred under v4, so the hold-blockout
+and chunked-admit path is unproven in vivo. V4 proof
+arrives when user traffic or the MTP burst produces a
+persistent false-hit claim: expect ONE throttled 'ESCWALL
+hold' line instead of 3 s loops and the queue draining
+via chunked recompute. Scenario map: wedge rows recur +
+counters stay flat + no park = fix WORKING; wedge + park
+(GPU KV pinned, no hold line, SK/refusal 0) = fix
+INCOMPLETE -> escalate. Next cycles verify the first
+post-V4 clean rows and any event.
+User was cleared to use the server meanwhile; event-level
+attribution keeps normal traffic from distorting the
+relay.
+       Cycle 519 dispatch pending (orchestrator).
