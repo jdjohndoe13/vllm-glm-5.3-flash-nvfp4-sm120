@@ -263,6 +263,31 @@ class TieringOffloadingManager(OffloadingManager):
         # transfers and are pruned at drain once their deadline passes.
         self._drained_retracted_job_ids: dict[JobId, float] = {}
 
+        # VLLM_KV_OFFLOAD_STORE_PENDING_TTL_SECS 2026-10-10: hard wall-clock
+        # for a pending GPU->primary store reservation (new keys in
+        # prepare_store() get ref_cnt=-1; lookups see HIT_PENDING until the
+        # connector reports complete_store()). A wedged store job otherwise
+        # parks a permanent false claim in the tier. Mirror of the promotion
+        # retraction pattern: free the reservation via complete_write(...,
+        # False) and deliver a retracted batch id through the existing
+        # drain_flush_job_ids() flush channel. 0 disables.
+        self._store_pending_ttl_secs: float = _env_float(
+            "VLLM_KV_OFFLOAD_STORE_PENDING_TTL_SECS", 30.0
+        )
+        # OffloadKey -> monotonic deadline after which the pending store is
+        # presumed wedged. Armed in prepare_store() for every ref_cnt=-1
+        # reservation; disarmed in complete_store() or by the retraction
+        # scan below.
+        self._store_pending_deadline: dict[OffloadKey, float] = {}
+        # OffloadKey -> (req_context, batch job id) captured at registration.
+        # Batch ids come from _next_job_id() so a retracted store-pend flows
+        # through the same _retracted_job_ids -> drain_flush_job_ids()
+        # channel as a retracted promotion.
+        self._store_pending_owner: dict[OffloadKey, tuple[ReqContext, JobId]] = {}
+        # Cumulative count of retracted store-pend batches (rate-limited log).
+        self._store_pending_retracted_total: int = 0
+        self._store_pending_last_log: float = 0.0
+
         # Per-request state for prepared GPU->primary stores and finalization.
         # Secondary tiers are finalized only after pending primary stores reach
         # complete_store(), since complete_store() can still submit cascades.
@@ -417,6 +442,10 @@ class TieringOffloadingManager(OffloadingManager):
         # 2026-09-30: run the promotion-TTL scan AFTER consuming finished
         # jobs, so a just-completed job cannot be falsely timed out.
         self._expire_stale_promotions()
+        # 2026-10-10: same poll point for store-pend reservations (also after
+        # finished-job consumption so a just-completed store is not falsely
+        # retracted either).
+        self._expire_stale_store_pends()
 
     def _expire_stale_promotions(self) -> None:
         """VLLM_KV_OFFLOAD_PROMOTION_TTL_SECS 2026-09-30: retract promotion
@@ -486,6 +515,53 @@ class TieringOffloadingManager(OffloadingManager):
             for job_id in retained_expired:
                 self._drained_retracted_job_ids.pop(job_id, None)
         return retracted
+
+    def _expire_stale_store_pends(self) -> None:
+        """VLLM_KV_OFFLOAD_STORE_PENDING_TTL_SECS 2026-10-10: retract
+        GPU->primary store reservations that never got complete_store().
+
+        A wedged store otherwise leaves a permanent ref_cnt=-1 claim behind,
+        so lookups keep reporting HIT_PENDING for a block that can never
+        become ready. Mirrors _expire_stale_promotions() semantics: free the
+        reservation via complete_write(..., False), deliver the batch id to
+        the existing drain_flush_job_ids() flush channel, and count the
+        retracts with a rate-limited INFO summary."""
+        if self._store_pending_ttl_secs <= 0.0:
+            return
+        now = time.monotonic()
+        expired: list[OffloadKey] = [
+            store_key
+            for store_key, deadline in self._store_pending_deadline.items()
+            if now > deadline
+        ]
+        if not expired:
+            return
+        # Group expired keys by their store batch so one complete_write()
+        # and one flush id serve the whole wedged reservation.
+        retracted: dict[JobId, tuple[ReqContext, list[OffloadKey]]] = {}
+        for store_key in expired:
+            del self._store_pending_deadline[store_key]
+            owner = self._store_pending_owner.pop(store_key, None)
+            if owner is None:
+                # Disarmed by a completion between scans; nothing to retract.
+                continue
+            req_context, batch_job_id = owner
+            group = retracted.setdefault(batch_job_id, (req_context, []))
+            group[1].append(store_key)
+        for batch_job_id, (req_context, keys) in retracted.items():
+            # Same retraction semantics as a retracted promotion: free the
+            # primary reservation and mark the batch for the worker-side
+            # flush path (drain_flush_job_ids).
+            self._retracted_job_ids.add(batch_job_id)
+            self.primary_tier.complete_write(keys, req_context, False)
+            self._store_pending_retracted_total += 1
+        if now - self._store_pending_last_log >= 60.0:
+            self._store_pending_last_log = now
+            logger.info(
+                "KV-OFFLOAD store-pend TTL retracted count=%d total=%d",
+                len(retracted),
+                self._store_pending_retracted_total,
+            )
 
     def _suppress_promotion_failures(
         self, keys: Collection[OffloadKey]
@@ -774,6 +850,18 @@ class TieringOffloadingManager(OffloadingManager):
         if primary_result.keys_to_store:
             state = self._req_state[req_context.req_id]
             state.pending_primary_stores += 1
+            # VLLM_KV_OFFLOAD_STORE_PENDING_TTL_SECS 2026-10-10: these keys
+            # now hold ref_cnt=-1 write-pending reservations; arm their
+            # retraction deadline alongside the connector's own job tracking.
+            if self._store_pending_ttl_secs > 0.0:
+                deadline = time.monotonic() + self._store_pending_ttl_secs
+                batch_job_id = self._next_job_id()
+                for store_key in primary_result.keys_to_store:
+                    self._store_pending_deadline[store_key] = deadline
+                    self._store_pending_owner[store_key] = (
+                        req_context,
+                        batch_job_id,
+                    )
 
         # Step 3: For request-level tiers, cascade blocks already in primary
         request_level_tiers = self._req_state[req_context.req_id].request_level_tiers
@@ -840,6 +928,14 @@ class TieringOffloadingManager(OffloadingManager):
         """
         # Step 1: Complete store in primary tier (makes blocks loadable)
         self.primary_tier.complete_store(keys, req_context, success)
+
+        # VLLM_KV_OFFLOAD_STORE_PENDING_TTL_SECS 2026-10-10: these keys are no
+        # longer write-pending (ready or removed); disarm their retraction
+        # deadlines so the store-pend maps stay bounded.
+        if self._store_pending_deadline:
+            for key in keys:
+                if self._store_pending_deadline.pop(key, None) is not None:
+                    self._store_pending_owner.pop(key, None)
 
         if success:
             # Step 2: Cascade to ALL secondary tiers
@@ -1031,6 +1127,10 @@ class TieringOffloadingManager(OffloadingManager):
         # reset below invalidates; their submit_load() has not yet been
         # called so no tier I/O is touching that memory.
         self._pending_load_submissions.clear()
+        # 2026-10-10: pending store reservations die with the primary reset;
+        # their deadline/owner maps must not outlive them.
+        self._store_pending_deadline.clear()
+        self._store_pending_owner.clear()
         self._metrics.assert_idle()
 
         finished_req_ids = []

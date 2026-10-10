@@ -655,6 +655,29 @@ class OffloadingConnectorScheduler:
         self._mirror_keys_offered_total = 0
         self._touch_keys_total = 0
 
+        # VLLM_KV_OFFLOAD_MIRROR_OFFER_CAP: bounds how many mirror-local
+        # re-offers (already-stored chunks below next_stored_chunk_idx) one
+        # _build_store_jobs invocation may append. Without it the chunk-0
+        # starting start_chunk_idx re-offers the full history of every
+        # running request every scheduler step. Keys the manager still holds
+        # are skipped outright (skipped_stored) and only the remainder counts
+        # against the cap (capped); chunks at group_state.next_stored_chunk_idx
+        # onward are genuinely new stores and are never capped, so the
+        # re-mirror intent for EVICTED chunk copies is preserved.
+        # "0" disables the cap (legacy unbounded behavior).
+        _mirror_cap_env = os.environ.get("VLLM_KV_OFFLOAD_MIRROR_OFFER_CAP", "4096")
+        try:
+            self._mirror_offer_cap = max(0, int(_mirror_cap_env.strip()))
+        except ValueError:
+            logger.warning(
+                "Invalid VLLM_KV_OFFLOAD_MIRROR_OFFER_CAP=%r; using default 4096",
+                _mirror_cap_env,
+            )
+            self._mirror_offer_cap = 4096
+        self._mirror_throttled_total = 0
+        self._mirror_skipped_stored_total = 0
+        self._mirror_throttle_log_ts = 0.0
+
         # VLLM_KV_OFFLOAD_STALE_HIT_MAX_LOOKUPS: bound identical no-progress
         # re-lookups per request (see get_num_new_matched_tokens). Under
         # tier-full churn a full external hit can stay alive indefinitely
@@ -1933,6 +1956,11 @@ class OffloadingConnectorScheduler:
     ) -> dict[int, TransferJob]:
         blocks_per_chunk = self.config.blocks_per_chunk
         store_jobs: dict[int, TransferJob] = {}
+        # VLLM_KV_OFFLOAD_MIRROR_OFFER_CAP: one mirror re-offer budget per
+        # _build_store_jobs invocation, shared across requests and groups;
+        # only below-pointer re-offers consume it (the next_stored_chunk_idx
+        # path must stay unthrottled).
+        offered = 0
         for req_id in chain(
             scheduler_output.num_scheduled_tokens,
             scheduler_output.finished_req_ids or (),
@@ -1964,9 +1992,15 @@ class OffloadingConnectorScheduler:
                 )
 
                 # VLLM_KV_OFFLOAD_MIRROR_LOCAL: offer from chunk 0 so chunks
-                # whose tier copy was evicted are re-mirrored; the manager's
-                # already-stored filter (policy.get(k) is None) makes this a
-                # no-op for keys still resident.
+                # whose tier copy was evicted are re-mirrored. Chunks below
+                # the request's next_stored_chunk_idx are already-stored
+                # re-offers: the manager's already-stored filter
+                # (policy.get(k) is None) makes them a no-op for keys still
+                # resident, so the scheduler skips resident keys up front
+                # (manager.lookup is read-only for LRU recency) and throttles
+                # the remainder per invocation. Chunks from
+                # next_stored_chunk_idx onward are genuinely new stores and
+                # are offered unconditionally.
                 start_chunk_idx = (
                     0 if self._mirror_local else group_state.next_stored_chunk_idx
                 )
@@ -2004,6 +2038,28 @@ class OffloadingConnectorScheduler:
                         group_config.is_eagle_group,
                     ):
                         continue
+                    if (
+                        self._mirror_local
+                        and abs_chunk_idx < group_state.next_stored_chunk_idx
+                    ):
+                        # Below-pointer re-offer of an already-stored chunk.
+                        # Cap first: past the budget, stop paying manager
+                        # lookups and just tally the remainder.
+                        if (
+                            self._mirror_offer_cap
+                            and offered >= self._mirror_offer_cap
+                        ):
+                            self._mirror_throttled_total += 1
+                            continue
+                        # Skip keys the manager still holds (resident, or
+                        # with a store in flight) — prepare_store would
+                        # filter them anyway; evicted copies are re-mirrored.
+                        if self.manager.lookup(
+                            offload_key, req_status.req_context
+                        ) in (LookupResult.HIT, LookupResult.HIT_PENDING):
+                            self._mirror_skipped_stored_total += 1
+                            continue
+                        offered += 1
                     new_offload_keys.append(offload_key)
 
             # VLLM_KV_OFFLOAD_MIRROR_LOCAL: count this step's tier-store
@@ -2313,6 +2369,23 @@ class OffloadingConnectorScheduler:
                 _ConnectorMetricName.TOUCH_KEYS, self._touch_keys_total
             )
             self._touch_keys_total = 0
+
+        # VLLM_KV_OFFLOAD_MIRROR_OFFER_CAP observability: rate-limited
+        # summary of how many mirror re-offers were skipped as already
+        # stored vs. throttled over the per-invocation cap. Cumulative
+        # totals (not reset here).
+        now = time.monotonic()
+        if (
+            (self._mirror_skipped_stored_total or self._mirror_throttled_total)
+            and now - self._mirror_throttle_log_ts >= 60.0
+        ):
+            self._mirror_throttle_log_ts = now
+            logger.info(
+                "KV-OFFLOAD mirror throttle skipped_stored=%d capped=%d cap=%d",
+                self._mirror_skipped_stored_total,
+                self._mirror_throttled_total,
+                self._mirror_offer_cap,
+            )
 
         # VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES: evicted-then-recomputed
         # attribution (scheduler-side lookup misses on tombstoned hashes).

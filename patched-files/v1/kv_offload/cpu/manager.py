@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 import os
+import time
 from collections import OrderedDict
 from collections.abc import Collection, Iterable
 
@@ -40,6 +41,13 @@ logger = init_logger(__name__)
 # the default with a warning).
 VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES_DEFAULT = 262_144
 
+# VLLM_KV_OFFLOAD_EVICTION_CALL_CAP: per-call eviction cap for prepare_store
+# so one giant store cannot evict the whole CPU-tier evictable cache in a
+# single call. Unset/empty -> default cap; "0"/"false"/"off" disables the
+# cap; otherwise an integer block cap (negative or invalid values fall back
+# to the default with a warning).
+VLLM_KV_OFFLOAD_EVICTION_CALL_CAP_DEFAULT = 2000
+
 
 def _eviction_tombstone_capacity() -> int:
     raw = os.environ.get("VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES")
@@ -66,6 +74,33 @@ def _eviction_tombstone_capacity() -> int:
         )
         return VLLM_KV_OFFLOAD_EVICTION_TOMBSTONES_DEFAULT
     return capacity
+
+
+def _eviction_call_cap() -> int:
+    raw = os.environ.get("VLLM_KV_OFFLOAD_EVICTION_CALL_CAP")
+    if raw is None or not raw.strip():
+        return VLLM_KV_OFFLOAD_EVICTION_CALL_CAP_DEFAULT
+    normalized = raw.strip().lower()
+    if normalized in ("0", "false", "off"):
+        return 0
+    try:
+        cap = int(normalized)
+    except ValueError:
+        logger.warning(
+            "Invalid VLLM_KV_OFFLOAD_EVICTION_CALL_CAP=%r; using default %d",
+            raw,
+            VLLM_KV_OFFLOAD_EVICTION_CALL_CAP_DEFAULT,
+        )
+        return VLLM_KV_OFFLOAD_EVICTION_CALL_CAP_DEFAULT
+    if cap < 0:
+        logger.warning(
+            "VLLM_KV_OFFLOAD_EVICTION_CALL_CAP=%d is negative; using "
+            "default %d",
+            cap,
+            VLLM_KV_OFFLOAD_EVICTION_CALL_CAP_DEFAULT,
+        )
+        return VLLM_KV_OFFLOAD_EVICTION_CALL_CAP_DEFAULT
+    return cap
 
 
 class CPUOffloadingManager(OffloadingManager):
@@ -121,6 +156,19 @@ class CPUOffloadingManager(OffloadingManager):
         # Delta of registry overflows already emitted via get_stats, so the
         # prom counter receives increments (the tracked value is cumulative).
         self._eviction_tombstone_overflows_emitted: int = 0
+
+        # VLLM_KV_OFFLOAD_EVICTION_CALL_CAP: per-call eviction cap (default
+        # 2000 blocks, 0 disables). Clamps the eviction a single prepare_store
+        # may request so one giant store cannot wipe the whole evictable
+        # tier; a capped store that is still short of free blocks aborts
+        # through the existing prepare_store None path and the caller retries
+        # later. total_decay follows the _eviction_tombstone_overflows_total
+        # idea: cumulative blocks requested beyond the cap (deferred demand).
+        # Survives reset_cache like _evicted_total on purpose.
+        self._eviction_call_cap: int = _eviction_call_cap()
+        self._eviction_capped_total: int = 0
+        self._eviction_capped_decay_total: int = 0
+        self._eviction_cap_last_log: float = 0.0
 
         self.store_threshold: int = store_threshold
         self.max_tracker_size: int = max_tracker_size
@@ -250,8 +298,25 @@ class CPUOffloadingManager(OffloadingManager):
 
         to_evict: list[OffloadKey] = []
         if num_blocks_to_evict > 0:
-            if num_blocks_to_evict > self._num_evictable_cache_blocks:
-                # Eviction will fail.
+            # VLLM_KV_OFFLOAD_EVICTION_CALL_CAP: clamp the per-call eviction
+            # so a single giant store cannot wipe the whole evictable tier.
+            # A clamped count can never cover the store's deficit (max post-
+            # evict free = free_before + cap < len(keys_to_store)), so the
+            # abort check below keeps the existing None-return semantics and
+            # the caller retries the store later.
+            cap = self._eviction_call_cap
+            if 0 < cap < num_blocks_to_evict:
+                n_requested = num_blocks_to_evict
+                num_blocks_to_evict = cap
+                self._eviction_capped_total += 1
+                self._eviction_capped_decay_total += n_requested - cap
+                self._log_eviction_capped(n_requested)
+            # Eviction will fail: too few evictable blocks, or (cap > 0) the
+            # clamp already left the store short of free blocks. Without the
+            # cap the second term is an exact equality and never trips.
+            if num_blocks_to_evict > self._num_evictable_cache_blocks or (
+                free_before + num_blocks_to_evict < len(keys_to_store)
+            ):
                 return None
             # There is a still a chance for eviction failure as some of the
             # idle blocks might be in the protected list.
@@ -320,6 +385,27 @@ class CPUOffloadingManager(OffloadingManager):
             keys_to_store=keys_to_store,
             store_spec=store_spec,
             evicted_keys=to_evict,
+        )
+
+    def _log_eviction_capped(self, n_requested: int) -> None:
+        """Rate-limited INFO (at most once per 60s) for capped evictions.
+
+        Capped stores abort through the prepare_store None path before any
+        eviction runs, so n_evicted is 0 by construction; the field is kept
+        for log-format stability.
+        """
+        now = time.monotonic()
+        if now - self._eviction_cap_last_log < 60.0:
+            return
+        self._eviction_cap_last_log = now
+        logger.info(
+            "CPU-TIER-EVICT capped n_requested=%d n_evicted=%d cap=%d "
+            "total_capped=%d total_decay=%d",
+            n_requested,
+            0,
+            self._eviction_call_cap,
+            self._eviction_capped_total,
+            self._eviction_capped_decay_total,
         )
 
     def _record_eviction_tombstones(self, block_hashes: Iterable[bytes]) -> None:

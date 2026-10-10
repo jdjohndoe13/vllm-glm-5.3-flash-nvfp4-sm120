@@ -854,8 +854,14 @@ def pin_mmap_region(region: SharedOffloadRegion) -> None:
 
 def _new_descriptor_buffers(
     num_copy_ops: int,
+    pin: bool | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    pin = PIN_MEMORY
+    # (kit patch, 2026-10-10 #3, HugePages stall): optional pin override for
+    # the pool-miss nonpinned fallback (see SingleDirectionOffloadingHandler.
+    # transfer_async); None keeps the module default so existing call sites
+    # are unchanged.
+    if pin is None:
+        pin = PIN_MEMORY
     # CUDA cache_kernels.cu requires int64; XPU DMA engine requires uint64.
     ptr_dtype = torch.uint64 if current_platform.is_xpu() else torch.int64
     return (
@@ -972,6 +978,36 @@ class SingleDirectionOffloadingHandler:
         self._event_pool: list[torch.Event] = []
         # list of pinned descriptor buffer sets available for re-use
         self._buffer_pool: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor]] = []
+
+        # (kit patch, 2026-10-10 #3, HugePages stall) Descriptor pool-miss
+        # fallback: fresh buffers come from cudaHostAlloc (via
+        # _new_descriptor_buffers), which stalls minutes on this host when
+        # HugePages_Free ~ 0. transfer_async now first reuses the largest
+        # pooled set that fits the submit whole; if none fits and this flag
+        # is on, it allocates new buffers with pin_memory=False instead —
+        # transfers still work but may be slower (unpinned DMA; same caveat
+        # as the cudaHostRegister path in pin_mmap_region). Env:
+        # VLLM_KV_OFFLOAD_DESCRIPTOR_NONPINNED_FALLBACK, default ON; on a
+        # parse failure warn once and stay enabled.
+        raw = os.environ.get("VLLM_KV_OFFLOAD_DESCRIPTOR_NONPINNED_FALLBACK")
+        self._descriptor_nonpinned_fallback = True
+        if raw is not None:
+            try:
+                self._descriptor_nonpinned_fallback = raw.strip().lower() not in (
+                    "0", "false", "no", "off")
+            except Exception:
+                logger.warning(
+                    "Invalid VLLM_KV_OFFLOAD_DESCRIPTOR_NONPINNED_FALLBACK=%r; "
+                    "defaulting to enabled",
+                    raw,
+                )
+        # Telemetry for the fallback (used by the rate-limited INFO in
+        # transfer_async: one line per 60 s at most). Nonpinned sets that
+        # later land back in _buffer_pool are ordinary reusable sets — no
+        # extra accounting needed.
+        self._descriptor_nonpinned_fallback_total = 0
+        self._descriptor_pool_reuse_total = 0
+        self._descriptor_fallback_last_log = 0.0
 
     def _estimate_max_copy_ops(self, group_sizes: Sequence[int]) -> int:
         """Upper bound on the number of copy descriptors for a transfer.
@@ -1191,14 +1227,53 @@ class SingleDirectionOffloadingHandler:
 
         num_copy_ops = self._estimate_max_copy_ops(group_sizes)
 
-        # reuse a pooled buffer set, growing it if this transfer needs more room
-        batch_src, batch_dst, batch_sizes = (
-            self._buffer_pool.pop()
-            if self._buffer_pool
-            else _new_descriptor_buffers(num_copy_ops)
-        )
-        if batch_src.numel() < num_copy_ops:
+        # reuse a pooled buffer set, growing it if this transfer needs more room.
+        # NOTE (kit patch, 2026-10-10 #3, HugePages stall): cudaHostAlloc on
+        # every pool miss stalls minutes on this host when HugePages_Free ~ 0,
+        # so first try to reuse the LARGEST pooled set that fits this submit
+        # whole (the descriptor arrays are 1-D and sliced [:num_copy_ops] in
+        # a moment — partial use works whenever numel >= num_copy_ops); only
+        # on a full miss allocate new buffers, UNPINNED when the fallback is
+        # enabled (transfers still work but may be slower — unpinned DMA, see
+        # pin_mmap_region) and count it; else allocate pinned as before.
+        reuse_before = self._descriptor_pool_reuse_total
+        nonpinned_before = self._descriptor_nonpinned_fallback_total
+        best_idx, best_cap = -1, 0
+        for i, entry in enumerate(self._buffer_pool):
+            cap = entry[0].numel()
+            if cap >= num_copy_ops and cap > best_cap:
+                best_idx, best_cap = i, cap
+        if best_idx >= 0:
+            batch_src, batch_dst, batch_sizes = self._buffer_pool.pop(best_idx)
+            self._descriptor_pool_reuse_total += 1
+        elif self._descriptor_nonpinned_fallback:
+            batch_src, batch_dst, batch_sizes = _new_descriptor_buffers(
+                num_copy_ops, pin=False
+            )
+            self._descriptor_nonpinned_fallback_total += 1
+        else:
             batch_src, batch_dst, batch_sizes = _new_descriptor_buffers(num_copy_ops)
+        if (
+            self._descriptor_pool_reuse_total > reuse_before
+            or self._descriptor_nonpinned_fallback_total > nonpinned_before
+        ):
+            # Rate-limited telemetry: at most one INFO line per 60 s wall.
+            now = time.monotonic()
+            if (
+                self._descriptor_fallback_last_log == 0.0
+                or now - self._descriptor_fallback_last_log >= 60.0
+            ):
+                self._descriptor_fallback_last_log = now
+                logger.info(
+                    "KV-OFFLOAD descriptor fallback count=%d nonpinned=%d "
+                    "pool_reuse=%d (need=%d have=%d)",
+                    self._descriptor_nonpinned_fallback_total
+                    + self._descriptor_pool_reuse_total,
+                    self._descriptor_nonpinned_fallback_total,
+                    self._descriptor_pool_reuse_total,
+                    num_copy_ops,
+                    batch_src.numel(),
+                )
 
         src = batch_src[:num_copy_ops]
         dst = batch_dst[:num_copy_ops]
