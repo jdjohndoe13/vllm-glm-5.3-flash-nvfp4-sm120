@@ -15092,4 +15092,44 @@ for batch 2-4 under MTP, or take a single-stream-MTP
 product stance; NOT an offload patch. No v5.1 trigger
 from this data; no code changes this cycle.
 User cleared to use the server meanwhile.
-       Cycle 521 dispatch pending (orchestrator).
+=== cycle 521 (2026-10-13) - GDN GATE VERDICT ===
+V6 (dispatcher patch 4558e65, dual-site md5 99c5aa5b,
+DEPLOY_V6_DONE) did NOT engage: the fork has two
+model runners and the live one is v1/worker/gpu/
+model_runner.py (ModelCudaGraphManager at line 577,
+decode_query_len 4); CudagraphDispatcher is unused on
+this boot path. Boot 6 stayed FULL 1/1, 2-req iters
+~102+ ms eager.
+V6.1 retargeted for real: v1/worker/gpu/cudagraph_
+utils.py _init_candidates reqs sweep for qlen>1
+(commit d72914e, md5 cee288c4, AST 858 lines, both
+sites, bak-20261013-v61).
+RESTART EVIDENCE: launch with sweep dies in capture
+warmup - RuntimeError from GDN backend (vllm/v1/
+attention/backends/gdn_attn.py:524: num_actual_tokens
+<= decode_cudagraph_max_bs=4 sees tokens 16 then 8;
+runtime staging gate echoes the same bound in
+build() ~line 420). Env fallback VLLM_MTP_DECODE_CG_
+BATCHES booted legacy 1/1 healthy (17:00:43 boot,
+API pid 2560942; KV churn clean, POST 200s).
+UPSTREAM VERDICT (librarian, vllm-project): assert is
+byte-identical at HEAD; provenance PR 25743 (fixes
+issue 25647). UNIFORM_BATCH explicitly supports
+q_len=1+k FULL decode; buffer token dimension is
+sized max_bs*(num_spec+1)=16, already fits 16-token
+descs; no kernel-level limit found anywhere. Root
+cause = launcher cap 4 clamps both the capture ladder
+and the GDN capacity envelope. Upstream remedy for
+this exact model class: bundle-divisible capture
+sizes (issue 25647 advice).
+DECISION: no GDN patch - assert-relax alone risks the
+stale-buffer replay class (issues 53051/49918);
+pristine staging copy removed, nothing committed for
+GDN. The cure is config: mtp-no-docker.sh line 780
+capture sizes [1,2,3,4] -> [4,8,12,16] (bak-20261013-
+sizes kept). With cap 16, decode_cudagraph_max_bs=16
+so both gates pass natively and the v6.1 sweep descs
+dedup identically (kept, harmless).
+Config-fix verification + concurrent A/B lands as
+next cycle.
+       Cycle 522 dispatch pending (orchestrator).
