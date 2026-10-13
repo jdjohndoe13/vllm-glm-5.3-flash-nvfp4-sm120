@@ -15132,4 +15132,31 @@ so both gates pass natively and the v6.1 sweep descs
 dedup identically (kept, harmless).
 Config-fix verification + concurrent A/B lands as
 next cycle.
-       Cycle 522 dispatch pending (orchestrator).
+=== cycle 522 (2026-10-13) - CONCURRENCY FIX VERIFIED ===
+Config cure landed: mtp-no-docker.sh line 780 capture
+sizes [1,2,3,4] -> [4,8,12,16] (bak-20261013-sizes),
+per cycle-521 upstream verdict (issue 25647 remedy).
+Boot 7 engine-20261013-172339.log (API pid 2569125,
+booted 17:23:39): config echo shows capture sizes
+[4,8,12,16], max_cudagraph_capture_size 16, mode
+FULL_AND_PIECEWISE. Target capture bars: PIECEWISE
+4/4 AND FULL 4/4 (was 1/1 on boots 5/6). Zero
+Tracebacks / OOM / 500s in the whole log (global
+grep). Speculator capture finished ~17:33.
+User A/B (2 + 4 reqs in parallel, ~17:33-17:39):
+8-token iters minimums 10.91/14.82/16.75/17.21/
+17.60 ms; 16-token iters 20.03-20.36 ms. Boot-6
+eager class was 102-145 ms for the same 8-token
+steps: ~5-8x step-time cut; batch-1 16-17 ms now
+bracketed by batch-2 ~17 ms (no step penalty),
+batch-4 ~20 ms. 87 POST 200s, zero failures.
+v5 offload pulse clean through the A/B window: store
+881 MB at ~25 ms per cycle cadence, evicted_total 0,
+tombstones 0, mirrored_keys 16 -> 156 healthy churn,
+sync lookup delays 18-70 us, no stalls, far-lane
+silent, stats 10-s cadence unbroken.
+CONCURRENCY BUG RESOLVED by config (no GDN/code
+change beyond dormant v6 dispatcher patch + v6.1
+sweep, which dedup identically under bundle-multiple
+sizes). Root cause was the launcher cap 4 all along.
+       Cycle 523 dispatch pending (orchestrator).
