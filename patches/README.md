@@ -15017,4 +15017,49 @@ post-V4 clean rows and any event.
 User was cleared to use the server meanwhile; event-level
 attribution keeps normal traffic from distorting the
 relay.
-       Cycle 519 dispatch pending (orchestrator).
+=== cycle 519 (2026-10-13) - CYCLE_REARM (V5 LIVE) ===
+Baseline: tip a288e66; orchestrator executed this cycle
+directly after the user restart; no new specialist lanes
+beyond the 4 completed v5 fix lanes.
+DEPLOY DONE 2026-10-13: 4 v5 files installed BOTH
+destinations (patched-files + vllm-bin site-packages)
+with md5 parity STAGE=P1=P2; venv AST parse OK x4;
+backups .bak-20261010-v5 at every target. md5s:
+gpu_worker 34907a4a, cpu mgr ff5d88c4, tiering mgr
+0eee34d0, offload sched 7cfac6e1. Deploy script
+Temp/opencode/v5diag/deploy_v5.sh (CRLF stripped).
+BOOT 5 V5 LIVE: engine-20261013-143645.log booted
+14:36:45 (API pid 2517038); boot banner unchanged
+(cpu_tier 800 GiB, kv_cache 2.1G fp8).
+USER BURST INSTANCE VERIFIED (SERVER SIDE ONLY):
+user burst args 100000 10000 --stream via proxy
+192.168.2.208; 15 proxied + 2 canary POST 200s;
+POST 500 = 0; Traceback 0. Stats cadence 10 s
+UNBROKEN through burst + idle (the 532 s blackout
+class EXTINCT); kv_offload_lookup_async metric
+emitted ZERO events (nonzero-only printer) - the
+532 s lookup waits are dead.
+V5 SIGNATURES: descriptor fallback lines 32
+(rate-limited; pool-reuse + nonpinned allocs
+absorbed the misses, no stall); mirror throttle
+lines 4; evict-cap 0; ttl-retract 0 - the latter
+two paths unexercised in vivo so far (harmless).
+LADDER SILENCE: stale-hit fallback 0, SERVERKILL 0,
+ESCWALL hold 0 - false-hit storm ABSENT under real
+burst load (v4 boot-4 lifetime: SK 1415, hold 327).
+THROUGHPUT: prefill 19.9k tok/s peak 10-s window
+(100k+ token prompt), sustained ~6.1k tok/s
+windows, decode 99.7 tok/s avg (MTP 4 tok 16-17
+ms); GPU KV churn 85.1% -> 0.0% clean after POSTs.
+CLIENT SIDE unseen (ran in the user terminal; no
+local artifacts written) - relay records
+server-truth only, per event-level attribution.
+FIELD NOTES: stats logger falls silent while engine
+is idle (no-step = no stats lines; distinct from
+stall blackouts which occur WHILE serving); V5
+changed nothing in the MNBT lane (still 1024).
+NEXT: soak under real traffic; optional MNBT=8192
+A/B probes the hb/queue starvation lane; v5.1
+(wait-timeout + invalid_block_ids) stays on the
+shelf - no trigger observed in boot 5.
+       Cycle 520 dispatch pending (orchestrator).
