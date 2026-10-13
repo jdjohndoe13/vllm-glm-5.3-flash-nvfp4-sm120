@@ -15062,4 +15062,34 @@ NEXT: soak under real traffic; optional MNBT=8192
 A/B probes the hb/queue starvation lane; v5.1
 (wait-timeout + invalid_block_ids) stays on the
 shelf - no trigger observed in boot 5.
-       Cycle 520 dispatch pending (orchestrator).
+=== cycle 520 (2026-10-13) - DIAGNOSIS (MTP batch-2) ===
+Baseline: tip ff7bf99; direct server-log pass on the
+user mode-2 A/B window (15:25-15:27 boot 5).
+FINDING: 2-stream decode = 8 tok/iter at 130-145 ms
+(earliest 2-req iters on boot 5: 15:17:09, 138-145) vs
+batch-1 = 4 tok/iter at 16-17 ms: ~8x per-step penalty;
+aggregate gen throughput 44-57 tok/s vs 240 single:
+2 concurrent streams LOSE ~5x total tokens/s.
+MTP intact (2x4-token groups verified every iter);
+offload tier CLEAN through the window (store 220 MB
+per ~10 ms, lookup delays ~50 us, zero evict/
+tombstones, GPU KV <=16%, Waiting 0, no preempts);
+v5 NOT implicated.
+ROOT CAUSE: custom build g487ecf187 captured the FULL
+decode CUDA graph 1/1 = batch-1 ONLY (config declares
+cudagraph_capture_sizes [1,2,3,4], FULL_AND_PIECEWISE,
+max_num_seqs 4); batch>=2 decode lands on the slow
+non-FULL path. Boot 4 same structure: batch-1 ~10-13
+ms vs batch-2 ~100 ms (~7x) -> predates v5. The old
+MTP step-rate-collapse mystery is hereby RESOLVED:
+concurrency collapse = batch-width step penalty, NOT
+offload eviction or tier state.
+ALSO DECODED: boot-4 0.2-0.3 ms 1-req iterations =
+async output-service ticks (0.23-0.25 ms lines with
+populated GPU KV; forward overlapped).
+FIX LANE: launcher/infra side - capture FULL graphs
+for batch 2-4 under MTP, or take a single-stream-MTP
+product stance; NOT an offload patch. No v5.1 trigger
+from this data; no code changes this cycle.
+User cleared to use the server meanwhile.
+       Cycle 521 dispatch pending (orchestrator).
