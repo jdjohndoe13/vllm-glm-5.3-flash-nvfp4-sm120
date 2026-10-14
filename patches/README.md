@@ -15159,4 +15159,37 @@ CONCURRENCY BUG RESOLVED by config (no GDN/code
 change beyond dormant v6 dispatcher patch + v6.1
 sweep, which dedup identically under bundle-multiple
 sizes). Root cause was the launcher cap 4 all along.
-       Cycle 523 dispatch pending (orchestrator).
+=== cycle 523 (2026-10-14) - SOAK 4.5H VERDICT ===
+soak_watch v1.1 ran full 90/90 iterations 17:43-22:13
+on boot 7 Jap (API pid 2569125) alongside real
+traffic; soak.log + engine log + canary swept.
+LIVENESS PASS: zero 500s/OOM/Tracebacks all night;
+canary h=200 rows throughout; engine alive at 01:05
+(log 96.9 MB); no ladder stall froze the server.
+INTEGRITY PASS: evictions counted to the block -
+cpu_evicted_total 232 -> 131,046 (soak end) ->
+193,344 at 01:05 with tombstones 46,869; stores/
+loads flowing (661 MB stores per wave, load windows
+762 MB at ~27 ms); touch_keys=96; mirrors held in the
+12,412-block live set. NO silent uncounted removal:
+the v4 disease signature is ABSENT under v5.
+LADDERS PASS: SERVERKILL wall-guard fired at 0.2-0.4s
+(5+ hits), escape vetoes live (refusal window=2 at
+21:26), descriptor fallback once per worker; far-lane
+silent.
+PERF WARNING: marker restore latency is BIMODAL under
+deep churn - 0.7s fast restores (tier hot path) vs
+43 ALERT iters breaching the 10s gate at 25-90s
+bursts once churn beyond the tier live set - incl.
+full-hit rows (h=175104) restored SLOWLY and pure
+recompute rows (h=1024) at ~48s. Classification:
+latency degradation under saturation churn, NOT
+data loss and NOT a freeze; phase A iters 0-9 were
+clean 0.7s.
+OPEN: mirror-thrash headroom question for saturation
+waves; bounded smaller-churn rerun + tombstone trend
+proposed as follow-up; no code change this cycle.
+Do not alert on isolated canary SERVE-WEDGE rows
+(hb=000 wobble) without decode; station otherwise
+green.
+       Cycle 524 dispatch pending (orchestrator).
