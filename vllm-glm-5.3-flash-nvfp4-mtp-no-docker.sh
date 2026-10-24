@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
 # GLM-5.3-Flash-NVFP4 on vLLM — 8x RTX 5090 (sm_120) — MTP VARIANT, NO DOCKER
-# with KV CPU offloading enabled (CPU_TIER_GB, default 800 GiB) and NEXTN MTP
+# with KV CPU offloading enabled (CPU_TIER_GB, default 512 GiB) and NEXTN MTP
 # speculative decoding at SPEC_TOKENS depth (default 3).
 #
 # Byte-identical to the no-docker launcher
@@ -46,7 +46,7 @@
 # on every start).
 #
 # Parity with the docker launcher (vllm-glm-5.3-flash-nvfp4.sh):
-#   * ALL env vars + server args preserved exactly (CPU_TIER_GB default 800,
+#   * ALL env vars + server args preserved exactly (CPU_TIER_GB default 512,
 #     KV_CACHE_MEMORY, port 1025 (API+metrics), VLLM_* envs, the kv-offload
 #     envs, tier remount + leak-cleanup pre-flight, JIT cache dirs)
 #   * dropped docker-only bits:
@@ -444,7 +444,7 @@ fi
 # lower this (or stop other big software) if the box runs other big jobs.
 # THIS LAUNCHER EXISTS TO A/B-TEST EXACTLY THIS FAILURE (576+ GiB
 # cudaHostRegister code=2) WITH VS WITHOUT THE CONTAINER.
-: "${CPU_TIER_GB:=800}"
+: "${CPU_TIER_GB:=512}"
 
 # Hugetlbfs backing for the tier. Default 1 (2026-09-18): the pre-flight
 # below auto-reserves the hugepages at start; CPU_TIER_HUGETLB=0 forces
@@ -777,7 +777,7 @@ setsid "$ENGINE_CMD" serve "$MODEL_ID" \
   --kv-cache-memory "$KV_CACHE_MEMORY" \
   --kv-cache-dtype fp8 \
   --speculative-config '{"method":"mtp","num_speculative_tokens":'"$SPEC_TOKENS"'}' \
-  --compilation-config '{"cudagraph_capture_sizes":[1,2,3,4]}' \
+  --compilation-config '{"cudagraph_capture_sizes":[4,8,12,16]}' \
   --kernel-config '{"enable_jit_warmup":true,"enable_cutedsl_warmup":true}' \
   --no-enable-flashinfer-autotune \
   --enable-prefix-caching \
